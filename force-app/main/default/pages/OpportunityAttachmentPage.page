@@ -1,0 +1,260 @@
+<apex:page controller="OpportunityAttachmentExtension" tabStyle="Opportunity">
+    <apex:form id="myForm" enctype="multipart/form-data" onsubmit="return false;">
+        <style>
+            .smallfont{
+            font-size: 12px;
+            margin-left:3px;
+            }
+            .tableFont{
+            font-size: 11px;
+            }
+            
+.loader {
+  bborder: 10px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 3px solid #3498db;
+  width: 30px;
+  height: 30px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 450ms linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+            
+        </style>
+        <apex:stylesheet value="{!$Resource.Bootstrap}"/>
+        <apex:sectionHeader subtitle="Attach File to Opportunity: {!$CurrentPage.parameters.parentname}"/>
+        
+        <apex:pageBlock id="myPageBlock">
+        <apex:pageMessages />
+            
+            <apex:inputHidden value="{!isExecuted}" id="executed"/>
+            
+            
+            <div class="row smallfont">
+                <div class="col-lg-2">
+                     Short Description:
+                </div>
+                <div class="col-lg-2">
+                    <apex:selectList size="1" value="{!selectedCountry}" id="ddlShortDescription">
+                        <apex:selectOptions value="{!ShortDescriptionOptions}" />
+                        
+                    </apex:selectList>
+                    <!--<select id="ddlShortDescription">
+                        <option value="0">Please Select</option>
+                        <option value="">Purchase Order</option>
+                        <option value="">Order</option>
+                        <option value="">Construct</option>
+                        <option value="">Lien Waiver</option>
+                        <option value="">Installation Quote</option>
+                    </select> -->
+                </div>
+                <div class="col-lg-8">
+                </div>
+            </div>
+            <br />
+            
+            <div class="row smallfont">
+                <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                     Signed:
+                </div>
+                <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                     <input type="checkbox" id="chkSigned" />
+                </div>
+                <div class="col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                </div>
+            </div>
+            <br />
+            
+            <div class="row smallfont">
+                <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                     Executed:
+                </div>
+                <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                     <input type="checkbox" id="chkExecuted" />
+                </div>
+                <div class="col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                </div>
+            </div>
+            <br />
+            
+            <div class="row smallfont">
+                <div class="col-lg-2">
+                    Date stamp:
+                </div>
+                <div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                    <input type="checkbox" id="chkDateStamp" />
+                </div>
+                <div class="col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                </div>
+            </div>
+            <br />
+  
+            <h6><b>1. Select the File</b></h6><br />
+            <div style="margin-left:15px;">
+                <span class="smallfont"> Type the path of the file or click the Browse button to find the file.</span><br />
+                
+                <apex:inputFile value="{!attachmentBody}" fileSize="" filename="{!attachmentName}" id="file" title="Type the path of the file or click the Browse button to find the file." />
+                
+                
+                <span id="lblFileError" class="errorMsg smallfont" style="display:none"><strong>Error:</strong> Please specify a file to upload. Type in the path to the file, or use the "Browse" button to locate it in your local filesystem.</span>
+                <span id="lblFileSizeError" class="errorMsg smallfont" style="display:none"><strong>Error:</strong> File Size must be less than 10MB</span>
+            </div>          
+            <br />
+            <div>
+                <h6><b>2. Click the "Attach File" button.</b></h6><br/>
+                <span class="smallfont" style="margin-left:15px;">
+                    Repeat steps 1 and 2 to attach multiple files. <br/>
+                    <span style="margin-left:15px;">( When the upload is complete the file information will appear below. )</span>
+                </span><br />
+                
+                
+                <div class="row">
+                    <div class="col-lg-1">                        
+                        <apex:commandButton onclick="attachFile()" action="{!upload_Process}" reRender=""
+                                            styleClass="btn btn-default"
+                                            style="margin-left:15px;font-size:11px;" 
+                                            value="Attach file" title="File choosen above will be saved"/>
+                        
+                    </div>
+                    <div class="col-lg-11" id="spanLoader" style="display:none;">
+                        <div class="row">
+                            <div class="col-lg-2 loader"></div>
+                            <div class="col-lg-4" style="margin-top:8px"><span class="smallfont">Please wait! It may take a while depending upon file size</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <br /><br />
+                <h6><b>3. Click the Done button to return to the previous page.</b></h6><br/>
+                <span class="smallfont" style="margin-left:15px;">
+                    ( This will cancel an in-progress upload.) 
+                </span>
+               <div  style="margin-left:15px;font-size:11px;">
+                   <apex:commandButton value="Done" action="{!done_Process}" reRender="" onclick="Done_Click();"/>
+               </div>
+                <br />
+                
+                
+            </div>
+            <br />
+            
+            <apex:inputText value="{!attachmentName}" id="fileName" style="display:none"/><br />
+        
+        </apex:pageBlock>
+        <apex:outputPanel rendered="{!fileCreated}">
+        <div class="row" id="dvAttachedFiles" style="display:block; margin:16px;">
+            <div class="row" style="background-color:#acbf40; border-color:#acbf40;color:white;height:30px;">
+                <h5><b>You have just uploaded the following file</b></h5>
+            </div>
+            
+            <div class="row" style="background-color:#f8f8f8">
+                <table id="tblAttachedFile" class="table">
+                    <thead>
+                    </thead>
+                    <tbody>
+                        <tr class="row tableFont">
+                            <td class="col-lg-1"></td>
+                            <td class="col-lg-1"><b>File Name</b></td>
+                            <td class='col-lg-4'>{!$CurrentPage.parameters.AttName}</td>
+                            <th class="col-lg-6"></th>
+                        </tr>
+                        <!--<tr class="row tableFont">
+                            <td class="col-lg-1"></td>
+                            <td class="col-lg-1"><b>Size</b></td>
+                            <td class='col-lg-3'>{!$CurrentPage.parameters.AttSize}</td>
+                            <th class="col-lg-7"></th>
+                        </tr>-->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </apex:outputPanel>
+        <apex:actionFunction name="StartProcessing" action="{!Upload}"/>
+    </apex:form>
+    
+    
+    <script> 
+    
+    
+    function Done_Click(){
+        var url = "{!$User.ContactId}" == "" ? '' : '/sales';
+        window.location.href = url + '/{!OppId}';
+    
+    }
+    function attachFile(){
+
+        var showDiv = "{!$CurrentPage.parameters.dvAttachedFiles}";
+        
+        var fullFile = document.getElementById("{!$Component.myForm.myPageBlock.file}");
+        var file = fullFile.files.item(0);
+        var txtFile = document.getElementById("{!$Component.myForm.myPageBlock.fileName}");
+        //document.getElementById("spanLoader").style.display = "block";
+        
+        if( file !== null){
+            var indexOfDot = file.name.lastIndexOf(".");
+            var ext = file.name.substring(indexOfDot);
+            document.getElementById("lblFileError").style.display = "none";
+            if(file.size < 10485760){
+
+                document.getElementById("spanLoader").style.display = "block";
+                document.getElementById("lblFileSizeError").style.display = "none";
+                txtFile.value = "{!$CurrentPage.parameters.parentname}";
+                var ddlShortDesc = document.getElementById("{!$Component.myForm.myPageBlock.ddlShortDescription}");
+                if(ddlShortDesc.selectedIndex != 0){
+                    txtFile.value = txtFile.value + " " + ddlShortDesc.options[ddlShortDesc.selectedIndex].text;
+                }
+
+                var chkSigned = document.getElementById('chkSigned'); 
+                if(chkSigned.checked == true){
+                    txtFile.value = txtFile.value + " Signed";
+                }
+                
+                var chkExecuted = document.getElementById('chkExecuted');
+                if(chkExecuted.checked == true){
+                    var executed = document.getElementById("{!$Component.myForm.myPageBlock.executed}");
+                    executed.value = true;
+                    if(chkSigned.checked == true){
+                        txtFile.value = txtFile.value + " & Executed";
+                    }
+                    else{
+                        txtFile.value = txtFile.value + " Executed";
+                    }
+                }
+                    
+                
+                var chkDateStamp = document.getElementById('chkDateStamp');
+                if(chkDateStamp != null){
+                    if(chkDateStamp.checked == true){
+                        var today = new Date();
+                        today = (today.getMonth()+1) + "-" + today.getDate() + "-" + today.getFullYear();
+                        txtFile.value = txtFile.value + " " + today;
+                    }
+                }
+        
+              txtFile.value = txtFile.value + ext;
+                
+                StartProcessing();
+            }
+            
+            else{
+                document.getElementById("lblFileSizeError").style.display = "block";
+            }
+        }
+        else{
+            document.getElementById("lblFileError").style.display = "block";
+            document.getElementById("lblFileSizeError").style.display = "none";
+        }
+        
+    }
+    </script>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page controller="OpportunityAttachmentEditExtension" tabStyle="Opportunity">
+    <apex:sectionHeader title="Opportunity" subtitle="Edit Attachment"></apex:sectionHeader>
+  	
+    <apex:form rendered="{!SOExist}">
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be edited."
+                          severity="error">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+</apex:page>

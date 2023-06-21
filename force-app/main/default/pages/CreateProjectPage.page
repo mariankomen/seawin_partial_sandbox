@@ -1,0 +1,175 @@
+<apex:page standardcontroller="AcctSeed__Project__c" Extensions="CreateProjectExtension" tabStyle="{!IF(strTabName<>null,strTabName,'AcctSeed__Project__c')}">
+    <style>
+        body .bPageBlock .detailList tr td, body 
+        .bPageBlock .detailList tr th, body 
+        table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+        
+        border: none;
+        
+        }
+        
+        .pbSubheader {
+        background-image: url(/img/alohaSkin/opacity75.png);
+        border-width: 0;
+        color: #000;
+        padding: 4px 16px !important;
+        border-top: 1px solid #fff;
+        }
+        
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+        margin: 0;
+        }
+        
+        .requiredLegend {
+        background-color: transparent;
+        }
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader h3 {
+        font-size: 1.2em;
+        color: black;
+        }
+        
+        /* blue required */
+        .brequiredLegend {
+        background-color: transparent;
+        }
+        .brequiredLegend {
+        padding: 0 2px;
+        background-color: transparent;
+        font-weight: normal;
+        color: #000;
+        }
+        
+        .brequiredExampleOuter {
+        margin: 0 .2em 0 .3em;
+        padding: 1px 0;
+        }
+        
+        .brequiredExample {
+        border-left: 3px solid blue;
+        font-size: 80%;
+        vertical-align: 1px;
+        width: 100%;
+        }
+        .bPageBlock .bluerequiredInput {
+        position: relative;
+        height: 100%;
+        }   
+        .bPageBlock .bluerequiredInput .bluerequiredBlock {
+        background-color: blue;
+        position: absolute;
+        left: -4px;
+        width: 3px;
+        top: 1px;
+        bottom: 1px;
+        }
+        textarea {width: 62%;}
+    </style>
+    <apex:form >
+        <apex:sectionHeader title="Project Edit" subtitle="New Project"/>
+        <apex:pageBlock id="addblock" title="Create Project" >
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton action="{!createRecord}" value="Save" rendered="{!!existsAlert && !showNothing}"/>
+                <apex:commandButton action="{!newRecord}" value="Save & New" reRender="addblock" rendered="{!!existsAlert && !showNothing}"/>
+                <apex:commandButton action="{!cancelRecord}" value="Cancel" immediate="true"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessage severity="info" escape="false" detail="The sales order will be automatically associated with
+                                                                     this project and all related purchase orders and opportunity if applicable." 
+                              strength="2" rendered="{!showSoAlert && !showPoAlert && !existsAlert && !showNothing}"></apex:pageMessage>
+            <apex:pageMessage severity="info" escape="false" detail="The purchase order will be automatically associated with
+                                                                     this project and all related sales order or opportunity if applicable." 
+                              strength="2" rendered="{!!showSoAlert && showPoAlert && !existsAlert && !showNothing}"></apex:pageMessage>
+            <apex:pageMessage severity="warning" escape="false" detail="This sales order has already been assigned a project. To assign an existing project, please use the project field on sales order." 
+                              strength="2" rendered="{!showSoAlert && existsAlert && !showNothing}"></apex:pageMessage>
+            <apex:pageMessage severity="warning" escape="false" detail="This purchase order has already been assigned a project. To assign an existing project, please use the project field on purchase order." 
+                              strength="2" rendered="{!showPoAlert && existsAlert && !showNothing}"></apex:pageMessage>
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:pageBlockSection columns="2" collapsible="false" rendered="{!!existsAlert && !showNothing}">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="requiredLegend brandTertiaryFgr">
+                        <span class="requiredExampleOuter">
+                            <span class="requiredExample">&nbsp;</span>
+                        </span>
+                        <span class="requiredText"> = Required Information.</span>
+                    </span>
+                    </span>
+                    <span class="pbSubExtra">
+                        <span class="brequiredLegend brandTertiaryFgr">
+                            <span class="brequiredExampleOuter">
+                                <span class="brequiredExample">&nbsp;</span>
+                            </span>
+                            <span class="requiredText"> = One of these required.</span>
+                        </span>
+                    </span>
+                    <h3>Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:inputField value="{!project.name}" required="true"></apex:inputField>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Owner"></apex:outputLabel>
+                    <apex:outputText value="{!$User.FirstName + ' ' + $User.LastName}"></apex:outputText>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >  
+                    <apex:outputLabel value="Account"></apex:outputLabel>
+                    <apex:outputPanel styleClass="bluerequiredInput"  layout="block">                 
+                        <apex:outputPanel styleClass="bluerequiredBlock" layout="block"/>               
+                        <apex:inputField value="{!project.AcctSeed__Account__c}" label="Account"></apex:inputField>      
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Status"></apex:outputLabel>
+                    <apex:inputField value="{!project.AcctSeed__Status__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >  
+                    <apex:outputLabel value="Contact"></apex:outputLabel>
+                    <apex:outputPanel styleClass="bluerequiredInput"  layout="block">                 
+                        <apex:outputPanel styleClass="bluerequiredBlock" layout="block"/>               
+                        <apex:inputField value="{!project.Contact__c}" label="Contact"></apex:inputField>      
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Project Manager"></apex:outputLabel>
+                    <apex:inputField value="{!project.Project_Manager__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Project Date"></apex:outputLabel>
+                    <apex:inputField value="{!project.Project_Date__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                
+                <!-- ETA Fields -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Mockup ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.Mockup_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Shower Bases ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.Shower_Bases_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Shower Doors ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.Shower_Doors_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="LED Mirrors ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.LED_Mirrors_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Wall Surrounds ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.Wall_Surrounds_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Barn Doors ETA"></apex:outputLabel>
+                    <apex:inputField value="{!project.Barn_Doors_ETA__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Note"></apex:outputLabel>
+                    <apex:inputField value="{!project.Note__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <!-- ETA Fields -->
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

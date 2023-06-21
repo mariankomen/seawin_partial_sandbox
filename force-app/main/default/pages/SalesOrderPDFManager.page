@@ -1,0 +1,113 @@
+<apex:page standardController="AcctSeedERP__Sales_Order__c" extensions="SalesOrderPDFManager">
+    
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/bootstrap-tagsinput.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/bootstrap-tagsinput.css')}" />
+    
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Sales Order" subtitle="{!AcctSeedERP__Sales_Order__c.Name} PDF" />
+        <apex:pageBlock >
+            <apex:outputPanel id="thePageMessages">
+                <apex:pageMessages escape="false"/>
+            </apex:outputPanel>
+            <apex:outputPanel id="emailErrorPanel" style="display:none">
+                <apex:pageMessage summary="" severity="error" strength="3" />
+            </apex:outputPanel>
+            <apex:pageBlockButtons id="buttons">
+                <apex:commandButton id="saveAttachButton"
+                                    action="{!saveAttach}"
+                                    value="Save PDF"
+                                    onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');" />
+                <apex:commandButton id="emailAttachButton"
+                                    action="{!saveAndEmail}"
+                                    value="Send Email"
+                                    onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');"/>
+                <apex:commandButton id="cancelButton" action="{!cancel}" value="Back" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Sales Order Information" columns="2" collapsible="false" rendered="{!showPage}">
+                <apex:outputField id="Name" value="{!AcctSeedERP__Sales_Order__c.Name}" />
+                <apex:outputField id="postingStatus" value="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Status__c}" />                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Account Name" for="accountname" />
+                    <apex:outputText id="accountname" value="{!$Organization.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:outputField id="total" value="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Total__c}" />
+                <apex:outputField id="vendorName" value="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__c}" />
+                <apex:outputField id="salesRep" value="{!AcctSeedERP__Sales_Order__c.Sales_Rep_O__c}" />
+                
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Email Sender and Recipient Information" columns="2" collapsible="false" rendered="{!showPage}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="From Address" for="fromAddress" />
+                    <apex:outputPanel >
+                        <apex:selectList id="fromAddress" value="{!selectedOrgWideEmailAddress}"
+                                         multiSelect="false" size="1" rendered="{!fromAddressPicklistEnabled}">
+                            <apex:selectOptions value="{!orgWideEmailSelectOptions}"/>
+                        </apex:selectList>
+                        <apex:outputText value="{!selectedOrgWideEmailAddress}" rendered="{!!fromAddressPicklistEnabled}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC Me" for="ccUser" />
+                    <apex:inputCheckbox id="ccUser" value="{!sendccUser}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Send to Contact" />
+                    <apex:actionRegion >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                                <apex:inputField value="{!salesOrder.Contact__c}">
+                                </apex:inputField>
+                        </div>
+                        <apex:outputPanel id="errorPanel" style="color:red;display:none" layout="block"/>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC Addresses" for="ccAddresses" />
+                    <apex:actionRegion >
+                    <div class="{!IF(sendccUser, 'requiredInput', '')}">
+                        <div class="{!IF(sendccUser, 'requiredBlock', '')}"></div>
+                            <apex:inputText id="ccAddresses" value="{!ccAddresses}" styleClass="form-control" html-data-role="tagsinput"/>
+                    </div>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>              
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="email" title="Email Subject and Body Information" columns="1" collapsible="true" rendered="{!showPage}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Subject" />
+                    <apex:actionRegion >
+                    <div class="requiredInput">
+                        <div class="requiredBlock"></div>
+                            <apex:inputText id="emailSubject" value="{!custmEmailTemplate.emailSubject}" style="width:65%"/>
+                    </div>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Body" />
+                    <apex:actionRegion >
+                    <div class="requiredInput">
+                        <div class="requiredBlock"></div>
+                            <apex:inputTextarea id="emailBody" value="{!custmEmailTemplate.emailBody}"
+                                                style="width:65%;line-height:1em;height:7em;"
+                                                richText="false"/>
+                        
+                    </div>
+                    </apex:actionRegion>
+                    
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="attachment" title="Email Attachments" columns="1" collapsible="true" rendered="{!showPage}">
+                <apex:inputfile value="{!attach.body}" filename="{!attach.name}" contentType="{!attach.contentType}"></apex:inputfile>
+                <apex:outputPanel layout="block" style="width:40%;">
+                    <table id="mainTable" ></table>
+                </apex:outputPanel>
+                <!--<apex:inputHidden id="proxyInput" value="{!serializedCustomEmailAttachments}"/>-->
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:pageBlock title="Sales Order PDF Preview">
+            <apex:iframe src="{!communityUrl}/apex/SalesOrderPDFInvoice?id={!salesOrder.id}" rendered="{!showPage}"/>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

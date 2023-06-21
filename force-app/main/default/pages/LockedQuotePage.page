@@ -1,0 +1,25 @@
+<apex:page standardcontroller="Quote" extensions="LockedQuoteExtension">
+    <style>
+        html{ background-color: white;}/*this line is added by murtaza to keep the color consistent for communities as well*/
+        .messageText br {
+        display: none;
+        }
+        .message {
+        font-weight: bold;
+        margin: 4px 20px;
+        }
+        .message .messageText {
+        font-size: 12px;
+        
+        }
+        .warningM3 .msgIcon, .warningMedium {
+        display: none;
+        }
+        .message .messageText h4 {
+        display: none;
+        }
+    </style>
+    
+    <apex:pageMessages ></apex:pageMessages>
+
+</apex:page>

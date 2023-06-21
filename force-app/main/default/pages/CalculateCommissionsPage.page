@@ -1,0 +1,11 @@
+<apex:page controller="CalculateCommissionsPageCtrl" action="{!PageAction}">
+    <apex:sectionHeader title="Create Commissions" subtitle="{!so.name}" />
+    <apex:form Id="form">
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="both">
+                <apex:commandbutton action="{!Back}" oncomplete="window.location.href = '{!communityUrl}/{!soId}'" rerender="form" value="Back"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessages ></apex:pageMessages>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

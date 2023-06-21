@@ -1,0 +1,13 @@
+<apex:page standardController="Sales_Order_Commissions__c">
+    <apex:form >
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Back" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessage severity="error" 
+            detail="Commissions are automatically created when payment is received or it is credited on the related billing." 
+                              strength="2">
+                            </apex:pageMessage>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

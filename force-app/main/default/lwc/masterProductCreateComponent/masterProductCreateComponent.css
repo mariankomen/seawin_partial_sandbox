@@ -1,0 +1,17 @@
+.slds-dueling-list__options{
+    height: 450px !important;
+    width: 200px !important;
+}
+.main_block{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.slds-dueling-list__options {
+    width: 250px !important;
+}
+
+.attr_input{
+    width: 32%;
+}

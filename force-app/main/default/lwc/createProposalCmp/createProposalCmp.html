@@ -1,0 +1,90 @@
+<template>
+    <div>
+        <template if:true={FRONT_PAGE_ERROR}>
+            The front page for the PDF could not be retrieved. Please retry.
+        </template>
+        <template if:true={PROPOSAL_PAGE_ERROR}>
+            Proposal page for the PDF could not be retrieved. Please retry.
+        </template>
+        <template if:true={QUOTE_DOCUMENT_PAGE_ERROR}>
+            No Quote PDF found. Please first create Quote PDF by clicking the button "Create PDF" on the Quote.
+        </template>
+        <template if:true={ANOTHER_ERROR}>
+            <div ishtmlcontainer="true" data-custom-error="true" id="anotherMessageId" style="padding: 10px; border-radius: 10px; background:red; color:#fff;"></div>
+        </template>
+        <template if:true={SHOW_CREATED}>
+            <div style="display: flex; align-items: center; background: #00c6b7; border-radius:50px;">
+                <lightning-icon icon-name="action:approval" alternative-text="Connected" size="small" title="large size">
+                </lightning-icon>
+                <p>
+                    Quote Proposal PDF successfully created!
+                </p>
+            </div>
+        </template>
+        <template if:true={SHOW_MESSAGE}>
+            <div style="margin-top: 15px; border-radius: 10px; display: flex; align-items: center; background:rgb(91 255 21); color:rgb(0, 0, 0);">
+                <div class="spinnerHolder">
+                    <lightning-spinner alternative-text="Loading" size="small" variant="brand"></lightning-spinner>
+                </div>
+                <div ishtmlcontainer="true" data-custom-info="true" id="infoMessageId" style="padding: 10px; color:rgb(0, 0, 0);"></div>
+            </div>
+        </template>
+        <template if:false={hasError}>
+            <div style="width: 20%;">
+                <p></p>
+                <lightning-combobox
+                    name="progress"
+                    label="1. Select proposal Template"
+                    value={_selectedTemplate}
+                    placeholder="Select template"
+                    options={quoteTemplatesOptions}
+                    onchange={handleTemplateChange}
+                    required
+                ></lightning-combobox>
+            </div>
+            
+            <div>
+                <p>2. Do you want to create proposal with technical specs?</p>
+                <lightning-input type="toggle" label="" name="input2" value={withTechnicalSpecs} onchange={handleToggleChange}></lightning-input>
+            </div>
+    
+            <div>
+                <template if:false={createAnyway}>
+                    <lightning-button variant="brand" label="Create" title="Primary action" onclick={handleStartProcessing} class="slds-m-left_x-small"></lightning-button>
+                </template>
+                <template if:true={createAnyway}>
+                    <lightning-button variant="brand" label="Create Anyway" title="Primary action" onclick={handleCreateAnyway} class="slds-m-left_x-small"></lightning-button>
+                </template>
+                <!-- <lightning-button variant="brand" label="TESTTTTT" title="Primary action" onclick={handleTestClick} class="slds-m-left_x-small"></lightning-button> -->
+    
+            </div>
+        </template>
+
+        <!-- <lightning-button variant="brand" label="Back" title="Primary action" onclick={handleGoBack} class="slds-m-left_x-small"></lightning-button> -->
+        <!-- <embed type="application/pdf" data-id="contentIframe" src="" width="300" height="200"> -->
+
+        <template if:true={showProposalPDF}>
+            <div>
+                <div style="display: flex; justify-content:center;">
+                    <lightning-button variant="brand" label="Save" title="Primary action" onclick={savePdfAction} class="slds-m-left_x-small"></lightning-button>
+                </div>
+
+                <template if:false={previewAvailable}>
+                    <div style="display: flex; justify-content: center;">
+                        <p>Can not preview file, because file weight more than 2mb.</p>
+                    </div>
+                </template>
+
+                <template if:true={previewAvailable}>
+                    <div style="display: flex; justify-content:center;height:1150px;margin:0 10%;">
+                        <iframe src={PDF_BODY} data-id="contentIframe" width="100%" ></iframe>
+                    </div>
+                </template>
+                
+            </div>
+            
+        </template>
+        
+
+    </div>
+</template>

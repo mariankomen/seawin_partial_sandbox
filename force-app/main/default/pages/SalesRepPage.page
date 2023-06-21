@@ -1,0 +1,256 @@
+<apex:page standardController="Sales_Rep__c" extensions="SalesRepPageExtension" id="thepage">
+    
+    <apex:stylesheet value="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+    <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js"/>
+    <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+    
+    <apex:sectionHeader title="Sales Rep / Team" subtitle="{!IF(Sales_Rep__c.Name != null, Sales_Rep__c.Name, 'Create')}"></apex:sectionHeader>
+    <apex:form id="theform">
+        <apex:pageBlock id="theblock" title="{!IF(Sales_Rep__c.Name != null, 
+                                             'Sales Rep / Team Edit', 
+                                             'New Sales Rep / Team')}">
+            <apex:pageMessage severity="info" detail="Email and Company Name are required if Team is unchecked." 
+                              strength="2"></apex:pageMessage>    
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveOverride}" ></apex:commandButton>
+                <apex:commandButton value="Cancel" action="{!cancel}" ></apex:commandButton>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection id="thesection" title="Information" collapsible="false">
+                <apex:inputField value="{!Sales_Rep__c.Name}" required="true"></apex:inputField>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Owner"></apex:outputLabel>
+                    <apex:outputText value="{!$User.FirstName + ' ' + $User.LastName}"></apex:outputText>
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!Sales_Rep__c.Title__c}"></apex:inputField>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Email"></apex:outputLabel>
+                    <apex:outputPanel id="theemail">
+                        <apex:inputField value="{!Sales_Rep__c.Email__c}" 
+                                         required="{!NOT(Sales_Rep__c.IsTeam__c)}">
+                        </apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:inputField value="{!Sales_Rep__c.Phone__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Mobile__c}"></apex:inputField>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Company Name"></apex:outputLabel>
+                    <apex:outputPanel id="thecompanyname">
+                        <apex:inputField value="{!Sales_Rep__c.Company_Name_Lookup__c}"  
+                                         required="{!NOT(Sales_Rep__c.IsTeam__c)}"></apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:inputTextarea value="{!Sales_Rep__c.Address__c}" rows="3" cols="40"></apex:inputTextarea>
+                <apex:inputField value="{!Sales_Rep__c.GL_Account_Variable_to_Sales_Rep__c}" required="true"></apex:inputField>
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Sales_Rep__c.Default_Record_Type__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Monthly_Quota__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Active__c}" required="true"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Outside_Sales_Rep__c}"></apex:inputField>
+                
+                <apex:pageBlockSectionItem id="thesectionitem">
+                    <apex:outputLabel >Visible To</apex:outputLabel>
+                    <apex:panelGrid columns="3" id="thepanelgrid">
+                        <apex:selectList id="leftselectedbox" value="{!leftSelected}" multiselect="true" style="width:200px" size="10">
+                            <apex:selectOptions value="{!UnSelectedValues}" />
+                        </apex:selectList>
+                        
+                        <apex:panelGroup id="thepanelgroup">
+                            <br/>
+                            <apex:image styleClass="picklistArrowRight" value="/s.gif" onclick="leftselection();">   
+                            </apex:image>
+                            <br/><br/>
+                            <apex:image styleClass="picklistArrowLeft" value="/s.gif" onclick="rightselection();">
+                            </apex:image>
+                        </apex:panelGroup>
+                        
+                        <apex:selectList id="rightselectedbox" value="{!rightSelected}" multiselect="true" 
+                                         style="width:200px" size="10">
+                            <apex:selectOptions value="{!SelectedValues}" />
+                        </apex:selectList>
+                    </apex:panelGrid>
+
+                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Receive Commission</apex:outputLabel>
+                    <apex:inputField value="{!Sales_Rep__c.Receive_Commission__c}"></apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Team"></apex:outputLabel>
+                    <apex:actionRegion >
+                        <apex:inputField value="{!Sales_Rep__c.IsTeam__c}">
+                            <apex:actionSupport event="onchange" 
+                                                rerender="thecompanyname,theemail"/>   
+                        </apex:inputField> 
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Commission Structure" collapsible="false">
+                <!-- <apex:inputField value="{!Sales_Rep__c.Price_Level_1_12__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_1_12__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_13_20__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_13_20__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_21_26__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_21_26__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_27_30__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_27_30__c}"></apex:inputField> -->
+
+
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_1_5__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_1_5__c}"></apex:inputField>
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_5__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_5__c}"></apex:inputField>
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_6__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_6__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_7__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_7__c}"></apex:inputField>
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_8__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_8__c}"></apex:inputField>
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_9_12__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_9_12__c}"></apex:inputField>
+
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_13_16__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_13_16__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_level_17__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_17__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_18__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_18__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_19__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_19__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_20__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_20__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_21__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_21__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_22__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_22__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_23__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_23__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_24__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_24__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_25__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_25__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_26__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_26__c}"></apex:inputField>
+                
+                <apex:inputField value="{!Sales_Rep__c.Price_Level_27_30__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Man_Spec_Rep_Price_Level_27_30__c}"></apex:inputField>
+
+
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Rep Lines" collapsible="false">
+                <apex:inputField value="{!Sales_Rep__c.Quote_Shower_Doors__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Quote_Barn_Doors__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Quote_Wall_Surrounds__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Quote_LED_Mirrors__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Quote_Shower_Bases__c}"></apex:inputField>
+                <apex:inputField value="{!Sales_Rep__c.Quote_Vanities_Kitchens__c}"></apex:inputField>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="System Information" collapsible="false">
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Sales_Rep__c.InActive_Date__c}"></apex:inputField>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionFunction name="leftselectionAction" action="{!leftselectionMethod}" 
+                             reRender="thepanelgrid" immediate="true">
+            <apex:param name="leftpickedvalue" value="">
+            </apex:param>
+        </apex:actionFunction>
+        <apex:actionFunction name="rightselectionAction" action="{!rightselectionMethod}" 
+                             reRender="thepanelgrid" immediate="true">
+            <apex:param name="rightpickedvalue" value="">
+            </apex:param>
+        </apex:actionFunction>
+    </apex:form> 
+    
+    
+    <script>
+    
+    function getSelectValues(select) {
+        var result = "";
+        // var result = [];
+        
+        var options = select && select.options;
+        var opt;
+        for (var i=0, iLen=options.length; i<iLen; i++) {
+            opt = options[i];
+            if (opt.selected) {
+                // result.push(opt.value || opt.text);
+                result += opt.value + ';';
+            }
+        }
+        return result;
+    } 
+    
+    function leftselection(){
+        
+        var element = 
+            document.getElementById("{!$Component.thepage:theform:theblock:thesection:thesectionitem:leftselectedbox}");
+        
+        var selectedValue = getSelectValues(element);
+        console.log(selectedValue);
+        if(selectedValue == '' || selectedValue == null || selectedValue == undefined){
+            alert('Please select at least 1 record for moving.')
+        }else{
+            leftselectionAction(selectedValue);
+        }
+    }
+    
+    function rightselection(){
+        
+        var element = 
+            document.getElementById("{!$Component.thepage:theform:theblock:thesection:thesectionitem:rightselectedbox}");
+        
+        var selectedValue = getSelectValues(element);
+        
+        if(selectedValue == '' || selectedValue == null || selectedValue == undefined){
+            alert('Please select at least 1 record for moving.')
+        }else{
+            rightselectionAction(selectedValue);
+        }
+    }
+    
+    $(function () {
+        
+        var inActiveUsers = new Array();
+        <apex:repeat value="{!inActiveUsers}" var="c">
+            inActiveUsers.push('{!c}');     
+        </apex:repeat>
+        
+        function updateSelectionPanel(){
+            
+            for(var i=0; i<inActiveUsers.length; i++){
+                
+                /*$('option').filter(function() { 
+                        return ($(this).val() == inActiveUsers[i]);
+                    }).css('background-color', 'red');*/
+                    $('option').filter(function() { 
+                        return ($(this).val() == inActiveUsers[i]);
+                    }).css('display', 'none');
+                }
+            }
+            
+            const interval = setInterval(function() { updateSelectionPanel(); }, 500);
+        });
+    
+    
+    </script> 
+    
+    
+</apex:page>

@@ -1,0 +1,50 @@
+<apex:page standardcontroller="Account" extensions="AccountExtension">
+
+    <apex:includeScript value="{!$Resource.jQueryV331}"/>
+    
+      <!-- Resizing the iframe -->
+    <apex:outputPanel rendered="{!hasMessage}">
+        <style>
+            [id="0661I000004fXj0"] {display: none;} /* the same for both sandbox and production */
+        </style>
+    </apex:outputPanel>
+    
+    
+    <!--
+<apex:pageMessage id="msg" severity="error" escape="false" detail="This Customer Account is on Hold. Contact financial department before you do any changes!!!" 
+strength="2" rendered="{!Account.Status__c == 'Hold'}"></apex:pageMessage>-->
+<apex:detail relatedList="true" inlineEdit="true" oncomplete="location.reload();"/>
+
+    
+    <script>
+/*
+        var counter = 0;
+        $('td').filter(function(){
+            if($(this).text() == 'Sales Rep'){
+                counter++;
+                if(counter > 1){
+                    $(this).css("display", "none");
+                    $(this).next().css("display", "none");
+                }
+            }
+        });
+*/
+    </script>
+
+    <script>
+    var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+    $('td').filter(function(){
+        return $(this).text() == 'Account Owner';
+    }).next().find('a').attr('href',comUrl + '/apex/AccountOwnerPage?accId={!Account.Id}&retURL={!Account.Id}');
+
+    </script>
+    <script>
+
+        $('a[href*="/a0v?rlid"]').each(function(){
+            var href = $(this).attr("href"); 
+            $(this).attr("href", href + "&nooverride=1"); 
+        });
+
+    </script>
+
+</apex:page>

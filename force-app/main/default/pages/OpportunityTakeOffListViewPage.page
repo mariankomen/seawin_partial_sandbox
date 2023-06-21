@@ -1,0 +1,247 @@
+<apex:page controller="OpportunityTakeOffListViewCtrl" showChat="false" showQuickActionVfHeader="false" id="thePage">
+    <style>
+        [id="thePage:theForm:pageblockid:thePanel"] td {
+
+            text-align: -webkit-center; 
+            text-align: center;
+        }
+        [id="thePage:theForm:pageblockid:thePanel"] td:first-child {
+
+            text-align: -webkit-left; 
+            text-align: left;
+        }
+        [id="thePage:theForm:pageblockid:thePanel"] td:last-child {
+
+            text-align: -webkit-right; 
+            text-align: right;
+        }
+
+        [id="thePage:theForm:pageblockid:fetchStatus"] {
+
+            position: relative;
+            top: 4px;
+            left: 3px;
+        }
+
+        body {
+
+            -webkit-user-select: none; /* Chrome/Safari */ 
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+ */
+
+            /* The rule below is not implemented in browsers yet */
+            -o-user-select: none;
+
+            /* The rule below is implemented in most browsers by now */
+            user-select: none;
+        }
+
+        [id="thePage:theForm:pageblockid:norecords"]{
+
+            width: 100%;
+            margin-top: 100px;
+            margin-bottom: 30px;
+        }
+
+        [id="thePage:theForm:pageblockid"] .pbBody{
+
+            text-align: right;
+        }
+    </style>
+    <apex:form id="theForm">
+    <apex:pageBlock title="Opportunity Seawin USA Take-Off" id="pageblockid">
+            <apex:pageMessage severity="info" detail="To edit or cancel editing double-click inside Team Take-off column. The new Team Take-off is automatically saved upon selection." 
+            strength="2" rendered="{!Opportunities.size > 0}"></apex:pageMessage>
+            <apex:outputPanel style="width: 100%; text-align: right">
+                <apex:repeat value="{!SerchAlphabet}" var="sa">
+                    <apex:commandLink action="{!Display}" reRender="pageblockid" value="{!sa}" 
+                    style="border-right: 1px solid #cfcece;padding: 0 5px;color: #333435;font-size: 11px;">
+                        <apex:param value="{!sa}" name="alpha" assignTo="{!SearchVar}"/>
+                        <apex:param value="clicked" name="alphabetClicked" />
+                    </apex:commandLink>
+                </apex:repeat>
+            </apex:outputPanel>
+            <apex:pageBlockButtons location="top" id="theButton">
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable id="opportunitylistview" value="{!Opportunities}" var="rec" 
+            rendered="{!Opportunities.size > 0}" style="text-align: left;">
+                <apex:column HeaderValue="Action" width="55"> 
+                    <apex:outputLink style="color:#015ba7;" value="{!URLFOR($Action.Opportunity.Edit,rec.Id,[retURL=IF($User.ContactId != null, 
+                        '/sales/', '/') + 'apex/OpportunityTakeOffListViewPage?sfdc.tabName=' + $CurrentPage.parameters.sfdc.tabName],true)}" 
+                    onclick="return window.confirm('Are you sure?');">Edit</apex:outputLink>
+                    <apex:outputText value=" | "></apex:outputText> 
+                    <apex:outputLink style="color:#015ba7;" value="{!URLFOR($Action.Opportunity.Delete,rec.Id,[retURL=IF($User.ContactId != null, 
+                        '/sales/', '/') + 'apex/OpportunityTakeOffListViewPage?sfdc.tabName=' + $CurrentPage.parameters.sfdc.tabName],true)}" 
+                    onclick="return window.confirm('Are you sure?');">Del</apex:outputLink>
+                    
+                </apex:column>
+                <apex:column headerValue="Opportunity Name">
+                    <apex:outputLink value="{!IF($User.ContactId != null, '/sales/' + rec.id, '/'+rec.id)}">{!rec.Name}
+                    </apex:outputLink>
+                </apex:column>
+                <apex:column headerValue="Account Name">
+                    <apex:outputField value="{!rec.AccountId}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Created Date">
+                    <apex:outputField value="{!rec.CreatedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Quote Due Date">
+                    <apex:outputField value="{!rec.Quote_Due__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Lead Source">
+                    <apex:outputField value="{!rec.LeadSource}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Award/Owner">
+                    <apex:outputField value="{!rec.Awarded_Owner__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Price Level">
+                    <apex:outputField value="{!rec.Price_Level__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Amount">
+                    <apex:outputField value="{!rec.Amount}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Sent to Take-Off Team">
+                    <apex:outputField value="{!rec.Sent_to_TakeOff_Team__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Sales Rep/Team">
+                    <apex:outputField value="{!rec.Sales_Rep_O__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Owner Full Name">
+                    <apex:outputField value="{!rec.Owner_Custom__c}"></apex:outputField>
+                </apex:column>
+                <apex:column id="teamtakeoff" headerValue="Team Take-off"
+                ondblclick="RerenderActionFunction(this.id);" style="width: 13%">
+                    <apex:outputPanel >
+                        <apex:image value="/img/func_icons/util/pencil12.gif" 
+                        style="background-repeat: no-repeat; float: right" 
+                        id="teamtakeoffimage"/>
+                        <apex:outputField value="{!rec.Team_Take_off__c}" id="teamtakeoffoutputfield" 
+                        style="float: right"></apex:outputField>
+                        <apex:selectList value="{!rec.Team_Take_off__c}"
+                        styleClass="teamtakeoffselectclass" 
+                        multiselect="false" 
+                        size="1" 
+                        id="teamtakeoffselectfield"
+                        style="display: none"
+                        onchange="UpdateTheTeamTakeOffFunction(String(this.id), String('{!rec.id}'), String(this.value))">
+                            <apex:selectOptions value="{!TeamTakeOffList}"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel id="loaderpanel" style="float: right; margin-top: 1px; display: none;">
+                        <img src="/img/loading.gif" class="img-responsive" />
+                    </apex:outputPanel>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:pageBlockSection rendered="{!Opportunities.size == 0}" id="norecords">
+                    <apex:outputText value="No records found." id="norecordsoutput"></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:actionFunction name="refreshPageSize" action="{!refreshPageSize}" status="fetchStatus" reRender="pageblockid"/>
+            <apex:panelGrid columns="12" style="width: 100%" id="thePanel"> 
+                <apex:panelGroup id="leftGroup">
+                    <apex:selectList value="{!size}" multiselect="false" size="1" onchange="refreshPageSize();">
+                        <apex:selectOptions value="{!paginationSizeOptions}"/>
+                    </apex:selectList>
+                </apex:panelGroup>
+                <apex:panelGroup id="midGroup">     
+                    <apex:commandButton status="fetchStatus" reRender="pageblockid" value="First" action="{!setCon.first}" 
+                    disabled="{!!setCon.hasPrevious}" title="First Page"/> 
+                    <apex:commandButton status="fetchStatus" reRender="pageblockid" value="Previous" action="{!setCon.previous}" 
+                    disabled="{!!setCon.hasPrevious}" title="Previous Page"/> 
+                    <apex:commandButton status="fetchStatus" reRender="pageblockid" value="Next" action="{!setCon.next}" 
+                    disabled="{!!setCon.hasNext}" title="Next Page"/> 
+                    <apex:commandButton status="fetchStatus" reRender="pageblockid" value="Last" action="{!setCon.last}" 
+                    disabled="{!!setCon.hasNext}" title="Last Page"/>
+                    <apex:actionStatus id="fetchStatus" style="position: relative; top: 4px; left: 3px">
+                        <apex:facet name="start">
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:panelGroup>
+                <apex:panelGroup id="rightGroup" style="font-weight: bold"> 
+                    <apex:outputText >Records {!IF( noOfRecords > 0, TEXT((setCon.pageNumber * size) + 1 - size) & '-' & TEXT(IF((setCon.pageNumber * size) > noOfRecords, noOfRecords,
+                        (setCon.pageNumber * size ))), '0')} of {!noOfRecords}
+                    </apex:outputText> 
+                </apex:panelGroup>
+            </apex:panelGrid>            
+            <apex:actionFunction name="UpdateTheTeamTakeOffAction" action="{!UpdateTheTeamTakeOff}" 
+            reRender="teamtakeoff">
+                <apex:param name="oppId" value="" />
+                <apex:param name="teamId" value="" />
+            </apex:actionFunction>
+        </apex:pageBlock>
+    </apex:form>
+    
+        <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+        <!--<apex:enhancedList type="Opportunity" height="300" 
+                       rowsPerPage="10" 
+                       id="takeOffListView" 
+                       listId="00B1I000008DMbI"
+                       customizable="true"/>-->
+    <script>
+
+        function UpdateTheTeamTakeOffFunction(elementId, oppId, selectVal){
+
+            var lastIndexOf = elementId.lastIndexOf(':');
+            var PartialId = elementId.substr(0, lastIndexOf);
+
+            var LoaderTeamTakeOff = PartialId + ":loaderpanel";
+
+            document.getElementById(LoaderTeamTakeOff).style.display = "";
+
+            UpdateTheTeamTakeOffAction(oppId, selectVal);
+
+        }
+        
+        function RerenderActionFunction(elementId){
+
+            var lastIndexOf = elementId.lastIndexOf(':');
+            var PartialId = elementId.substr(0, lastIndexOf);
+
+            var TeamTakeOffOutputId = PartialId + ":teamtakeoffoutputfield";
+
+            var TeamTakeOffImageId = PartialId + ":teamtakeoffimage";
+
+            var LoaderTeamTakeOff = PartialId + ":loaderpanel";
+
+            // team take off output field show and hide
+            if(document.getElementById(TeamTakeOffOutputId).style.display == ''){
+
+                document.getElementById(TeamTakeOffOutputId).style.display = "none";
+            }else{
+
+                document.getElementById(LoaderTeamTakeOff).style.display = "none";
+
+                document.getElementById(elementId).style.width = "13%";
+
+                document.getElementById(TeamTakeOffOutputId).style.display = "";
+                document.getElementById(TeamTakeOffImageId).style.display = ""; 
+            }
+
+            // team take off selectlist show and hide
+
+            var TeamTakeOffSelect = PartialId + ":teamtakeoffselectfield";
+            
+            if(document.getElementById(TeamTakeOffSelect).style.display == ''){
+
+                document.getElementById(TeamTakeOffSelect).style.display = "none";
+            }else{
+
+                document.getElementById(elementId).style.width = "17%";
+
+                document.getElementById(TeamTakeOffSelect).style.display = "";
+                document.getElementById(TeamTakeOffImageId).style.display = "none";
+            }
+        }
+    
+    </script>
+    <script>
+        $(document).on("click","a", function (e) {
+            console.log($(this).parent().attr("id"));
+            var linkId = $(this).parent().attr("id");
+            if(linkId.toLowerCase().indexOf("teamtakeoffoutputfield") >= 0){
+
+                e.preventDefault();
+            }
+        });
+    </script>
+</apex:page>

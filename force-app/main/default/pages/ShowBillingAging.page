@@ -1,0 +1,84 @@
+<apex:page controller="ShowBillingAging" doctype="html-5.0">
+    <style>
+        .highcharts-credits{
+            display :none;
+        }
+    </style>
+
+    <apex:outputPanel rendered="{!IF(($User.Alias != 'gshilman' && $User.Alias != 'Axion'), True, False)}">
+        <apex:pageMessage title="Insufficient privileges" summary="You don't have access to this page" severity="warning" strength="1" />
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!IF(($User.Alias = 'gshilman' || $User.Alias = 'Axion'), True, False)}">
+        <div id="container"></div>
+    </apex:outputPanel>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+   
+    <script>
+        var labelArray = [];
+        var data = [];
+        <apex:repeat value="{!mapBillingAgeToBalanceDue}" var="key">
+            labelArray.push("{!key}");            
+            data.push({
+                y: {!mapBillingAgeToBalanceDue[key]},
+                key: '{!key}'
+           });
+        </apex:repeat>
+        
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column'
+            },
+        
+            title: {
+                text: ''
+            },
+        
+            xAxis: {
+                categories: labelArray ,
+                title : {
+                    text: 'Billing Ages (in Days)'
+                }
+            },
+        
+            yAxis: {
+                allowDecimals: false,
+                min: 0,
+                title: {
+                    text: 'Outstanding Billing Amount ($)'
+                }
+            },
+        
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.x + '</b><br/>' +
+                        this.series.name + '<br/>' +
+                        'Total: $' + this.y;
+                }
+            },
+        
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    point: {
+                        events: {
+                            click: function () {
+                                var listOfRegions = "{!lstRegion}";
+                                listOfRegions = listOfRegions.replace(/[.*+?^${}()|[\]\\]/g, '');
+                                window.open('/' + "{!reportId}" + '?pv3='+listOfRegions+'&pv2='+this.options.key, '_blank');
+                            }
+                        }
+                    }
+                }
+            },
+        
+            series: [{
+                showInLegend: false, 
+                name: '',
+                data: data 
+            }]
+        });
+    </script>
+</apex:page>

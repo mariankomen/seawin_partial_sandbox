@@ -1,0 +1,13 @@
+<apex:page standardcontroller="Optional_Products_Opportunity__c" extensions="EditOptionalOLIExtension" action="{!EditProcess}"
+           tabStyle="{!IF(tabname<>null,tabname,'Opportunity')}">
+     <apex:sectionHeader title="{!title}" subtitle="Edit Optional Products Opportunity"></apex:sectionHeader>
+  	
+    <apex:form >
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be edited."
+                          severity="error" rendered="{!EditErrorMsgOpp}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+</apex:page>

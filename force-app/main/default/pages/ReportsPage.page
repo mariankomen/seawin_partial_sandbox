@@ -1,0 +1,57 @@
+<apex:page controller="ReportsPageController" action="{!PageAction}">
+  <style>
+      body {
+          margin: 0 !important;
+      }
+  </style>
+  <apex:pageblock title="Reports">
+      <apex:outputLink rendered="{!$Profile.Name == 'System Administrator'}" 
+      value="{!IF(IsSandbox, communityUrl + '/00O59000000O9dk?pv4='&$User.Chosen_GL__c, communityUrl + '/00O8W000006allWUAQ?pv4='&$User.Chosen_GL__c)}" 
+                       target="_blank">Unpaid Sales Order Commissions with Fully Paid Sales Orders
+          <span><img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="A report showing all sales order commissions which are not paid with a fully paid sales order."/></span>
+    </apex:outputLink>
+    <apex:outputLink rendered="{!Contains($Profile.Name, 'Inside Sales')}" value="{!IF(IsSandbox, 
+      communityUrl + '/00O59000000O9lT?pv0='&$User.Full_Name__c&'&pv2='&$User.Full_Name__c, 
+      communityUrl + '/00O8W000006alvqUAA')}" 
+      target="_blank">Commissions Due<span>
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="A report showing all sales order commissions which are not paid with a fully paid sales order for the user {!usr.name}."/>
+        </span>
+    </apex:outputLink>
+    <br/>
+    <br/>
+    <div style="background-color: #d6dcdc; height: 22px; padding-left: 3px; line-height: 25px; 
+                {!IF(Contains($Profile.Name, 'Inside Sales'), '', 'display: none;')}">
+    Commisison Pending Payments <span style="position: relative; bottom: 5px; cursor: pointer;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart shows all possible sales order commissions for sales orders where no billing is done or billing is done but no payment is received for the user {!usr.name}."/>
+        </span></div>
+    <apex:pageBlockTable value="{!wrap}" var="w" 
+                         rendered="{!Contains($Profile.Name, 'Inside Sales') && wrap.size > 0}">
+        <apex:column headerValue="Sales Order">
+            <apex:outputLink value="{!communityURL}/{!w.so.id}">{!w.so.name}</apex:outputLink>
+        </apex:column>
+        <apex:column headerValue="Commission Due">
+            <apex:outputText value="{0,number, Currency}">
+                <apex:param value="{!w.due}"/>
+            </apex:outputText>
+        </apex:column>
+        <apex:column headerValue="Commission Holder">
+            <apex:outputField value="{!w.so.ownerId}"/>
+        </apex:column>
+        <apex:column headerValue="Created Date">
+            <apex:outputField value="{!w.so.CreatedDate}"/>
+        </apex:column>
+    </apex:pageBlockTable>
+    <apex:pageMessage severity="info" summary="There are no commissions pending." rendered="{!Contains($Profile.Name, 
+                                                                                            'Inside Sales') && wrap.size == 0}">
+      </apex:pageMessage>
+  </apex:pageblock>
+  <script>
+    
+    // production id is 0661I000004fZnM
+    // sandbox id is 06659000000GnaK
+    window.parent.document.getElementById("{!IF(IsSandbox, '06659000000GnaK', '0661I000004fZnM')}").height = '{!sizeOfTable}px';  
+  </script>
+</apex:page>

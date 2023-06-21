@@ -1,0 +1,219 @@
+<apex:page standardcontroller="AcctSeedERP__Purchase_Order__c" 
+extensions="PurchaseOrderPageExtension" sidebar="false" id="page">
+    
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js"/>
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+    
+    <apex:pageMessage severity="error" escape="false" detail="This Customer Account is on Hold. Contact financial department before you do any changes!!!" strength="2" rendered="{!AcctSeedERP__Purchase_Order__c.Sales_Order__r.AcctSeedERP__Customer__r.Status__c == 'Hold'}"></apex:pageMessage>
+    <apex:form id="IntransitMessage">
+        <apex:outputPanel rendered="{!ShowIntransitMessage}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                                Shipped Date updated.
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="IntransitMessage" style="float: right;" action="{!hideIntransitMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <apex:form id="infoform">
+        <apex:outputPanel rendered="{!showChangeMessage}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                                {!ChangeMessage}
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoform" style="float: right;" action="{!hideChangeMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <apex:detail relatedList="true" inlineEdit="true" id="detail"
+    relatedListHover="true" oncomplete="location.reload();"/>    
+    
+    
+    <apex:form >
+        <apex:actionFunction name="removeHelperValue" action="{!removeHelperValue}" rerender=""/>
+        <apex:actionFunction name="MarkInTransit" action="{!MarkInTransit}" rerender=""/>
+        
+        
+        
+        
+        
+    </apex:form>
+    <script>
+        if("{!po.Status_Helper__c}" != "") removeHelperValue();
+    </script>
+    
+    <script src="/soap/ajax/50.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/50.0/apex.js" type="text/javascript"></script>
+    
+    <script>
+        
+        $(document).ready(function() {
+        
+        var GLVar1 = '{!LEFT(AcctSeedERP__Purchase_Order__c.GL_Account_Variable_1__c,15)}';
+        
+        GLAccHref = '{!baseUrl}/'+GLVar1;
+        var GLHref = $('a[href^="'+GLAccHref+'"]');
+        
+        //Replace Record type default href value with our custom one
+        $('a[href*="my.salesforce.com/setup/ui/recordtypeselect.jsp?"]').each(function(){
+            
+            var url = '/apex/PurchaseOrderRecordTypePage?ent=AcctSeedERP__Purchase_Order__c&';
+            url += 'POID={!AcctSeedERP__Purchase_Order__c.Id}&GLVariable1='+GLHref[0].text;
+            url += '&recTypeId={!AcctSeedERP__Purchase_Order__c.RecordType}&';
+            url += 'retURL={!AcctSeedERP__Purchase_Order__c.Id}&save_new_url=/apex/AddPurchaseOrder?';
+            url += 'retURL=/{!AcctSeedERP__Purchase_Order__c.Id}&nooverride=1';        
+            $(this).attr("href", url); 
+        });
+    });
+
+    </script>
+    <script>
+
+    function Calculate_Fields(){
+
+        var AccountName = $("#CF00N1I00000KXFqCpage_detail").text();
+        
+        var AccountId = $("#CF00N1I00000KXFqCpage_detail_lkid").val();
+
+       // if($("#CF00N1I00000KXFqCpage_detail_ileinner").attr('class') == "inlineEditModified"){
+            if(AccountId != ""){
+
+                sforce.connection.sessionId = '{!$Api.Session_ID}';
+                var query = "Select Id, Name, Contact_Person__c, Contact_Person__r.Name, Contact_Person__r.MailingStreet," +
+                "Contact_Person__r.MailingCity,Contact_Person__r.MailingState," +
+                "Contact_Person__r.MailingPostalCode,Contact_Person__r.MailingCountry from Account " + 
+                "where id = " + "'" + AccountId + "'";
+                var result = sforce.connection.query(query);
+                var records = result.getArray("records");
+
+                var IDs = "#CF00N1I00000KXFq7page_detail_ileinner,";
+                IDs += "#00N1I00000KXFqBpage_detail_ileinner,"; // street
+                IDs += "#00N1I00000KXFq6page_detail_ileinner,"; // city
+                IDs += "#00N1I00000KXFqApage_detail_ileinner,"; // state
+                IDs += "#00N1I00000KXFq9page_detail_ileinner,"; // postal code
+                IDs += "#00N1I00000KXFq8page_detail_ileinner"; // country
+
+                var editIDs = "#CF00N1I00000KXFq7page_detail_ileinneredit,";
+                editIDs += "#00N1I00000KXFqBpage_detail_ileinneredit,";
+                editIDs += "#00N1I00000KXFq6page_detail_ileinneredit,";
+                editIDs += "#00N1I00000KXFqApage_detail_ileinneredit,";
+                editIDs += "#00N1I00000KXFq9page_detail_ileinneredit,";
+                editIDs += "#00N1I00000KXFq8page_detail_ileinneredit";
+
+                var contactperson = '';
+                var contactpersonname = '';
+                var street = '';
+                var city = '';
+                var state = '';
+                var postalcode = '';
+                var country = '';
+
+                if(records[0].Contact_Person__c != null){
+
+                    contactperson = records[0].Contact_Person__c;
+                    contactpersonname = records[0].Contact_Person__r.Name;
+
+                    street = records[0].Contact_Person__r.MailingStreet != null ? 
+                    records[0].Contact_Person__r.MailingStreet : '';
+
+                    city = records[0].Contact_Person__r.MailingCity != null ? 
+                    records[0].Contact_Person__r.MailingCity : '';
+
+                    state = records[0].Contact_Person__r.MailingState != null ? 
+                    records[0].Contact_Person__r.MailingState : '';
+
+                    postalcode = records[0].Contact_Person__r.MailingPostalCode != null ? 
+                    records[0].Contact_Person__r.MailingPostalCode : '';
+
+                    country = records[0].Contact_Person__r.MailingCountry != null ? 
+                    records[0].Contact_Person__r.MailingCountry : '';
+
+                }
+
+                var valuesMap = {'#CF00N1I00000KXFq7page_detail':contactpersonname,
+                '#00N1I00000KXFqBpage_detail':street,
+                '#00N1I00000KXFq6page_detail':city,
+                '#00N1I00000KXFqApage_detail':state,
+                '#00N1I00000KXFq9page_detail':postalcode,
+                '#00N1I00000KXFq8page_detail':country}
+
+                var keysMap = {'#CF00N1I00000KXFq7page_detail':'#CF00N1I00000KXFq7page_detail_ileinner',
+                '#00N1I00000KXFqBpage_detail':'#00N1I00000KXFqBpage_detail_ileinner',
+                '#00N1I00000KXFq6page_detail':'#00N1I00000KXFq6page_detail_ileinner',
+                '#00N1I00000KXFqApage_detail':'#00N1I00000KXFqApage_detail_ileinner',
+                '#00N1I00000KXFq9page_detail':'#00N1I00000KXFq9page_detail_ileinner',
+                '#00N1I00000KXFq8page_detail':'#00N1I00000KXFq8page_detail_ileinner'}
+                
+
+                $(IDs).on( "dblclick", function() {
+
+                        for(var key in keysMap){
+
+                            $(key).val(valuesMap[key]);
+                            $(keysMap[key]).text(valuesMap[key]);
+
+                            if(key == "#CF00N1I00000KXFq7page_detail"){
+                                $("#CF00N1I00000KXFq7page_detail_lkid").val(contactperson);
+                            }
+
+                        }
+                        
+                        setTimeout(function() {
+                            $(editIDs).css('display', 'none');
+                            $(IDs).css('display', 'block');
+                            $(IDs).removeClass("inlineEditModified");
+
+                            
+                            $(IDs).find("a.inlineEditUndoLink").css('display', 'none');
+
+                            $(IDs).each(function( index ) {
+                                if($( this ).text() == "Deleted"){
+                                    $( this ).text('');
+                                }
+                            });
+                        }, 50);
+                        
+                });
+                $(IDs).trigger( "dblclick" );
+            }
+    }
+    $('body').on('DOMSubtreeModified', '#CF00N1I00000KXFqCpage_detail_ileinner', function(){
+
+            setTimeout(function() { Calculate_Fields(); }, 50);
+    });
+    </script> 
+
+    <script>
+        if({!ShowIntransitMessage}) MarkInTransit();
+    </script>
+    
+</apex:page>

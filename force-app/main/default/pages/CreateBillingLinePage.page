@@ -1,0 +1,86 @@
+<apex:page standardController="AcctSeed__Billing_Line__c" extensions="CreateBillingLineExtension" action="{!pageAction}">
+    <apex:sectionHeader title="Billing Line Edit" subtitle="New Billing Line"/>
+    
+    <apex:form >
+        
+        <style>
+            .tertiaryPalette{
+            margin-left:-12px;
+            margin-right:-12px;
+            background-image: url(/img/alohaSkin/opacity75.png);
+            color:#000;
+            
+            }
+            
+            
+            .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader {
+            bborder-top: 0;
+            color: black;
+            }
+        </style>
+        
+        <apex:pageBlock >
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:pageBlockButtons title="titl" >
+                <apex:commandButton value="Save" action="{!Save}" rendered="{!!showError}"/>
+                <apex:commandButton value="Save & New" action="{!SaveAndNew}" rendered="{!!showError}"/>
+                <apex:commandButton value="Cancel" action="{!Cancel}"/>
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection title="information" collapsible="false" rendered="{!!showError}"></apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!!showError}">
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Date__c}"/>
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Hours_Units__c}" />
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Billing__c}"/>
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.Size_Custom__c}" id="txtSize"/>
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Product__c}" onchange="getProduct(value)" id="txtProduct"/>
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Rate__c}" id="txtUnitPrice"/>  
+                <apex:inputTextarea value="{!AcctSeed__Billing_Line__c.Item_Description__c}" id="txtDescription"
+                                    rows="8" cols="28"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Accounting Information" collapsible="false" rendered="{!!showError}" ></apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!!showError}">
+                <apex:inputField value="{!line.AcctSeed__GL_Account_Variable_1__c}"/>
+                <!--<apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__GL_Account_Variable_1__c}"/>-->
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Expense_GL_Account__c}" />
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Revenue_GL_Account__c}"/>
+                <apex:inputField value="{!AcctSeed__Billing_Line__c.AcctSeed__Inventory_GL_Account__c}"/>
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+        
+    </apex:form>
+    <apex:includeScript value="{!$Resource.jQueryV331}"/>
+    <script src="/soap/ajax/50.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/50.0/apex.js" type="text/javascript"></script>
+    
+    <script>
+    
+    function getProduct(prod){
+        
+        debugger;
+        
+        if (prod !== "") {
+            var prodId = $("[id$=txtProduct_lkid]").val();//txtSize
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            var query = "Select Id, Size__c, AcctSeed__Unit_Cost__c, Description from Product2 " + 
+                "where id = " + "'" + prodId + "'";
+            var result = sforce.connection.query(query);
+            var records = result.getArray("records");
+            
+            if(typeof records[0].Size__c !== "undefined")
+                $("[id$=txtSize]")[0].value = records[0].Size__c;    
+            
+            if(typeof records[0].Size__c !== "undefined")
+                $("[id$=txtUnitPrice]")[0].value = records[0].AcctSeed__Unit_Cost__c;    
+            
+            if(typeof records[0].Size__c !== "undefined")
+                $("[id$=txtDescription]")[0].value = records[0].Description;    
+            
+            
+        }
+    }
+    
+    </script>
+</apex:page>

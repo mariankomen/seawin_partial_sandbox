@@ -1,0 +1,188 @@
+<template>
+
+
+    <template if:true={show_spinner}>
+        <div class="exampleHolder">
+            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+        </div>
+    </template>
+    
+    <template if:true={show_form}>
+        <lightning-record-form
+            object-api-name="Master_Product__c"
+            fields={fields}
+            onsuccess={handleRecordCreated}
+            columns="2"
+            density="comfy"
+            >
+            
+        </lightning-record-form>
+    </template>
+    
+
+
+    <!-- <div>
+        <template for:each={size_array} for:item="item">
+            <div key={item.index} style="display: flex;">
+                <lightning-input data-index={item.index} onchange={sizeInputHandler} placeholder="Enter size: "></lightning-input>
+                <lightning-input data-index={item.index} onchange={sizeInputAttributeHandler} placeholder="Enter size attribute: "></lightning-input>
+
+            </div>
+        </template>
+        <lightning-button variant="brand" label="Add row" title="Add row" onclick={addSizeRow} class="slds-m-left_x-small"></lightning-button>
+        <lightning-button variant="brand" label="Test" title="Test" onclick={testExecute} class="slds-m-left_x-small"></lightning-button>
+        
+    </div> -->
+    <!-- <div style="display: flex; justify-content: flex-start; flex-wrap: wrap;"> -->
+
+    <template if:true={show_properties}>
+        <div class="main_block">
+
+            <template for:each={property_fields} for:item="field">
+                <div key={field.apiname} >
+                    <template if:true={field.isText}>
+                        <template for:each={field.inputs} for:item="input_item">
+                            <div style="display:flex; width: 50%; justify-content: space-between;" key={input_item.index}>
+                                <lightning-input data-fieldapi={field.apiname} style="width: 24%;" label={field.apiname} data-index={input_item.index} onchange={handleTextValue} placeholder={field.placeholder}></lightning-input>
+                                <lightning-input data-fieldapi={field.apiname} style="width: 24%;" label="Abbreviation" data-index={input_item.index} onchange={handleTextAttribute} placeholder={field.placeholder_attr}></lightning-input>
+                                <lightning-input data-fieldapi={field.apiname} style="width: 24%;" label="Name keyword" data-index={input_item.index} onchange={handleNameKeywordAttribute} placeholder={field.placeholder_name}></lightning-input>
+                                <lightning-input data-fieldapi={field.apiname} style="width: 24%;" label="Description keyword" data-index={input_item.index} onchange={handleDescriptionKeywordAttribute} placeholder={field.placeholder_desc}></lightning-input>
+                            </div>
+                        </template>
+                        
+                        <div style="margin-top: 7px;">
+                            <lightning-button variant="brand" label="New Row" title="Add row" data-field={field.apiname} onclick={addTextRow} class="slds-m-left_x-small" style="margin: 0;"></lightning-button>
+                        </div>
+                    </template>
+
+                    <template if:true={field.isPicklist}>
+                        <div key={field.apiname} style="display: flex;">
+
+                            <lightning-dual-listbox name="languages"
+                                                data-field = {field.apiname}
+                                                label= {field.label}
+                                                source-label="Available"
+                                                selected-label="Selected"
+                                                options={field.picklist_values}
+                                                style="width: 600px !important;"
+                                                onchange={handlePicklistChange}></lightning-dual-listbox>
+            
+                                <div style="margin-top: 2.8rem;">
+                                    <template for:each={field.inputs} for:item="input_item">
+                                        <div key={input_item.value} style="display:flex; width: 125%; justify-content: space-between;">
+                                            <lightning-input data-field={field.apiname} class="attr_input" data-pickvalue={input_item.value} label="Abbreviation" onchange={picklistAttributeHandler} placeholder={input_item.placeholder}></lightning-input>                
+                                            <lightning-input data-field={field.apiname} class="attr_input" data-pickvalue={input_item.value} label="Name keyword" onchange={picklistNameKeywordHandler} placeholder={input_item.placeholder}></lightning-input>                
+                                            <lightning-input data-field={field.apiname} class="attr_input" data-pickvalue={input_item.value} label="Description keyword" onchange={picklistDescriptionKeywordHandler} placeholder={input_item.placeholder}></lightning-input>                
+                                        </div>
+                                    </template>
+                                </div>                                    
+                        </div>
+                    </template>
+
+                    <template if:true={field.isCheckbox}>
+                        <template for:each={field.inputs} for:item="input_item">
+                            <div style="display:flex;" key={input_item.index}>
+
+                                <lightning-input type="checkbox" data-fieldapi={field.apiname} data-index={input_item.index} onchange={handlCheckboxValue}></lightning-input>
+                                <lightning-input data-fieldapi={field.apiname} data-index={input_item.index} onchange={handleTextAttribute} placeholder={field.placeholder_attr}></lightning-input>
+                            </div>
+                        </template>
+                        <template if:false={field.two_checkboxes}>
+                            <lightning-button variant="brand" label="New Row" title="Add row" data-field={field.apiname} onclick={addCheckboxRow} class="slds-m-left_x-small"></lightning-button>
+                        </template>
+                    </template>
+                </div>
+                
+
+            </template>
+
+            <div style="display: flex; align-items:center; justify-content: center;">
+                <lightning-button variant="brand" label="Preview products" title="Preview" onclick={previewExecute} class="slds-m-left_x-small"></lightning-button>
+            </div>
+            <template if:true={show_predefined_table}>
+
+                <lightning-button variant="brand" label="Add Column" title="Preview" onclick={showAddColumn} class="slds-m-left_x-small"></lightning-button>
+                
+
+                <lightning-datatable
+                                    key-field="rowId"
+                                    data={predefined_table_data}
+                                    columns={predefined_table_columns}
+                                    show-row-number-column="true"
+                                    selected-rows={preselected_rows} 
+                                    onrowaction={handleRowAction}
+                ></lightning-datatable>
+
+                <div style="display:flex; justify-content:center; align-items:center;">
+                    <lightning-button variant="brand" label="Insert Products" title="Preview" onclick={insertSelectedRows} class="slds-m-left_x-small"></lightning-button>
+                </div>
+            </template>
+
+            <template if:true={show_modal_lead_edit}>
+                <section  class="slds-modal slds-fade-in-open" style="background-color: rgb(0,0,0,0.8);">
+                    <div class="slds-modal__container container_edit">
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModalEditLeadAction}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small" ></lightning-icon>
+                            </button>
+                            <h2 class="slds-text-heading_medium slds-hyphenate">Edit Properties</h2>
+                        </header>
+        
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <template for:each={editable_row_fields} for:item="field">
+                                <div key={field.apiname}>
+                                    <template if:true={field.isPicklist}>
+                                        <lightning-combobox
+                                                            name="progress"
+                                                            label={field.label}
+                                                            value={field.value}
+                                                            data-field={field.apiname}
+                                                            placeholder="Select Progress"
+                                                            options={field.picklist_values}
+                                                            onchange={handleEditPicklistChange} ></lightning-combobox>
+                                    </template>
+
+                                    <template if:true={field.isText}>
+                                        <lightning-input type="text" data-field={field.apiname} label={field.label} value={field.value} onchange={handleEditChange}></lightning-input>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button variant="brand" label="Save" title="Save"  onclick={saveModalEdit}></lightning-button>
+                            <lightning-button variant="brand" label="Close" title="Close"  onclick={closeModalEditLeadAction}></lightning-button>
+                    </footer> 
+                    </div>
+                </section>
+            </template>
+
+            <template if:true={show_add_column_popup}>
+                <section  class="slds-modal slds-fade-in-open" style="background-color: rgb(0,0,0,0.8);">
+                    <div class="slds-modal__container container_edit" >
+                        <header class="slds-modal__header">
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideAddColumn}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small" ></lightning-icon>
+                            </button>
+                            <h2 class="slds-text-heading_medium slds-hyphenate">Add Row</h2>
+                        </header>
+        
+                        <div class="slds-modal__content slds-p-around_medium" style="height: 300px;">
+                            <lightning-combobox
+                                                            name="progress"
+                                                            label='Select Additional Column'
+                                                            placeholder="Select Column"
+                                                            options={available_additional_columns}
+                                                            onchange={handleAdditionalColumnPicklistChange} ></lightning-combobox>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button variant="brand" label="Save" title="Save"  onclick={addNewColumn}></lightning-button>
+                            <lightning-button variant="brand" label="Close" title="Close"  onclick={hideAddColumn}></lightning-button>
+                    </footer> 
+                    </div>
+                </section>
+            </template>
+        </div>
+    </template>
+
+    
+</template>

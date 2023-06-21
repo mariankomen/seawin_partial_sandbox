@@ -1,0 +1,141 @@
+<apex:page controller="AccountOwnerPageExtension" tabStyle="Account">
+    
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js" />
+
+    <style>
+        body .bPageBlock .detailList tr td, body 
+        .bPageBlock .detailList tr th, body 
+        table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+        
+        border: none;
+        
+        }
+        
+        .pbSubheader {
+        background-image: url(/img/alohaSkin/opacity75.png);
+        border-width: 0;
+        color: #000;
+        padding: 4px 16px !important;
+        border-top: 1px solid #fff;
+        }
+        
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+        margin: 0;
+        }
+        
+        .requiredLegend {
+        background-color: transparent;
+        }
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader h3 {
+        font-size: 1.2em;
+        color: black;
+        }
+        
+        /* blue required */
+        .brequiredLegend {
+        background-color: transparent;
+        }
+        .brequiredLegend {
+        padding: 0 2px;
+        background-color: transparent;
+        font-weight: normal;
+        color: #000;
+        }
+        
+        .brequiredExampleOuter {
+        margin: 0 .2em 0 .3em;
+        padding: 1px 0;
+        }
+        
+        .brequiredExample {
+        border-left: 3px solid blue;
+        font-size: 80%;
+        vertical-align: 1px;
+        width: 100%;
+        }
+        .bPageBlock .bluerequiredInput {
+        position: relative;
+        height: 100%;
+        }   
+        .bPageBlock .bluerequiredInput .bluerequiredBlock {
+        background-color: blue;
+        position: absolute;
+        left: -4px;
+        width: 3px;
+        top: 1px;
+        bottom: 1px;
+        }
+        textarea {width: 62%;}
+    </style>
+
+    <apex:sectionHeader title="Ownership Edit" subtitle="{!acc.Name}"></apex:sectionHeader>
+    <p>This screen allows you to transfer an account from one user to another. When you transfer ownership of an account, the new owner will also gain ownership of the following records related to the transferred account:</p>
+
+    <ul>
+        <li>all notes and open activities for this account owned by you</li>
+        <li>all contacts within the account owned by you, including all related notes and open activities owned by you</li>
+        <li>all opportunities (including closed opportunities if you select the Transfer closed opportunities checkbox below) within the account owned by you, including all related notes and open activities owned by you</li>
+    </ul>
+
+    <p>Note that completed activities will not be transferred.</p>
+    <p>The new owner might need to edit sharing.</p>
+
+    <apex:form id="myForm">
+        <apex:PageBlock id="PageBlock">
+
+            <apex:pageBlockSection columns="1" collapsible="false">
+
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                        <span class="requiredLegend brandTertiaryFgr">
+                            <span class="requiredExampleOuter">
+                                <span class="requiredExample">&nbsp;</span>
+                            </span>
+                            <span class="requiredText"> = Required Information.</span>
+                        </span>
+                    </span>
+                    <h3>Select New Owner<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessages ></apex:pageMessages>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Transfer this account</apex:outputLabel>
+                    <apex:outputLabel >{!acc.Name}</apex:outputLabel>
+                </apex:pageBlockSectionItem>
+
+                <apex:inputField label="Owner" value="{!acc.Owner_Custom__c}" required="true">
+                    <apex:actionSupport event="onchange" action="{!setOptionValues}" reRender="PageBlock">
+                    </apex:actionSupport>
+                </apex:inputField>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Sales Rep/Team</apex:outputLabel>
+                    <apex:selectList value="{!selected}" size="10" style="width:200px" >
+                        <apex:selectOptions value="{!AllOptionValues}">
+                        </apex:selectOptions>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!SalesRepMissing}">
+                        <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                        <apex:outputText style="color: red !important;" value="Please also select a Sales Rep/Team."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+
+            </apex:pageBlockSection>
+
+
+            <div class="pbBottomButtons">
+                <div style="margin-left: 410px;margin-top: 10px;">
+                    <apex:commandButton value="Cancel" action="{!cancel}" immediate="true"/>
+                    <apex:commandButton value="Continue" action="{!saveOverride}"/>
+                </div>
+            </div>
+
+
+        </apex:PageBlock>
+
+    </apex:form>
+
+</apex:page>

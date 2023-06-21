@@ -1,0 +1,112 @@
+<apex:page name="Sales Support Dashboard">
+
+    <apex:includeLightning />
+
+    <style>
+        .listButtons li:not(.lastItem) {
+            display: none;
+        }
+        .reportTitle{
+            display: none;
+        }
+        .slds-scope .slds-button_icon-more, .slds-scope .slds-button--icon-more {
+            display: none !important; 
+        }
+    </style>
+    
+    <apex:pageBlock title="Sales Support Dashboard">
+        
+        <div id="Open_Active_Sales_Order_Last_7_Days" />
+        <div id="Late_POs_NEED_ATTENTION" />
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette" id="j_id0:j_id1_topNav">
+                        <div class="controls">
+                            <!-- <img src="/img/s.gif" alt="Purchase Order" class="pageTitleIcon" title="Purchase Order"/>-->
+                            <h2 class="title">Problem POs NEED ATTENION.</h2>
+                            <div class="filterLinks" id="j_id0:j_id1_filterLinks"></div>
+                            <span class="divisionLabel" id="j_id0:j_id1_divisionLabel"></span>
+                            <div class="topNavTab" id="j_id0:j_id1_topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <div id="Missing_Order_ETA" />
+                            <div id="Missing_Expected_Delivery" />
+                            <!-- include page here -->
+                            <apex:include pageName="Project_Management_Dashboard_Remaining" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> 
+        <script>
+        
+        $Lightning.use("c:projectmanagementdashboard", function() {
+            
+            // open/active sales order last 7 days
+            
+          $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Sales_Order__c",
+    listName:"Open_Active_Sales_Order_Last_7_Days",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Open_Active_Sales_Order_Last_7_Days",
+              function(comp) {
+                console.log('Open Active Sales Order Last 7 Days. has been loaded.');
+                console.log(comp);
+                
+              }
+          );
+            
+            // late po need attention
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Late_POs_NEED_ATTENTION",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Late_POs_NEED_ATTENTION",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // Missing order eta
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Missing_Order_ETA",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Missing_Order_ETA",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // Missing expected delivery
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Missing_Expected_Delivery",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Missing_Expected_Delivery",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+        });
+        
+    </script>
+    </apex:pageBlock>
+       
+</apex:page>

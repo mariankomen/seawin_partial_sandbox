@@ -1,0 +1,51 @@
+<apex:page controller="OpportunityLineItemAlternateImgExtension" tabStyle="Opportunity" showHeader="false" showChat="false" showQuickActionVfHeader="false"
+           sidebar="false">
+    <apex:form id="AttachFile">
+        <apex:includeScript value="{!$Resource.jQueryV331}"/>
+        <apex:stylesheet value="{!$Resource.Bootstrap}"/>
+        <br/><br/>
+        
+        <apex:pageMessages />
+        <apex:pageBlock title="Upload a File"> 
+            
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!upload}" value="Save" reRender=""/>
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection showHeader="false" columns="2" id="block1">
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="File" for="file"/>
+                    <apex:inputFile value="{!content}" filename="{!contentName}" id="file" contentType="{!contentType}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <div class="col-lg-offset-2 col-lg-10">
+                <span id="lblFileError" class="errorMsg smallfont" style="display:none"><strong>Error:</strong> Please Browse an image</span>
+                
+            </div>
+            </apex:pageBlock>
+    </apex:form>    
+    
+    <script> 
+    
+    $(document).ready(function() {
+        debugger;
+        var prodId = '{!$CurrentPage.parameters.prodId}';
+        var docId = '{!$CurrentPage.parameters.docId}';
+        console.log('prodId: ',prodId)
+        console.log('docId: ',docId)
+        if(docId && docId ){
+            document.getElementById("lblFileError").style.display = "none";
+            console.log('11111')
+            window.close();
+
+            window.opener.HandlePopupResult(prodId, docId);  
+        }
+        else if(docId == "null"){
+            document.getElementById("lblFileError").style.display = "block";
+        }
+        
+    });
+     
+    </script>
+</apex:page>

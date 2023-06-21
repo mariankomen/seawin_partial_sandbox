@@ -1,0 +1,7 @@
+<apex:page standardController="Quote" tabStyle="Quotes__tab" >
+  <!-- Begin Default Content REMOVE THIS -->
+  <script>
+      window.top.location = '/sales/0Q0/o';
+  </script>
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

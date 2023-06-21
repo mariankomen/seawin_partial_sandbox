@@ -1,0 +1,90 @@
+<apex:page standardController="AcctSeed__Billing__c" extensions="Billing_Payment_Controller" title="{!AcctSeed__Billing__c.Name}" contentType="text/html;charset=utf-8" lightningStylesheets="true">
+
+<style type="text/css">
+    .rich_text_input {
+        width: 65% !important;
+        height: 35% !important;
+    }
+</style>
+<apex:form id="theForm">
+
+    <apex:sectionHeader title="Billing" subtitle="Billing PDF" />
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:pageBlock id="pageBlockOne">
+            <apex:pageBlockButtons id="buttons">
+                <apex:commandButton id="save" value="Save PDF" action="{!savePDF}" reRender="hfhjf"/>
+                <apex:commandButton id="send" value="Send Email" action="{!sendPDF}"/>
+                <apex:commandButton id="back" value="Back" action="{!back}"/>
+            </apex:pageBlockButtons>
+
+
+            <apex:pageBlockSection title="Billing Information" columns="2" collapsible="false" >
+                <apex:outputField id="billingName" value="{!AcctSeed__Billing__c.Name}" />
+                <apex:outputField id="billingType" value="{!AcctSeed__Billing__c.AcctSeed__Type__c}" />
+                <apex:outputField id="customerName" value="{!AcctSeed__Billing__c.AcctSeed__Customer__r.Name}" />
+                <apex:outputField id="billingTotal" value="{!AcctSeed__Billing__c.AcctSeed__Total__c}" />
+                <apex:outputField id="postingStatus" value="{!AcctSeed__Billing__c.AcctSeed__Status__c}" />
+                <apex:outputField id="billingBalanceAmount" value="{!AcctSeed__Billing__c.AcctSeed__Balance__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Billing Contact" for="billingcontactname" />
+                    <apex:outputText id="billingcontactname"
+                                     value="{!AcctSeed__Billing__c.AcctSeed__Billing_Contact__r.Name} ({!AcctSeed__Billing__c.AcctSeed__Billing_Contact__r.Email})" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="reciever_info" title="Email Sender and Recipient Information" columns="2" collapsible="false">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="From Address" for="fromAddress" />
+                    <apex:outputText value="{!senderEmail}"> </apex:outputText>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC Me" for="ccMe" />
+                    <apex:inputCheckbox value="{!ccMe}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem id="reciever_email">
+                    <apex:outputLabel value="Send to Contact" for="toAddress" />
+                    <apex:actionRegion >
+
+                        <apex:inputField value="{!record_info.AcctSeed__Billing_Contact__c}"  id="rec_email" required="true"/>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC Addresses" for="ccAddresses" />
+                    <apex:inputText value="{!ccAddresses}" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="email" title="Email Subject and Body Information" columns="1" collapsible="true">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Subject" />
+                    <apex:inputText id="emailSubject" value="{!emailSubject}" style="width:65%" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!isHTML}">
+                    <apex:outputLabel value="Body" />
+                    <apex:inputTextarea id="emailBodyRich" value="{!templateBodyPreview}"
+                                        style="width:45%;line-height:1em;height:15em;"
+                                        richText="true"
+                                        styleClass="rich_text_input" 
+                                        />
+                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!!isHTML}">
+                    <apex:outputLabel value="Body" />
+                    <apex:inputTextarea id="emailBody" value="{!templateBodyPreview}"
+                                        style="width:45%;line-height:1em;height:15em;"
+                                        />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+    </apex:pageBlock>
+
+
+
+</apex:form>
+    <apex:pageBlock title="Billing PDF Preview" >
+            <apex:iframe id="iframe1" src="/apex/{!emailPDF}?id={!recordId}"/>
+    </apex:pageBlock>
+
+</apex:page>

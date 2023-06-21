@@ -1,0 +1,38 @@
+<apex:page >
+<style>
+.listButtons li:not(.lastItem) {
+  display: none;
+}
+
+</style>
+<apex:pageBlock title="Project Management Dashboard">
+
+<apex:enhancedList type="AcctSeedERP__Sales_Order__c" height="400" rowsPerPage="10"
+        ListId="00B1I000008E6CQ" customizable="false" />
+        <apex:enhancedList type="AcctSeedERP__Purchase_Order__c" height="400" rowsPerPage="10"
+        ListId="00B1I000008E7YX" customizable="false" />
+<apex:enhancedList type="AcctSeedERP__Purchase_Order__c" height="400" rowsPerPage="10"
+        ListId="00B1I000008E6Ca" customizable="false" />
+        <div class="individualPalette listViewportWrapper" style="width: 1262px;">
+<div class="listViewport Custom29Block">
+      <form>
+          <div class="topNav primaryPalette" id="j_id0:j_id1_topNav">
+                <div class="controls">
+                   <!-- <img src="/img/s.gif" alt="Purchase Order" class="pageTitleIcon" title="Purchase Order"/>-->
+                   <h2 class="title">Problem POs NEED ATTENION.</h2>
+                   <div class="filterLinks" id="j_id0:j_id1_filterLinks"></div>
+                   <span class="divisionLabel" id="j_id0:j_id1_divisionLabel"></span>
+                   <div class="topNavTab" id="j_id0:j_id1_topNavTab"></div>
+                   <div class="clearingBox"></div>
+            <apex:enhancedList type="AcctSeedERP__Purchase_Order__c" height="400" rowsPerPage="10"
+                    ListId="00B1I000008E6Cu" customizable="false" />
+            <apex:enhancedList type="AcctSeedERP__Purchase_Order__c" height="400" rowsPerPage="10"
+                    ListId="00B1I000008E6DE" customizable="false" />
+             <apex:include pageName="Project_Management_Dashboard_Remaining" />
+                 </div>
+            </div>
+      </form>
+   </div>
+</div>
+</apex:pageBlock>     
+</apex:page>

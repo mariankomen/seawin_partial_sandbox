@@ -1,0 +1,23 @@
+<apex:page standardcontroller="Optional_Products_Opportunity__c" extensions="OptionalProductOppDeleteExtension" 
+           action="{!PageAction}">
+     <apex:sectionHeader title="Opportunity" subtitle="Delete Optional Products"></apex:sectionHeader>
+    <apex:form id="msgform">
+        
+        <apex:pageblock rendered="{!showApprovalMsg}">
+            <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+            <apex:pageMessage strength="2" detail="Locked Opportunity, pending Approval." severity="error">
+            </apex:pageMessage>
+        </apex:pageblock> 
+        
+        <apex:pageblock rendered="{!hasSO}">
+            
+            <apex:pageMessage rendered="{!hasSO}"
+                              strength="2"
+                              detail="Won Opportunity with Sales Order cannot be edited."
+                              severity="error">
+            </apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+        </apex:pageblock>
+        
+    </apex:form>
+</apex:page>

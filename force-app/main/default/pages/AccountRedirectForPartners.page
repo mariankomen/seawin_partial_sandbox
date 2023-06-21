@@ -1,0 +1,9 @@
+<apex:page standardController="Account" standardStylesheets="false" showHeader="false" sidebar="false" >
+  <script>
+      var pageName = 'AccountPage';
+      if(!document.referrer.includes(pageName))
+      {
+          window.top.location = '/sales/'+pageName+'?id={!Account.Id}&sfdc.override=1';
+      }
+  </script>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page controller="UpdateCommissionsController" action="{!PageAction}">
+    <apex:sectionHeader title="Update Commissions" subtitle="{!so.name}" />
+    <apex:form Id="form" rendered="{!!CommissionRateHasChanged}">
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="both">
+                <apex:commandbutton action="{!Back}" 
+                rerender="form" value="Back" immediate="true"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessages ></apex:pageMessages>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

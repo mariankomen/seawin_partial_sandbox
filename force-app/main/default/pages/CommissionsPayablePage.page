@@ -1,0 +1,339 @@
+<apex:page id="thePage" controller="CommissionsPayableController">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/bootstrap-tagsinput.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}" />
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/bootstrap-tagsinput.css')}" />
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Sales Order" subtitle="{!so.Name}" />
+        <apex:pageBlock id="thePageBlock" title="Create Payable">
+            <apex:pageMessage severity="info" strength="3" summary="All items have been paid." rendered="{!AlreadyPaid}" />
+            <apex:pageMessage severity="info" strength="3" summary="There are no sales order commissions associated with this sales order."
+                rendered="{!!isLines}" />
+            <apex:pageMessage severity="info" strength="3" summary="You must include a value for the amount to pay field for each line you want to include on the payable."
+                rendered="{!isLines && !AlreadyPaid}" />
+                <apex:pageMessage severity="info" strength="3" 
+                summary="You must also include a value for Expense GL Account, which is a required field for payable. 
+                The default value is picked from related Customer/Account on SO."
+                rendered="{!isLines && !AlreadyPaid}" />
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="saveStatus" onstart="AcctSeed.ASModule.disableButtons('Processing...')" onstop="AcctSeed.ASModule.format()"
+                />
+                <apex:commandButton status="saveStatus" value="Create Payable" action="{!createPayable}" reRender="theForm" 
+                 oncomplete="calculatePayableOnload(false);" rendered="{!isLines && !AlreadyPaid}"
+                />
+                <apex:commandButton value="Back" action="/{!so.Id}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2">
+                <!-- <apex:outputField value="{!so.AcctSeedERP__Customer__c}" /> -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Issue Date" />
+                    <apex:InputField value="{!temp.AcctSeed__Date__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!so.AcctSeedERP__Ledger__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Due Date" />
+                    <apex:InputField value="{!temp.AcctSeed__Due_Date__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Expense GL Account" />
+                    <apex:InputField value="{!paylineTemp.AcctSeed__Expense_GL_Account__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockTable id="thePageBlockTable" value="{!socWrapper}" var="sw" cellpadding="6" rendered="{!isLines}">
+                <apex:column value="{!sw.soc.Name}" />
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Commission Holder">
+                    <apex:outputText id="commissionholder" value="{!sw.soc.Commission_Holder__c}" escape="false">
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Role">
+                    <apex:outputText id="role" value="{!sw.soc.Role__c}">
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Invoice/Memo">
+                    <apex:outputLink value="/{!IF(sw.soc.billing_cash_receipt__c != null, sw.soc.billing_cash_receipt__c, 
+                        sw.soc.billing_credit_memo__c)}">{!IF(sw.soc.billing_cash_receipt__c != null, sw.soc.billing_cash_receipt__r.Name, 
+                            sw.soc.billing_credit_memo__r.Name)}</apex:outputLink>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Billing Payment ($)">
+                    <apex:outputText id="billingpayment" value="{0, number, 0.0000}">
+                        <apex:param value="{!sw.soc.Billing_Payment__c}" />
+                    </apex:outputText>
+                </apex:column>
+
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Commission Amount ($)">
+                    <apex:outputText id="commissionamount" value="{0, number, 0.0000}">
+                        <apex:param value="{!sw.soc.Commission_Amount__c}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Commission Paid ($)">
+                    <apex:outputText id="commissionpaid" value="{0, number, 0.0000}">
+                        <apex:param value="{!sw.paidAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Commission Unpaid ($)">
+                    <apex:outputText id="commissionunpaid" value="{0, number, 0.0000}">
+                        <apex:param value="{!sw.unpaidAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" style="width:120px">
+                    <apex:facet name="header">
+                        <apex:actionRegion >
+                            Amount to Pay
+                            <br/>Pay Type?:&nbsp;
+                            <apex:selectList id="billAllSelect" value="{!PayType}" size="1" onchange="calculatePayableOnload(true)" styleClass="istype">
+                                <apex:selectOption itemValue="percent" itemLabel="Percent" />
+                                <apex:selectOption itemValue="amount" itemLabel="Amount to Pay ($)" />
+                            </apex:selectList>
+                        </apex:actionRegion>
+                    </apex:facet>
+                    <apex:actionRegion >
+                        <apex:inputText id="paytype" title="myTitle" styleClass="align-right clearText paytypefilled" value="{!sw.paytypeval}" style="width:80px"
+                            required="false" onkeyup="recalculatePay(this.id, this.title,this.value, {!sw.UnPaidAmount})" disabled="{!sw.UnPaidAmount == 0}">
+                        </apex:inputText>
+                    </apex:actionRegion>
+                </apex:column>
+
+                <apex:column styleClass="align-right" headerClass="align-right" footerClass="align-right" headerValue="Amount to Pay ($)">
+                    <apex:outputText id="payAmount" value="{!sw.PayAmount}" styleClass="clearAmount">
+                    </apex:outputText>
+                    <apex:inputHidden value="{!sw.PayAmountHidden}" id="payAmountInput" />
+                    <apex:facet name="footer">
+                        <apex:outputText id="footerAmount" value="{!Amount}" styleClass="clearAmount">
+                        </apex:outputText>
+                    </apex:facet>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+        var keyvalue = [];
+        function calculatePayableOnload(isOnChange) {
+
+            // selected
+            var SelectedElement = document.getElementsByClassName('istype');
+            var selected = SelectedElement[0].value;
+
+            var TextInputs = document.getElementsByClassName('paytypefilled');
+
+            if (isOnChange) {
+
+                for (var j = 0; j < TextInputs.length; j++) {
+
+                    var tempId = TextInputs[j].id;
+
+                    var splittedTemp = tempId.split(':');
+                    var turnTemp = tempId.split(':')[4];
+
+                    var paytypeval = '';
+                    var unPaidAmountTemp = '';
+                    for (var o = 0; o < 5; o++) {
+                        paytypeval += (o == 4) ? turnTemp + ':paytype' : splittedTemp[o] + ':';
+                        unPaidAmountTemp += (o == 4) ? turnTemp + ':commissionunpaid' : splittedTemp[o] + ':';
+
+                    }
+
+                    // if its quantity then set the full quantity in the paytypeval input
+                    var unpaidamt = parseFloat(document.getElementById(unPaidAmountTemp).innerHTML);
+                    if (selected == 'percent') {
+
+                        // check what the user has selected in the isdeposit select
+                        // document.getElementById(paytypeval).value = (unpaidamt > 0) ? 100 : '';
+                        document.getElementById(paytypeval).value = 100;
+
+                    } else if (selected == 'amount') {
+                        //var unbilledamountTempVal = parseFloat(document.getElementById(unPaidAmountTemp).innerHTML.replace('$', '').replace(/,/g, ''));
+                        //document.getElementById(paytypeval).value = (unbilled > 0) ? unbilledamountTempVal : '';
+                        console.log('Amount to pay: ' + document.getElementById(unPaidAmountTemp).innerHTML);
+                        /*
+                        var unbilledamountTempVal = parseFloat(document.getElementById(unPaidAmountTemp).innerHTML.indexOf('(') != -1 ?
+                            -document.getElementById(unPaidAmountTemp).innerHTML.replace(/[()]/g, '').replace('$', '').replace(/,/g, '') :
+                            document.getElementById(unPaidAmountTemp).innerHTML.replace('$', '').replace(/,/g, ''));
+                        document.getElementById(paytypeval).value = unbilledamountTempVal;
+                        */
+                        document.getElementById(paytypeval).value = 
+                            parseFloat((document.getElementById(unPaidAmountTemp).innerHTML).replace(/\s/g, ''));
+                    }
+                }
+            }
+            var FooterAmountIdStr = '';
+            // calculate the bill amount and footer amount for the already populated percentages
+
+            for (var i = 0; i < TextInputs.length; i++) {
+
+                // calcuate the ids of footer amount and bill amount so we can update their amounts based on paytype
+                var id = TextInputs[i].id;
+
+                var splitted = id.split(':');
+                var turn = id.split(':')[4];
+
+                var PayAmountIdStr = '';
+                var PayAmountInputStr = '';
+                var unitpricefield = '';
+                var unPaidAmount = '';
+
+                for (var k = 0; k < 5; k++) {
+                    PayAmountIdStr += (k == 4) ? turn + ':payAmount' : splitted[k] + ':';
+                    PayAmountInputStr += (k == 4) ? turn + ':payAmountInput' : splitted[k] + ':';
+                    unPaidAmount += (k == 4) ? turn + ':commissionunpaid' : splitted[k] + ':';
+                }
+                if (i == 0) {
+                    for (var x = 0; x < 5; x++) {
+
+                        FooterAmountIdStr += (x == 4) ? 'footerAmount' : splitted[x] + ':';
+                    }
+                }
+
+                // entered
+                var entered = (TextInputs[i].value == undefined) || (TextInputs[i].value == '') ||
+                    (TextInputs[i].value == null) ? 0 : parseFloat(TextInputs[i].value);
+
+                var UnPaidAmountStepOne = document.getElementById(unPaidAmount).innerHTML.indexOf('(') != -1 ?
+                    -document.getElementById(unPaidAmount).innerHTML.replace(/[()]/g, '').replace('$', '').replace(/,/g, '') :
+                    document.getElementById(unPaidAmount).innerHTML.replace('$', '').replace(/,/g, '');
+
+                // actual
+                var actual = parseFloat(UnPaidAmountStepOne.replace(/\s/g, ''));
+
+                // actual
+                //var actual = parseFloat(document.getElementById(unPaidAmount).innerHTML.replace('$', '').replace(/,/g, ''));
+
+                // unitprice
+                //var unitprice = parseFloat(document.getElementById(unitpricefield).innerHTML.replace('$', '').replace(/,/g, ''));
+
+                // set the title for text field to be used with reCalculateBill
+                TextInputs[i].attributes.getNamedItem('title').value = selected;
+
+                var amount = 0;
+                if (selected == 'percent') {
+                    amount = actual * (entered / 100);
+                } else if (selected == 'amount') {
+                    amount = actual;
+                }
+
+                // amount = amount.toFixed(2);
+                amount = trueRound(amount, 4);
+
+                // Bill amount
+
+                document.getElementById(PayAmountIdStr).innerHTML = (amount == '') ? "0.00" :
+                    amount;
+                document.getElementById(PayAmountInputStr).value = (amount == '') ? "0.00" : amount;
+
+                // add it to the key value pair
+
+                var ElementIndex = id.split(':')[4];
+                keyvalue[ElementIndex] = amount;
+
+            }
+
+            // grand total
+            var grandtotal = 0;
+            for (var i = 0; i < keyvalue.length; i++) {
+                if (keyvalue[i] != undefined) {
+                    grandtotal += parseFloat(keyvalue[i]);
+                }
+            }
+
+            var gt = trueRound(grandtotal, 4);
+            document.getElementById(FooterAmountIdStr).innerHTML =
+                (grandtotal == 0) ? "0.00" : gt;
+        }
+
+        window.onload = function () {
+
+            var SelectedElement = document.getElementsByClassName('istype');
+            var val = SelectedElement[0].value;
+
+            // clear each user entered amount/percent/quantity
+            var TextInputs = document.getElementsByClassName('clearText');
+            for (var i = 0; i < TextInputs.length; i++) {
+                //TextInputs[i].value = '';
+                TextInputs[i].attributes.getNamedItem('title').value = val;
+            }
+
+            calculatePayableOnload(false);
+        }
+
+        function recalculatePay(id, selected, entered, actual) {
+
+            if (selected == 'myTitle') {
+                var SelectedElement = document.getElementsByClassName('istype');
+                selected = SelectedElement[0].value;
+            }
+
+            var splitted = id.split(':');
+            var turn = id.split(':')[4];
+
+            var PayAmountIdStr = '';
+            var PayAmountInputStr = '';
+            for (var k = 0; k < 5; k++) {
+                PayAmountIdStr += (k == 4) ? turn + ':payAmount' : splitted[k] + ':';
+                PayAmountInputStr += (k == 4) ? turn + ':payAmountInput' : splitted[k] + ':';
+            }
+
+            var FooterAmountIdStr = '';
+            for (var x = 0; x < 5; x++) {
+
+                FooterAmountIdStr += (x == 4) ? 'footerAmount' : splitted[x] + ':';
+            }
+
+            var amount = 0;
+            if (selected == 'percent') {
+                if (entered > 100) {
+                    alert('Incorrect percentage.');
+                    document.getElementById(id).value = '';
+                } else {
+                    amount = actual * (entered / 100);
+                }
+            } else if (selected == 'amount') {
+
+                if (actual < 0 && (entered < actual || entered > 0)) {
+                    alert('The amount cannot be less than ' + actual + ' and cannot be more than 0.');
+                    document.getElementById(id).value = '';
+                }else if(actual > 0 && (entered > actual || entered < 0)){
+                    alert('The amount cannot be more than ' + actual + ' and cannot be less than 0.');
+                    document.getElementById(id).value = '';
+                } else {
+                    amount = (entered == undefined || entered == '' || entered == null) ? 0 : parseFloat(entered);
+                }
+            }
+
+            // amount = amount.toFixed(2);
+            amount = trueRound(amount, 4);
+
+            // Bill amount
+            document.getElementById(PayAmountIdStr).innerHTML = (amount == '') ? "0.00" :
+                amount;
+            document.getElementById(PayAmountInputStr).value = (amount == '') ? "0.00" : amount;
+
+            // add it to the key value pair
+
+            var ElementIndex = id.split(':')[4];
+            keyvalue[ElementIndex] = amount;
+
+            // grand total
+            var grandtotal = 0;
+            for (var i = 0; i < keyvalue.length; i++) {
+                if (keyvalue[i] != undefined) {
+                    grandtotal += parseFloat(keyvalue[i]);
+                }
+            }
+
+            var gtotal = trueRound(grandtotal, 4);
+            document.getElementById(FooterAmountIdStr).innerHTML =
+                (grandtotal == 0) ? "0.00" : gtotal;
+        }
+
+        function trueRound(value, digits){
+        return parseFloat((Math.round((value*Math.pow(10,digits)).toFixed(digits-1))/Math.pow(10,digits)).toFixed(digits));
+    }
+    
+    function getLength(number) {
+        return number.toString().length;
+    }
+
+    </script>
+</apex:page>

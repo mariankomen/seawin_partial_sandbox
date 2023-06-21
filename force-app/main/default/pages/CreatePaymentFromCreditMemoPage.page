@@ -1,0 +1,123 @@
+<apex:page controller="CreatePaymentFromCreditMemo" tabStyle="AcctSeed__Account_Payable__c" docType="html-5.0">
+
+<apex:form id="theForm">
+    <apex:sectionHeader title="Payable Edit" subtitle="New Payable" id="first_section" />
+    <apex:pageBlock id="thePageBlock" title="Payable Edit">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton status="saveStatus" value="Save" action="{!savePayable}"/>
+                <apex:commandButton value="Back" action="/{!billingId}" immediate="true" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection columns="2" title="Information">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Purchase Order" />
+                    <apex:inputField value="{!payable.AcctSeedERP__Purchase_Order__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="RecordType" />
+                    <apex:outputField value="{!payable.RecordTypeId}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Posting Status" />
+                    <apex:inputField value="{!payable.AcctSeed__Status__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Owner" />
+                    <apex:outputField value="{!payable.OwnerId}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Payment Status" />
+                    <apex:inputField value="{!payable.AcctSeed__Payment_Status__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Discount Amount" />
+                    <apex:inputField value="{!payable.AcctSeed__Discount_Amount__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Recurring Payable" />
+                    <apex:inputField value="{!payable.AcctSeed__Recurring_Account_Payable__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Credit Memo Applied Amount" />
+                    <apex:inputField value="{!payable.AcctSeed__Credit_Memo_Applied_Amount__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Fixed Asset" />
+                    <apex:inputField value="{!payable.AcctSeed__Fixed_Asset__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Pay Type" />
+                    <apex:inputField value="{!payable.Pay_Type__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Sales Order Commissions" />
+                    <apex:inputField value="{!payable.Sales_Order_Commissions__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection columns="2" title="Payee Information">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Vendor" />
+                    <apex:inputField value="{!payable.AcctSeed__Vendor__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Payee Reference" />
+                    <apex:inputField value="{!payable.AcctSeed__Payee_Reference__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Contact" />
+                    <apex:inputField value="{!payable.AcctSeed__Contact__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Billing" />
+                    <apex:inputField value="{!payable.Billing__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Employee" />
+                    <apex:inputField value="{!payable.AcctSeed__Employee__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    
+                </apex:pageBlockSectionItem>
+
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection columns="2" title="Date Information">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Issue Date" />
+                    <apex:inputField value="{!payable.AcctSeed__Date__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Accounting Period" />
+                    <apex:inputField value="{!payable.AcctSeed__Accounting_Period__c}"/>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Due Date" />
+                    <apex:inputField value="{!payable.AcctSeed__Due_Date__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

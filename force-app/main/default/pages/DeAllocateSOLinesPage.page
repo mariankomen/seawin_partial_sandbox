@@ -1,0 +1,11 @@
+<apex:page controller="DeAllocateSOLinesController" action="{!deleteInventoryMovements}">
+    <apex:form >
+        <apex:sectionHeader title="Sales Order" subtitle="{!soName}" />
+        <apex:pageBlock id="thePageBlock" title="Sales Order Lines" rendered="{!showError}">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Back" action="{!DoRedirect}" immediate="true"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,346 @@
+<apex:component controller="AddEmailAddressPopupComponentCtrl">
+    <apex:attribute name="shipmentId" description="Label on left listbox."
+                    type="String" required="true" />
+    <apex:attribute name="SelectedEmails" description="Label on left listbox."
+                    type="String" required="true" />
+    <apex:attribute name="ContactsLabel" description="Label on left listbox."
+                    type="String" required="true" />
+    <apex:attribute name="SalesRepLabel" description="Label on left listbox."
+                    type="String" required="true" />
+    <apex:attribute name="rightLabel" description="Label on right listbox."
+                    type="String" required="true" />
+    <apex:attribute name="size" description="Size of listboxes."
+                    type="Integer" required="true" />
+    <apex:attribute name="width" description="Width of listboxes."
+                    type="String" required="true" />
+    <apex:attribute name="showUpDownButtons" description="Should Up/Down buttons be displayed or not."
+                    type="Boolean" required="false" default="false"/>
+    <apex:attribute name="rightOptionsName" description="The right select options name/label."
+                    type="String"/>
+    
+    
+    <apex:attribute name="contactsOption"
+                    description="Options list for left listbox." type="SelectOption[]"
+                    required="true" assignTo="{!contactsOptions}" />
+    <apex:attribute name="salesRepOption"
+                    description="Options list for left listbox." type="SelectOption[]"
+                    required="true" assignTo="{!salesRepOptions}" />
+    <apex:attribute name="rightOption"
+                    description="Options list for right listbox." type="SelectOption[]"
+                    required="true" assignTo="{!rightOptions}" />
+    
+    <apex:outputPanel id="multiselectPanel" layout="block" styleClass="duelingListBox">
+        <table class="layout">
+            <tbody>
+                <tr>
+                    <td>
+                        <table class="layout">
+                            <tbody>
+                                <tr>
+                                    <!-- Account Contacts -->
+                                    <td class="selectCell">
+                                        <apex:outputPanel layout="block" styleClass="selectTitle">
+                                            <apex:outputLabel value="{!ContactsLabel}" 
+                                                              for="multiselectPanel:contactsList" />
+                                        </apex:outputPanel>
+                                        <select id="{!$Component.multiselectPanel}:contactsList" 
+                                                class="multilist" multiple="multiple" size="6" 
+                                                style="width: {!width};">
+                                            <apex:repeat value="{!contactsOptions}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                        <select id="{!$Component.multiselectPanel}:contactsListCopy" 
+                                                class="multilist" multiple="multiple" size="6" 
+                                                style="width: {!width}; display: none;">
+                                            <apex:repeat value="{!contactsOptions}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                    </td>
+                                    <td class="buttonCell">
+                                        <apex:outputPanel layout="block" styleClass="text">
+                                            <apex:outputLink value="javascript:moveSelectedOptionsRight('{!$Component.multiselectPanel}:contactsList', 
+                                                                    '{!$Component.multiselectPanel}:rightList', '{!$Component.ContactleftHidden}', 
+                                                                    '{!$Component.rightHidden}');"
+                                                             id="btnRight" >
+                                                <apex:image value="/s.gif" alt="Add" styleClass="rightArrowIcon"
+                                                            title="Add" />
+                                                <apex:actionSupport event="onclick" reRender="popupRedirect"/>
+                                            </apex:outputLink>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <!-- Sales Reps -->
+                                    <td class="selectCell">
+                                        <apex:outputPanel layout="block" styleClass="selectTitle">
+                                            <apex:outputLabel value="{!SalesRepLabel}" 
+                                                              for="multiselectPanel:List" />
+                                        </apex:outputPanel>
+                                        <select id="{!$Component.multiselectPanel}:salesRepList" 
+                                                class="multilist" multiple="multiple" size="6" 
+                                                style="width: {!width};">
+                                            <apex:repeat value="{!salesRepOption}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                        <select id="{!$Component.multiselectPanel}:salesRepListCopy" 
+                                                class="multilist" multiple="multiple" size="6" 
+                                                style="width: {!width}; display: none;">
+                                            <apex:repeat value="{!salesRepOption}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                    </td>
+                                    <td class="buttonCell">
+                                        <apex:outputPanel layout="block" styleClass="text">
+                                            <apex:outputLink value="javascript:moveSelectedOptionsRight('{!$Component.multiselectPanel}:salesRepList', 
+                                                                    '{!$Component.multiselectPanel}:rightList', '{!$Component.salesRepHidden}', 
+                                                                    '{!$Component.rightHidden}');"
+                                                             id="btnRightAdd">
+                                                <apex:image value="/s.gif" alt="Add" styleClass="rightArrowIcon"
+                                                            title="Add" />
+                                            </apex:outputLink>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <!-- Search box -->
+                                    <td class="selectCell">
+                                        
+                                        
+                                        <apex:outputPanel layout="block" styleClass="selectTitle">
+                                            <apex:outputLabel value="Search" 
+                                                              for="multiselectPanel:List" />
+                                        </apex:outputPanel>
+                                        
+                                        <apex:inputText id="searchInput" value="{!searchText}"></apex:inputText>
+                                        <apex:commandButton id="searchButton" value="Search" action="{!searchMethod}" rerender="refreshSearch" onkeyup="searchTerm();"/>
+                                        
+                                        <apex:outputPanel id="refreshSearch">
+                                            <select id="{!$Component.multiselectPanel}:searchList" 
+                                                    class="multilist" multiple="multiple" size="6" 
+                                                    style="width: {!width};">
+                                                <apex:repeat value="{!searchOption}" var="option">
+                                                    <option value="{!option.value}">{!option.label}</option>
+                                                </apex:repeat>
+                                            </select>
+                                            <select id="{!$Component.multiselectPanel}:searchListCopy" 
+                                                    class="multilist" multiple="multiple" size="6" 
+                                                    style="width: {!width}; display: none;">
+                                                <apex:repeat value="{!searchOption}" var="option">
+                                                    <option value="{!option.value}">{!option.label}</option>
+                                                </apex:repeat>
+                                            </select>
+                                        </apex:outputPanel>
+                                        <select id="{!$Component.multiselectPanel}:searchListCopy" 
+                                                class="multilist" multiple="multiple" size="6" 
+                                                style="width: {!width}; display: none;">
+                                            <apex:repeat value="{!searchOption}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                    </td>
+                                    <td class="buttonCell">
+                                        <apex:outputPanel layout="block" styleClass="text">
+                                            <apex:outputLink value="javascript:moveSelectedOptionsRight('{!$Component.multiselectPanel}:searchList', 
+                                                                    '{!$Component.multiselectPanel}:rightList', '{!$Component.searchHidden}', 
+                                                                    '{!$Component.rightHidden}');"
+                                                             id="btnRightSearch">
+                                                <apex:image value="/s.gif" alt="Add" styleClass="rightArrowIcon"
+                                                            title="Add" />
+                                            </apex:outputLink>
+                                        </apex:outputPanel>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td>
+                        <!-- RightOption Box -->
+                        <table class="layout">
+                            <tbody>
+                                <tr>
+                                    <td class="buttonCell">
+                                        <apex:outputPanel layout="block" styleClass="text leftMargin">
+                                            <apex:outputLink value="javascript:moveSelectedOptions('{!$Component.multiselectPanel}:rightList', 
+                                                                    '{!$Component.multiselectPanel}:contactsList',
+                                                                    '{!$Component.multiselectPanel}:salesRepList',
+                                                                    '{!$Component.multiselectPanel}:searchList',
+                                                                    '{!$Component.rightHidden}', 
+                                                                    '{!$Component.searchHidden}');"
+                                                             id="btnLeftSearch">
+                                                <apex:image value="/s.gif" alt="Remove"
+                                                            styleClass="leftArrowIcon" title="Remove" />
+                                            </apex:outputLink>
+                                        </apex:outputPanel>
+                                    </td>
+                                    <td class="selectCell">
+                                        <apex:outputPanel layout="block" styleClass="selectTitle">
+                                            <apex:outputLabel value="{!rightLabel}" for="multiselectPanel:rightList" />
+                                        </apex:outputPanel>
+                                        <select id="{!$Component.multiselectPanel}:rightList" 
+                                                class="multilist" multiple="multiple" size="25" 
+                                                style="width: {!width};">
+                                            <apex:repeat value="{!rightOptions}" var="option">
+                                                <option value="{!option.value}">{!option.label}</option>
+                                            </apex:repeat>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>          
+                </tr>
+            </tbody>
+        </table>
+        <apex:inputHidden value="{!rightOptionsHidden}" id="rightHidden" />
+    </apex:outputPanel>
+    <script type="text/javascript">
+    if (!buildOutputString) {
+        // Create a string from the content of a listbox
+        var buildOutputString = function(listBox, hiddenInput) {
+            var str = '';
+            
+            for ( var x = 0; x < listBox.options.length; x++) {
+                str += listBox.options[x].value + ':'
+                + listBox.options[x].text + '&';
+            }
+            str.length--;
+            hiddenInput.value = str.slice(0, -1);
+        }
+        }
+    
+    if (!moveSelectedOptionsRight) {
+        var moveSelectedOptionsRight = function(idFrom, idTo, idToTwoidHdnFrom, idHdnTo) {
+            listFrom = document.getElementById(idFrom);
+            listTo = document.getElementById(idTo);
+            
+            // check if the option selected belongs to the idTo box or not and move w.r.t that
+            
+            
+            for ( var x = 0; x < listTo.options.length; x++) {
+                listTo.options[x].selected = false;
+            }
+            
+            for ( var x = 0; x < listFrom.options.length; x++) {
+                if (listFrom.options[x].selected == true) {
+                    listTo.prepend(listFrom.options[x]);
+                    x--;
+                }
+            }
+            
+            listTo.focus();
+            
+            //buildOutputString(listFrom, document.getElementById(idHdnFrom));
+            buildOutputString(document.getElementById('{!$Component.multiselectPanel}:rightList'), 
+                              document.getElementById('{!$Component.rightHidden}'));
+        }
+        }
+    
+    
+    if (!moveSelectedOptions) {
+        var moveSelectedOptions = function(idFrom, idToAcctCt, idToSalesRep, idToSearch, idHdnFrom, idHdnTo) {
+            
+            listFrom = document.getElementById(idFrom);
+            // listTo = document.getElementById(idTo);
+            listAcctCt = document.getElementById(idToAcctCt);
+            listSalesRep = document.getElementById(idToSalesRep);
+            listSearch = document.getElementById(idToSearch);
+            
+            var belongToAcctCt = false;
+            var belongToSalesRep = false;
+            var belongToSearch = false;
+            
+            // check if the option selected belongs to the idTo box or not and move w.r.t that
+            var selectedValue = '';
+            for ( var x = 0; x < listFrom.options.length; x++) {
+                if (listFrom.options[x].selected == true) {
+                    selectedValue = listFrom.options[x].innerHTML;
+                }
+            }
+            //alert(selectedValue);
+            
+            var contactsHiddenBox = document.getElementById('{!$Component.multiselectPanel}:contactsListCopy');
+            
+            // var belongToContact = false;
+            for ( var x = 0; x < contactsHiddenBox.options.length; x++) {
+                if (contactsHiddenBox.options[x].innerHTML == selectedValue) {
+                    belongToAcctCt = true;
+                }
+            }
+            
+            if(belongToAcctCt){
+                MoveTheListItems(listFrom, listAcctCt);
+                
+            }else{
+                
+                var SalesRepHiddenBox = document.getElementById('{!$Component.multiselectPanel}:salesRepListCopy');
+                
+                //var belongToSalesRep = false;
+                for ( var x = 0; x < SalesRepHiddenBox.options.length; x++) {
+                    if (SalesRepHiddenBox.options[x].innerHTML == selectedValue) {
+                        belongToSalesRep = true;
+                    }
+                }
+                if(belongToSalesRep){
+                    MoveTheListItems(listFrom, listSalesRep);
+                }else{
+                    
+                    var SearchHiddenBox = document.getElementById('{!$Component.multiselectPanel}:searchListCopy');
+                    
+                    //var belongToSearch = false;
+                    for ( var x = 0; x < SearchHiddenBox.options.length; x++) {
+                        if (SearchHiddenBox.options[x].innerHTML == selectedValue) {
+                            belongToSearch = true;
+                        }
+                    }
+                    if(belongToSearch){
+                        MoveTheListItems(listFrom, listSearch);
+                    }
+                }
+            }
+            
+        }
+        }
+    
+    // initialize the string representations
+    buildOutputString(document.getElementById('{!$Component.multiselectPanel}:rightList'), 
+                      document.getElementById('{!$Component.rightHidden}'));
+    
+    function MoveTheListItems(listFrom, listTo){
+        
+        for ( var x = 0; x < listTo.options.length; x++) {
+            listTo.options[x].selected = false;
+        }
+        
+        for ( var x = 0; x < listFrom.options.length; x++) {
+            if (listFrom.options[x].selected == true) {
+                listTo.prepend(listFrom.options[x]);
+                x--;
+            }
+        }
+        
+        listTo.focus();
+        
+        //buildOutputString(listFrom, document.getElementById(idHdnFrom));
+        buildOutputString(document.getElementById('{!$Component.multiselectPanel}:rightList'), 
+                          document.getElementById('{!$Component.rightHidden}'));
+        
+    }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script>
+        $(document).ready( function(){
+        $(document).keypress(function(e) {
+            if(e.which == 13) {
+                if($("[id$='searchInput']").val() != '' && $("[id$='searchInput']").val() != null){
+                    $("[id$='searchButton']").click();
+                }
+                e.preventDefault();
+            }
+        });
+    });
+    </script>
+</apex:component>

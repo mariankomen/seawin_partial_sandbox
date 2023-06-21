@@ -1,0 +1,220 @@
+<apex:page standardcontroller="Opportunity" extensions="OpportunityCreateExtension" id="createpage">
+    <style>
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+            margin: 7px 0px 0px 0px;
+        }
+        .requiredLegend {
+            padding: 0 2px;
+            background-color: transparent !important;
+            font-weight: normal;
+            color: #000;
+        }
+        .opportunityTab .tertiaryPalette, .individualPalette .opportunityBlock .tertiaryPalette, .layoutEdit .individualPalette .opportunityBlock .tertiaryPalette {
+            background-image: url(/img/alohaSkin/opacity75.png);
+            border-width: 0;
+            color: black !important;
+            padding: 4px 16px;
+            border-top: 1px solid #fff;
+        }
+        #para {
+            padding: 0;
+            margin: 16px 0;
+            font-size: 109%;
+            text-align: left;
+        }
+    </style>
+    <apex:stylesheet value="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js" />
+    <apex:includeScript value="/soap/ajax/55.0/connection.js" />
+    <apex:includeScript value="/soap/ajax/15.0/apex.js" />
+    
+    <apex:sectionHeader title="Opportunity Edit" subtitle="{!Opp.Name}"></apex:sectionHeader>
+    <apex:form id="form">
+        <apex:pageBlock id="pageblock" title="Opportunity Edit">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveOverride}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+
+            <apex:pageMessages escape="false"></apex:pageMessages>
+            <apex:pageBlockSection columns="2" collapsible="false">
+                <apex:inputField value="{!Opp.Allow_Duplicate_Opportunity__c}" 
+                                 label="{!$ObjectType.Opportunity.Fields.Allow_Duplicate_Opportunity__c.Label}">
+                </apex:inputField>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="pageblocksection" title="Opportunity Information" columns="2" collapsible="false">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="requiredLegend brandTertiaryFgr">
+                        <span class="requiredExampleOuter">
+                            <span class="requiredExample">&nbsp;</span>
+                        </span>
+                        <span class="requiredText"> = Required Information.</span>
+                    </span>
+                    </span>
+                    <h3>Opportunity Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:inputField value="{!Opp.Name}" />
+                <apex:outputField value="{!Opp.RecordTypeId}"></apex:outputField>
+
+                <apex:inputField value="{!Opp.AccountId}" />
+                <apex:outputField value="{!Opp.Sales_Rep_O__c}" />
+
+                <apex:inputField value="{!Opp.ContactPerson__c}" />
+                <apex:inputField value="{!Opp.Manufacturer_Rep__c}" />
+
+                <apex:inputField value="{!Opp.Type}" required="true"/>
+                <apex:inputField value="{!Opp.Referral_Sales_Rep__c}" />
+
+                <apex:inputField value="{!Opp.LeadSource}" required="true"/>
+                <apex:inputField value="{!Opp.Specified_Rep__c}" />                
+
+                <apex:inputField value="{!Opp.Parent_Opportunity__c}" />
+                <apex:inputField id="stagename" value="{!Opp.StageName}" onchange="stageChange(this.value);"/>
+                
+
+                <apex:inputField value="{!Opp.GL_Account_Variable_1__c}" />
+                <apex:inputField id="probability" value="{!Opp.Probability}"/>
+                
+
+                <apex:inputField value="{!Opp.Project__c}" />
+                <apex:inputField id="forecastcategoryname" value="{!Opp.ForecastCategoryName}" />
+                
+
+                <apex:inputField value="{!Opp.Approval_Status__c}" required="true"/>
+                <apex:inputField value="{!Opp.CloseDate}" />
+
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opp.Loss_Reason__c}" />
+                
+
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:outputField value="{!Opp.Amount}" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opp.Price_Level__c}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Hospitality Analysis" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality'}">
+
+            
+                <apex:inputField value="{!Opp.Quote_Due__c}" required="true"/>
+                <apex:inputField value="{!Opp.Braking_Ground_Date__c}" />
+                <apex:inputField value="{!Opp.Submittal_Due_Date__c}" />
+                <apex:inputField value="{!Opp.Project_Completion_Date__c}" />
+
+                <apex:inputField value="{!Opp.Quote_Format_del__c}" required="true"/>
+                <apex:inputField value="{!Opp.Specified_del__c}" />
+                <apex:inputField value="{!Opp.Awarded_Owner__c}" required="true"/>
+                <apex:inputField value="{!Opp.Construct_Connect_ID__c}" />
+
+                <!-- <apex:inputField value="{!Opp.Quote_Due__c}" required="true"/>
+                <apex:inputField value="{!Opp.Braking_Ground_Date__c}"/>
+                <apex:inputField value="{!Opp.Quote_Format_del__c}" required="true"/>
+                <apex:inputField value="{!Opp.Project_Completion_Date__c}"/>
+                <apex:inputField value="{!Opp.Awarded_Owner__c}" required="true"/>
+                <apex:inputField value="{!Opp.Construct_Connect_ID__c}"/> -->
+
+
+
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Hospitality Sales Related" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality'}">
+                <apex:inputField value="{!Opp.Sent_to_TakeOff_Team__c}"/>
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opp.Quote_Submitted_Date__c}"/>
+                <apex:inputField value="{!Opp.Project_Owner_Developer__c}"/>
+                <apex:inputField value="{!Opp.Decision_Date_del__c}"/>
+                <apex:inputField value="{!Opp.Contact_Owner_Developer__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Drawings / Approvals" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality'}">
+                <apex:inputField value="{!Opp.Architect__c}"/>
+                <apex:inputField value="{!Opp.Financial_Clearance_Date__c}"/>
+                <apex:inputField value="{!Opp.Drawing_Date__c}"/>
+                <apex:inputField value="{!Opp.submittal_approval_date__c}"/>
+                <apex:inputField value="{!Opp.Revision__c}"/>
+                <apex:inputField value="{!Opp.Contract_Date__c}"/>
+                <apex:inputField value="{!Opp.submittal_submitted_date__c}"/>
+                <apex:inputField value="{!Opp.PO_Number__c}"/>
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opp.PO_Date__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Approvals" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin China Hospitality' || 
+            RecordTypeName == 'Seawin China OEM'}">
+                <apex:inputField value="{!Opp.submittal_submitted_date__c}"/>
+                <apex:inputField value="{!Opp.Financial_Clearance_Date__c}"/>
+                <apex:inputField value="{!Opp.PO_Date__c}"/>
+                <apex:inputField value="{!Opp.submittal_approval_date__c}"/>
+                <apex:inputField value="{!Opp.PO_Number__c}"/>
+                <apex:inputField value="{!Opp.Contract_Date__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Sales Team" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality'}">
+                <apex:inputField value="{!Opp.Team_Estimator__c}"/>
+                <apex:inputField value="{!Opp.Project_Manager__c}"/>
+                <apex:inputField value="{!Opp.Team_Engineer__c}"/>
+                <apex:inputField value="{!Opp.Team_Notes__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Billing Information" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality' ||
+            RecordTypeName == 'Seawin China Hospitality' || RecordTypeName == 'Seawin China OEM'}">
+                <apex:inputField value="{!Opp.Billing_Terms_Name__c}"/>
+                <apex:inputField value="{!Opp.Billing_Deposit__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Additional Information" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality' ||
+            RecordTypeName == 'Seawin China Hospitality' || RecordTypeName == 'Seawin China OEM'}">
+                <apex:inputField value="{!Opp.Description}" style="width: 300px; height: 50px;"/>
+                <apex:inputField value="{!Opp.Note__c}" style="width: 300px; height: 50px;"/>
+                <apex:inputField value="{!Opp.deliver_by__c}"/>
+                <apex:inputField value="{!Opp.Shipping_Term__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Additional Information" columns="2" 
+            collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Online/Drop Shipment' || 
+            RecordTypeName == 'Seawin USA Wholesale Distribution'}">
+                <apex:inputField value="{!Opp.Description}" style="width: 300px; height: 50px;"/>
+                <apex:inputField value="{!Opp.Note__c}" style="width: 300px; height: 50px;"/>
+                <apex:inputField value="{!Opp.deliver_by__c}"/>
+                <apex:inputField value="{!Opp.Shipping_Term__c}"/>
+                <apex:inputField value="{!Opp.PO_Number__c}"/>
+                <apex:inputField value="{!Opp.PO_Date__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Shipping Details" columns="1" collapsible="false">
+                <apex:inputField value="{!Opp.Shipping_Account__c}"/>
+                <apex:inputField value="{!Opp.Shipping_Name__c}"/>
+                <apex:inputField value="{!Opp.Shipping_Street__c}"/>
+                <apex:inputField value="{!Opp.Shipping_City__c}"/>
+                <apex:inputField value="{!Opp.Shipping_State__c}"/>
+                <apex:inputField value="{!Opp.Shipping_PostalCode__c}"/>
+                <apex:inputField value="{!Opp.Shipping_Country__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="System Information" columns="2" collapsible="false">
+                <apex:outputField value="{!Opp.OwnerId}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+        sforce.connection.sessionId = "{!$Api.Session_ID}";
+        sforce.connection.serverUrl = '{!$Site.Prefix}/services/Soap/u/55.0';
+        function stageChange(stagename){
+        
+        //var stagename = document.getElementById('{!$Component.form.pageblock.pageblocksection.stagename}');
+        var probability = document.getElementById('{!$Component.form.pageblock.pageblocksection.probability}');
+        var forecastcategoryname = document.getElementById('{!$Component.form.pageblock.pageblocksection.forecastcategoryname}');
+        
+        var qr = sforce.connection.query("Select DefaultProbability,ForecastCategoryName From OpportunityStage where "+
+        " MasterLabel = '" + stagename + "'") ; 
+        records = qr.getArray("records");
+        
+            for (var i=0; i< records.length; i++) {
+                var record = records[i];
+                $(probability).val(parseInt(record.DefaultProbability));
+                $(forecastcategoryname).val(record.ForecastCategoryName);
+                break;
+            }
+            return true;
+        }
+        </script>
+</apex:page>

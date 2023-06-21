@@ -1,0 +1,239 @@
+<apex:page standardcontroller="AcctSeed__Billing_Line__c" recordSetVar="bolines" extensions="BillingLineSortOrderExtension">
+    
+    <style>
+        .hiddenColumn{
+        display: none !important;   
+        }
+        .col_1 {
+            width: 26%;
+
+        }
+        .col_2 {
+            width: 10%;
+        }
+        .col_3 {
+            width: 25%;
+        }
+        .col_4 {
+            width: 13%;
+        }
+        .col_5 {
+            width: 7%;
+        }
+        .col_6 {
+            width: 5%;
+        }
+        .col_7 {
+            width: 5%;
+        }
+        .col_8 {
+            width: 5%;
+        }
+        .col_9 {
+            width: 5%;
+        }
+        .col_t_1 {
+            width: 26%;
+
+        }
+        .col_t_2 {
+            width: 10%;
+        }
+        .col_t_3 {
+            width: 25%;
+        }
+        .col_t_4 {
+            width: 13%;
+        }
+        .col_t_5 {
+            width: 7%;
+        }
+        .col_t_6 {
+            width: 5%;
+        }
+        .col_t_7 {
+            width: 5%;
+        }
+        .col_t_8 {
+            width: 5%;
+        }
+        .col_t_9 {
+            width: 5%;
+        }
+
+        .first_row {
+            background: #f2f3f3;
+        }
+        td {
+            padding: 4px 2px 4px 5px;
+            border: none !important;
+            border-bottom: 1px solid #f2f3f3 !important;
+        }
+        table {
+            border-spacing: 0;
+        }
+
+        .main_container{
+            margin-bottom: 50px;
+        }
+
+        /* .main_container{
+            padding-bottom: 100px;
+        } */
+        .pbBottomButtons{
+            display: none !important;
+        }
+    </style>
+
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" />
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Billing" subtitle="{!billing.name}"/>
+        <apex:pageBlock id="thePageBlock" title="Billing Lines">
+            <apex:pageBlockButtons rendered="{!visible}">
+                <apex:commandButton value="Save" onclick="savesort(); return false;" reRender="" />
+                <apex:commandButton value="Back" action="{!Back}"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:outputPanel rendered="{!visible}">
+                <div style="height: 30px; width: 100%; margin-bottom: 5px; margin-top: 17px;">
+                    <apex:outputText value="Note: Drag and Drop the respective products to sort."></apex:outputText>
+                </div>
+            </apex:outputPanel>
+            <div class="main_container">
+                <table id='main_table' class="sortable">
+                    <tbody>
+                        <div>
+                            <tr class='first_row'>
+                                <td class='col_1'><b>Product Name</b></td>
+                                <td class='col_2'><b>Product Code</b></td>
+                                <td class='col_3'><b>Item Description</b></td>
+                                <td class='col_4'><b>Revenue GL Account</b></td>
+                                <td class='col_5'><b>Size</b></td>
+                                <td class='col_6'><b>Quantity</b></td>
+                                <td class='col_7'><b>Unit Cost</b></td>
+                                <td class='col_8'><b>Total Price</b></td>
+                            </tr>
+                        </div>
+                        <apex:repeat value="{!kits_parents}" var="item" >    
+                            <apex:outputPanel >
+                                <table class='table_item' >
+                                        <tr style="background: #fff; border-bottom: 1px solid f2f3f3;" title="{!item.Id}">
+                                            <td class='col_t_1'>{!item.AcctSeed__Product__r.name}</td>
+                                            <td class='col_t_2'>{!item.Product_Code__c}</td>
+                                            <td class='col_t_3'>{!item.Item_Description__c}ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ</td>
+                                            <td class='col_t_4'>
+                                                <a href='/{!item.AcctSeed__Revenue_GL_Account__c}'>{!item.AcctSeed__Revenue_GL_Account__r.Name}</a>
+                                            </td>
+                                            <td class='col_t_5'>{!item.Size__c}</td>
+                                            <td class='col_t_6'>{!item.Quantity__c}</td>
+                                            <td class='col_t_7'>{!item.Unit_Cost__c}</td>
+                                            <td class='col_t_8'>{!item.Total_Price__c}</td>
+                                        </tr>
+
+
+                                        <apex:outputText > 
+                                            <apex:repeat value="{!childrens[kits[item]]}" var="item_v">
+                                                <tr style="background: #fff; border-bottom: 1px solid f2f3f3; margin-left: 25px;" title='{!item_v.Id}'>
+                                                    <td class='col_t_1' style='padding-left: 35px;'>{!item_v.AcctSeed__Product__r.name}</td>
+                                                    <td class='col_t_2'>{!item_v.Product_Code__c}</td>
+                                                    <td class='col_t_3'>{!item_v.Item_Description__c}</td>
+                                                    <td class='col_t_4'>
+                                                        <a href='/{!item_v.AcctSeed__Revenue_GL_Account__c}'>{!item_v.AcctSeed__Revenue_GL_Account__r.Name}</a>
+                                                    </td>
+                                                    <td class='col_t_5'>{!item_v.Size__c}</td>
+                                                    <td class='col_t_6'>{!item_v.Quantity__c}</td>
+                                                    <td class='col_t_7'>{!item_v.Unit_Cost__c}</td>
+                                                    <td class='col_t_7'>{!item_v.Total_Price__c}</td>
+                                                </tr>
+                                            </apex:repeat>
+                                        </apex:outputText>
+                                </table>
+                            </apex:outputPanel>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </div>
+        </apex:pageBlock>
+
+        <apex:inputText id="sortedarray" style="display: none" rendered="{!visible}"></apex:inputText>       
+    </apex:form>
+
+
+
+
+    <apex:outputPanel rendered="{!visible}">
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+        <script>
+        let elements_map = []
+
+        $(function () {
+            $(".pbBody").sortable({
+                items: '.table_item',
+                cursor: 'pointer',
+                axis: 'y',
+                dropOnEmpty: false,
+                start: function (e, ui) {
+                    console.log(ui)
+                    ui.item.addClass("selected");
+                },
+                stop: function (e, ui) {
+                    elements_map = []
+                    ui.item.removeClass("selected");
+                    let counter = 1
+                    document.querySelectorAll('.table_item').forEach(el => {
+                        Array.from(el.children[0].children).forEach((item,index) => {
+                            let obj = {}
+                            obj.solId = item.title;
+                            obj.sortNumber = counter;
+
+        //                     public Id solId {get;set;}
+        // public Integer sortNumber {get;set;}
+                            elements_map.push(obj)
+                            counter++
+                        })
+                    })
+                    console.log('elements_map: ',elements_map)
+                }
+            });
+        });
+        
+        function savesort(){
+
+        var url_string = window.location.href
+        var url = new URL(url_string);
+        var id = url.searchParams.get("id");
+        if(Object.keys(elements_map).length !== 0){
+            Visualforce.remoting.timeout = 120000;
+
+            Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.BillingLineSortOrderExtension.saveSorting}',JSON.stringify(elements_map),id,
+                function(result, event){
+                    console.log('active by stage result: ', result)
+                    if (event.status) {
+                        
+                        setTimeout(() => {
+                            document.location = '/'+id;
+                        },1000)
+                    } else if (event.type === 'exception') {
+                        
+                            console.log('Exception has occured in Active Opportunities by Stage...');
+                            
+                    } else {
+                            console.log('Error occured in Active Opportunities by Stage...');
+                            
+                    }
+                }, 
+                {escape: true}
+            );
+        }else{
+            alert('You did not sort any element.')
+        }
+
+        }
+        </script>
+    </apex:outputPanel>
+</apex:page>

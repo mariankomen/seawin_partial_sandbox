@@ -1,0 +1,12 @@
+<apex:page standardController="Sales_Order_Commissions__c">
+    <apex:form >
+   		<apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Back" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessage severity="Error" detail="Sales Order Commissions cannot be edited directly. 
+            Commissions are automatically created when payment is received or it is credited on the related billing." 
+                              strength="2"></apex:pageMessage>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

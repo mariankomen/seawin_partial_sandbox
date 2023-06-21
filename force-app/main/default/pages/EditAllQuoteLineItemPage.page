@@ -1,0 +1,12 @@
+<apex:page standardcontroller="QuoteLineItem" extensions="EditAllQuoteLineItemExtension" action="{!Edit}">
+    <apex:sectionHeader title="QuoteLineItem" subtitle="Edit All Quote Line Item"></apex:sectionHeader>
+    <apex:form rendered="{!showBack}">
+        <br/>
+        <apex:pageBlock >
+            <br/>
+            <apex:pageMessages ></apex:pageMessages><br/>
+            <apex:commandButton value="Back" action="{!CancelButton}" style="width: 80px; margin-left:18px;" />
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

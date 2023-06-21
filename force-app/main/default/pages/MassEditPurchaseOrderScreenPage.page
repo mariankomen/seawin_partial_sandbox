@@ -1,0 +1,97 @@
+<apex:page standardcontroller="AcctSeedERP__Purchase_Order_Line__c" recordSetVar="polines" extensions="MassEditPurchaseOrderScreenExtension">
+    <style>
+        .empty{
+            display: none !important;
+        }
+        body .bPageBlock .detailList tr td, 
+        body .bPageBlock .detailList tr th, 
+        body table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+            border-color: transparent !important;
+        }
+    </style>
+    
+    <apex:form >
+        <apex:sectionHeader title="Purchase Order" subtitle="{!po.name}"/>
+        <apex:pageBlock title="Purchase Order Lines Edit"  >
+            <apex:pageMessages id="msg" escape="false"></apex:pageMessages>
+            <div style="text-align: right; margin-bottom: 5px" rendered="{!visible}">
+                <apex:outputPanel id="buttonsmsg">
+                    <apex:commandButton action="{!yes}" rendered="{!LasttoDelete}" value="Yes" style="background: #ffc; width: 35px;"/>
+                    <apex:commandButton action="{!no}" rendered="{!LasttoDelete}" value="No" reRender="msg, buttonsmsg" style="background: #acbf40; width: 35px;"/>
+                </apex:outputPanel>  
+            </div>
+            <apex:pageBlockSection title="Purchase Order" collapsible="false" rendered="{!visible}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Type: "/>
+                    <apex:outputText value="{!po.AcctSeedERP__Type__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Order Date: "/>
+                    <apex:outputText value="{0,date,MM/dd/yyyy}"> 
+                        <apex:param value="{!po.AcctSeedERP__Order_Date__c}" /> 
+                    </apex:outputText>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Status: "/>
+                    <apex:outputText value="{!po.AcctSeedERP__Status__c}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Purchase Order Lines" collapsible="false" rendered="{!visible}">
+                <apex:pageBlockTable value="{!lines}" var="line"> 
+                    <apex:column >
+                            <apex:commandLink value="Delete" action="{!TrashIt}">
+                                <apex:param name="polId" value="{!line.id}"/>
+                            </apex:commandLink>
+                    </apex:column> 
+                    <apex:column headervalue="Product">
+                        <apex:outputText value="{!line.AcctSeedERP__Product__r.name}"></apex:outputText>
+                    </apex:column>               
+                    <apex:column headervalue="Product Code">
+                        <apex:outputText value="{!line.Product_Code__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Item Description">
+                        <apex:inputField value="{!line.Description__c}" rendered="{!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                        <apex:outputText value="{!line.Description__c}" rendered="{!!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Size">
+                        <apex:inputField value="{!line.Size__c}" rendered="{!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                        <apex:outputText value="{!line.Size__c}" rendered="{!!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Quantity">
+                        <apex:inputField id="quantityfield" value="{!line.AcctSeedERP__Quantity__c}" html-min="1" required="true">
+                            <apex:actionSupport event="onchange" reRender="msg"/>
+                            <apex:actionSupport event="onclick" reRender="msg"/>
+                        </apex:inputField>
+                        <script>
+                            var val = document.getElementById('{!$Component.quantityfield}').value.replace(/,/g,'');
+                            document.getElementById('{!$Component.quantityfield}').value = 
+                            (val == '' || val == null)?'':Math.round(val);
+                        </script>
+                    </apex:column>
+                    <apex:column headervalue="Quantity Received" value="{!line.Quantity_Received_Formula__c}" />
+                    <apex:column headervalue="Quantity Unreceived" value="{!line.Quantity_Unreceived_Formula__c}" />
+                    <apex:column headervalue="Purchase Price">
+                            <apex:inputField id="unitcost" value="{!line.AcctSeedERP__Unit_Price__c}" html-min="1" required="true">
+                                <apex:actionSupport event="onchange" reRender="msg"/>
+                                <apex:actionSupport event="onclick" reRender="msg"/>
+                            </apex:inputField>
+                            <script>    
+                                var val = document.getElementById('{!$Component.unitcost}').value.replace(/,/g,'');
+                                document.getElementById('{!$Component.unitcost}').value = 
+                                (val == '' || val == null)?'':parseFloat(val).toFixed(6);
+                            </script>
+                        </apex:column>
+                    <apex:column headervalue="Total Price">
+                        <apex:outputField value="{!line.AcctSeedERP__Total__c}"></apex:outputField>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >                
+                <apex:commandButton value="Save" action="{!UpdateLine}" rendered="{!visible}"/>
+                <apex:commandButton value="Back" action="{!back}" immediate="true"/>
+            </apex:pageBlockButtons>         
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

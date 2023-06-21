@@ -1,0 +1,178 @@
+<apex:page standardcontroller="Sales_Order_Commissions__c" extensions="CommissionManuallyController">
+
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+
+
+    <apex:form id="theForm">
+
+        <apex:actionFunction action="{!handleChange}" name="change" rerender="theForm"/>
+    
+        <apex:sectionHeader title="Sales Order Commissions" subtitle="Create Commission Manually" />
+
+        <apex:outputPanel >
+            <apex:pageMessages id="msgs"/>
+        </apex:outputPanel>
+
+        <apex:pageBlock id="page_bl_1">
+            <apex:pageBlockButtons id="buttons">
+                <apex:commandButton id="save" value="Save" action="{!saveCustom}" reRender="msgs"/>
+                <apex:commandButton id="send" value="Save & New" action="{!saveAndNew}" reRender="msgs"/>
+                <apex:commandButton id="back" value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+
+
+            <apex:pageBlockSection title="Information" columns="2" collapsible="false" >
+                <apex:pageBlockSection columns="1">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Sales Order</apex:outputLabel>
+                        <apex:inputField id="soId" value="{!commission.Sales_Order__c}"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Opportunity</apex:outputLabel>
+                        <apex:inputField id="oppId" value="{!commission.Opportunity__c}"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Commission Amount</apex:outputLabel>
+                        <apex:inputField id="amount" value="{!commission.Commission_Amount__c}" required="true"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1">
+
+                    <!-- <apex:pageBlockSectionItem>
+                        <apex:outputLabel>Sales Rep Company Name</apex:outputLabel>
+                        <apex:inputField id="salRSep" value="{!commission.Sales_Rep_Company_Name__c}"/>
+                    </apex:pageBlockSectionItem> -->
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Manufacturer Rep</apex:outputLabel>
+                        <apex:inputField id="manRep" value="{!commission.Manufacturer_Rep__c}" onchange="handleChangeInput(this, event)" styleclass="field1"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Referral Sales Rep</apex:outputLabel>
+                        <apex:inputField id="refRep" value="{!commission.Referral_Sales_Rep__c}" onchange="handleChangeInput(this, event)" styleclass="field2"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Specified Rep</apex:outputLabel>
+                        <apex:inputField id="specRep" value="{!commission.Specified_Rep__c}" onchange="handleChangeInput(this, event)" styleclass="field3"/>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Owner</apex:outputLabel>
+                        <apex:inputField id="OwnerId" value="{!commission.Owner__c}" onchange="handleChangeInput(this, event)" styleclass="field4"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Billing / Payment" columns="2" collapsible="false" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Billing Cash Receipt</apex:outputLabel>
+                    <apex:inputField id="blc" value="{!commission.Billing_Cash_Receipt__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Billing Credit Memo</apex:outputLabel>
+                    <apex:inputField id="bcm" value="{!commission.Billing_Credit_Memo__c}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+    </apex:form>
+
+    <script>
+        
+        let field_2_obj = {
+            className: undefined,
+            value: undefined
+        }
+
+        function handleChangeInput(e, test){
+            test.preventDefault();
+            var url_string = window.location.href
+            let cur_class = e.className
+            let cur_value = e.value
+            
+            if(cur_value !== undefined){
+                field_2_obj.value = cur_value
+            } else {
+                field_2_obj.className = cur_class
+            }
+
+            if(cur_class == 'field2' || cur_class == 'field4'){
+                if(field_2_obj.value !== undefined && field_2_obj.className !== undefined){
+                    cur_class = field_2_obj.className
+                    cur_value = field_2_obj.value
+                }
+            }
+            
+            if(cur_value !== ""){
+                console.log('if')
+                if(cur_class == 'field1'){
+                    $(".field2").attr("onclick","return false;");
+                    $(".field3").attr("onclick","return false;");
+                    $(".field4").attr("onclick","return false;");
+                    
+                    $(".field2").children().children().attr("disabled","true");
+                    $(".field3").attr("disabled","true");
+                    $(".field4").children().children().attr("disabled","true");
+
+                } else if(cur_class == 'field2' ){
+                    
+                    if(cur_value !== undefined){
+                        field_2_obj.value = cur_value
+                    }
+                    
+                    console.log('field2 start')
+                    $(".field1").attr("onclick","return false;");
+                    $(".field3").attr("onclick","return false;");
+                    $(".field4").attr("onclick","return false;");
+
+                    $(".field1").attr("disabled","true");
+                    $(".field3").attr("disabled","true");
+                    $(".field4").children().children().attr("disabled","true");
+                } else if(cur_class == 'field3'){
+                    $(".field2").attr("onclick","return false;");
+                    $(".field1").attr("onclick","return false;");
+                    $(".field4").attr("onclick","return false;");
+
+                    $(".field2").children().children().attr("disabled","true");
+                    $(".field1").attr("disabled","true");
+                    $(".field4").children().children().attr("disabled","true");
+                } else if(cur_class == 'field4'){
+                    $(".field2").attr("onclick","return false;");
+                    $(".field3").attr("onclick","return false;");
+                    $(".field1").attr("onclick","return false;");
+
+                    $(".field2").children().children().attr("disabled","true");
+                    $(".field3").attr("disabled","true");
+                    $(".field1").attr("disabled","true");
+                }
+                
+            } else {
+
+                    let func = 'setLastMousePosition(event)'
+                    test.preventDefault();
+                    $(".field1").attr("onclick","return func;");
+                    $(".field2").attr("onclick","return func;");
+                    $(".field3").attr("onclick","return func;");
+                    $(".field4").attr("onclick","return func;");
+
+                    $(".field1").removeAttr("disabled");
+                    $(".field2").children().removeAttr("disabled");
+                    $(".field2").children().children().removeAttr("disabled");
+                    $(".field3").removeAttr("disabled");
+                    $(".field4").children().removeAttr("disabled");
+                    $(".field4").children().children().removeAttr("disabled");
+                
+            }
+            return false;
+        }
+    </script>
+
+    
+</apex:page>

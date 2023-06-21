@@ -1,0 +1,88 @@
+<apex:page >
+<apex:includeLightning />
+    <div id="Missing_Shipping" />
+    <div id="Close_PO" />
+    <div id="Order_ETA_7_Days" />
+    <div id="Expected_Delivery_7_Days" />
+    <div id="Your_Active_Projects" />
+    
+    <script>
+        $Lightning.use("c:projectmanagementdashboard", function() {
+          $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Missing_Shipping",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Missing_Shipping",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // close po
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Close_PO",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Close_PO",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // order eta
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Order_ETA_7_Days",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Order_ETA_7_Days",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // expected delivery
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeedERP__Purchase_Order__c",
+    listName:"Expected_Delivery_7_Days",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Expected_Delivery_7_Days",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            // your active projects
+            $Lightning.createComponent("lightning:listView",
+              { objectApiName: "AcctSeed__Project__c",
+    listName:"Your_Active_Projects",
+    rows:10,
+    showSearchBar:"true",
+    showActionBar:"false",
+    enableInlineEdit:"false",
+    showRowLevelActions:"false" },
+              "Your_Active_Projects",
+              function(cmp) {
+                  // console.log('text');
+              }
+          );
+            
+            
+        });
+    </script>
+</apex:page>

@@ -1,0 +1,28 @@
+<apex:page controller="NewPayablesController" title="Latest Payables">
+    <apex:form >
+    <apex:sectionHeader title="Payable" subtitle="Latest Payables"/>
+        <apex:pageBlock title="" rendered="{!payables.size > 0}">
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Back to Sales Order" 
+                action="{!IF($User.ContactId == null, '/'+soId, '/sales/'+soId)}"></apex:commandButton>
+            </apex:pageBlockButtons>  
+            <apex:pageBlockTable value="{!payables}" var="p" >                   
+                <apex:column headervalue="Name">
+                    <apex:outputLink value="/{!p.id}">
+                    {!p.Name}
+                    </apex:outputLink>
+                </apex:column>
+                <apex:column headervalue="Sales Order" value="{!p.Sales_Order__c}"></apex:column> 
+                <apex:column headervalue="Sales Order Commissions" value="{!p.Sales_Order_Commissions__c}" /> 
+                <apex:column headervalue="Commission Holder" value="{!p.Commission_Holder__c}" /> 
+                <apex:column headervalue="Role" value="{!p.Role__c}" />
+                <apex:column headervalue="Due Date" value="{!p.AcctSeed__Due_Date__c	}" />  
+                <apex:column headervalue="Posting Status" value="{!p.AcctSeed__Status__c}" /> 
+                <apex:column headervalue="Payment Status" value="{!p.AcctSeed__Payment_Status__c}" /> 
+                <apex:column headervalue="Balance" value="{!p.AcctSeed__Balance__c}" /> 
+                <apex:column headervalue="Total" value="{!p.AcctSeed__Total__c}" />  
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        <apex:outputText value="There are no latest payables." rendered="{!payables.size < 1}"></apex:outputText>
+    </apex:form>
+</apex:page>

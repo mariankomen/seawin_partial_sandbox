@@ -1,0 +1,161 @@
+<apex:page standardController="Credit_Order__c" extensions="CreateBillingFromCOController" tabStyle="Credit_Order__c" docType="html-5.0">
+
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"/>
+
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Credit Order" subtitle="{!Credit_Order__c.Name}" id="first_section" />
+        <apex:pageBlock id="thePageBlock" title="Create Billing">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton status="saveStatus" value="Save" action="{!createBilling}" rendered="{!!allIsPaid}"/>
+                <apex:commandButton value="Back" action="/{!creditOrderId}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2" >
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Customer" />
+                    <apex:outputField value="{!Credit_Order__c.Customer__c}" />
+                    <!-- <apex:InputField value="{!sales_order.AcctSeedERP__Customer__c}" /> -->
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Billing Date" />
+                    <apex:InputField value="{!billing.AcctSeed__Date__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Ledger" />
+                    <apex:outputField value="{!Credit_Order__c.Ledger__c}" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Due Date" />
+                    <apex:InputField value="{!billing.AcctSeed__Due_Date2__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Billing Format" />
+                    <apex:InputField value="{!billing.AcctSeed__Billing_Format__c}" required="true"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <br/>
+            <apex:pageBlockTable id="thePageBlockTable" value="{!wrapper_lines}" var="line" cellpadding="6">
+                <apex:column headerValue="Product" >
+                    <apex:outputText value="{!line.productName}" />
+                </apex:column>
+                <apex:column headerValue="Quantity Ordered" >
+                    <apex:outputText value="{!line.orderedQuantity}" />
+                </apex:column>
+                <apex:column headerValue="Quantity Allocated" >
+                    <apex:outputText value="{!line.allocatedQuantity}" />
+                </apex:column>
+                <apex:column headerValue="Quantity Shipped" >
+                    <apex:outputText value="{!line.shippedQuantity}" />
+                </apex:column>
+                <apex:column headerValue="Quantity Billed" >
+                    <apex:outputText value="{!line.billedQuantity}" />
+                </apex:column>
+                <apex:column headerValue="Quantity Unbilled" >
+                    <apex:outputText value="{!line.unbilledQuantity}" />
+                </apex:column>
+
+                <apex:column headerValue="Quantity to Bill">
+                    <apex:facet name="header">
+                        <apex:actionRegion >
+                            Quantity to Bill: 
+                            <apex:selectList value="{!selected_type}" multiselect="false" size="1" label="Quantity to Bill">
+                                <apex:selectOptions value="{!typeBillingOptions}" id="field"/>
+                                <apex:actionSupport event="onchange" action="{!handleChangeType}" rerender="thePageBlockTable"/>
+                            </apex:selectList>
+                        </apex:actionRegion>
+                    </apex:facet>
+                    <apex:inputText value="{!line.quantityToBill}" html-data-unitp="{!line.unitPrice}" onkeyup="handleCheckQuantity(this,event, '{!line.col.Id}')"/>
+                </apex:column>
+
+                <apex:column headerValue="Billed Amount" >
+                    <apex:outputText value="${!line.billedAmount}" />
+                </apex:column>
+                <apex:column headerValue="Unbilled Amount" >
+                    <apex:outputText value="${!line.unbilledAmount}" />
+                </apex:column>
+                <apex:column headerValue="Unit Price" >
+                    <apex:outputText value="${!line.unitPrice}" />
+                </apex:column>
+                <apex:column headerValue="Total Price" >
+                    <apex:outputText value="${!line.totalPrice}" />
+                </apex:column>
+                <apex:column headerValue="Amount to Bill" >
+                    <apex:outputText value="${!line.amountToBill}" html-data-tobill="{!line.col.Id}"/>
+                </apex:column>
+
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+
+        <script>
+
+            
+
+            function handleCheckQuantity(element, event, toBillId){
+                let k = '{!JsonMap}'
+                k = k.replaceAll('\r', '')
+                let contactMap = JSON.parse(k);
+                
+                const selected_bill_type = document.querySelectorAll("option[selected='selected']")[0].innerHTML
+                const unit_price = $(element).attr("data-unitp")
+                
+                //Amount
+                if(selected_bill_type == 'Amount'){
+                    
+                    if(event.target.value > contactMap[toBillId].unbilledAmount || event.target.value < 0){
+                        alert(`Amount cannot be more than ${contactMap[toBillId].unbilledAmount} and can't be negative.`)
+                        element.value = null;
+                        return;
+                    }
+
+                    document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = `$${event.target.value}`
+                //Quantity
+                }else if(selected_bill_type == 'Quantity'){
+                    if(event.target.value > contactMap[toBillId].orderedQuantity){
+                        alert(`The quantity cannot be more than ${contactMap[toBillId].orderedQuantity}`)
+                        element.value = null;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$0.00'
+                        return;
+                    }else if(event.target.value < 0){
+                        alert(`The quantity cannot be negative.`)
+                        element.value = null;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$0.00'
+                        return;
+                    }else{
+                        //All validation has been passed
+                        const amount_to_bill = event.target.value * contactMap[toBillId].unitPrice;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$'+amount_to_bill.toFixed(2);
+                    }
+                //Percent
+                }else if(selected_bill_type == 'Percent'){
+                    if(event.target.value > 100 || event.target.value < 0){
+                        alert('Incorrect percentage.')
+                        element.value = null;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$0.00'
+                        return;
+                    }else if(event.target.value > contactMap[toBillId].quantityToBill){
+                        alert(`The percent cannot be more than ${contactMap[toBillId].quantityToBill}`)
+                        element.value = null;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$0.00'
+                        return;
+                    }else{
+                        //All validation has been passed
+                        const amount_to_bill = ((event.target.value * contactMap[toBillId].orderedQuantity)/100)*contactMap[toBillId].unitPrice;
+                        document.querySelectorAll(`span[data-tobill='${toBillId}']`)[0].innerHTML = '$'+amount_to_bill.toFixed(2);
+                    }
+                }
+                
+
+            }
+        </script>
+        
+
+    </apex:form>
+</apex:page>

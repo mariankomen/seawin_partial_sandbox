@@ -1,0 +1,461 @@
+<apex:page standardcontroller="AcctSeedERP__Sales_Order__c" extensions="SalesOrderPageExtension" sidebar="false" action="{!ChangedMessage}">
+    <apex:outputPanel rendered="{!attachments.size < 1}">
+        <style>
+            .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+            margin: 7px 6px 7px;
+            padding: 5px 2px 4px 5px;
+            }
+        </style>
+    </apex:outputPanel>
+    <style>
+        .bEditBlock .pbHeader>table, .apexp .bPageBlock.apexDefaultPageBlock .pbHeader>table, #ep.bLayoutBlock .pbHeader>table {
+            border-bottom: none !important;
+        }
+        body .bEditBlock .pbHeader, body .bLayoutBlock .pbHeader, body .apexp .bPageBlock.apexDefaultPageBlock .pbHeader {
+            border-bottom: none !important;
+        }
+        .displayLink {
+            display:block;
+        }
+        iframe{
+			height: 50px !important;
+        }
+    </style>
+    <apex:pageMessage severity="error" escape="false" detail="This Customer Account is on Hold. Contact financial department before you do any changes!!!" 
+    strength="2" rendered="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__r.Status__c == 'Hold'}"></apex:pageMessage>
+    <apex:pageMessage severity="error" escape="false" detail="Owner is not part of the Sales Rep/Team." 
+    strength="2" rendered="{!!CONTAINS(AcctSeedERP__Sales_Order__c.Sales_Rep_o__r.Team__c,
+    AcctSeedERP__Sales_Order__c.OwnerId)}"></apex:pageMessage>
+    
+    <apex:form id="infoSOMessage">
+        <apex:outputPanel rendered="{!SOLHasChanged}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="warning" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                            Purchase Order was created. Your changes will not reflect this Purchase Order. Make your changes directly on the Purchase Order if you want them to take place.
+                            
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoSOMessage" style="float: right;" 
+                                        action="{!hideSOMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <!-- <apex:form id="infoContactMessage">
+        <apex:outputPanel rendered="{!ContactHasChanged}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                            Lead Source has changed. The new information came from the contact: <b>{!SourceContact}</b>
+                            
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoContactMessage" style="float: right;" 
+                                        action="{!hideContactMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form> -->
+    <apex:form id="infoformMessage">
+        <apex:outputPanel rendered="{!AccountHasChanged}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                            Price Level and GL Account Variable 1 have changed. The new information came from the account: <b>{!SourceAccount}</b>
+                            
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoformMessage" style="float: right;" 
+                                        action="{!hideAccountMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <apex:form id="infoform">
+        <apex:outputPanel rendered="{!showChangeMessage}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                            {!ChangeMessage}
+                            
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoform" style="float: right;" action="{!hideChangeMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <apex:detail relatedList="true" inlineEdit="true" relatedListHover="true" oncomplete="location.reload();"/>    
+    
+    <!--<apex:relatedList list="AcctSeedERP__Sales_Order_Line__r" rendered="{!$ObjectType.AcctSeedERP__Sales_Order_Line__c.fields.Name.Accessible}"/>
+    <apex:relatedList list="Sales_Order_Commissions__r" rendered="{!$ObjectType.Sales_Order_Commissions__c.fields.Name.Accessible}"/>
+    <apex:relatedList list="AcctSeedERP__Billings__r" rendered="{!$ObjectType.AcctSeed__Billing__c.fields.Name.Accessible}"/>
+    <apex:relatedList list="AcctSeedERP__Shipments__r" rendered="{!$ObjectType.AcctSeedERP__Shipment__c.fields.Name.Accessible}"/>
+    <apex:relatedList list="Purchase_Orders__r" rendered="{!$ObjectType.AcctSeedERP__Purchase_Order__c.fields.Name.Accessible}"/>
+    <apex:relatedList subject="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Opportunity__c}" list="OpportunityContactRoles" 
+                      rendered="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Opportunity__c != null}"/>-->
+    <!--<apex:relatedList list="Cases__r"/>-->
+    
+    
+    
+    <apex:form >
+        <apex:pageBlock title="Executed Documents">
+            
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton id="TransferToAttachments" onclick="return TransferToAttachments();" reRender="" value="Transfer to Attachments" />
+            </apex:pageBlockButtons>
+            
+            <apex:actionFunction action="{!getCheckedExecutedDocs}" name="TransferExecutedToAttachments" reRender="" >
+                <apex:param value="" name="attachmentIDs"/>
+            </apex:actionFunction>
+            
+            <apex:pageBlockTable id="attachmenttable" value="{!executedDocs}" var="attach" rendered="{!executedDocs.size > 0}">
+                <apex:column HeaderValue="Action" width="129">
+                    <input type="checkbox" id="attachments_" value="{!attach.id}" class="chkExecutedDocs" />
+                 
+                    &nbsp;|&nbsp;
+                    <apex:commandLink value="Edit" style="color:#015ba7;" action="{!editAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="editid"/> 
+                    </apex:commandLink> 
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="View" style="color:#015ba7;" action="{!viewAttachment}" target="_blank" >
+                        <apex:param value="{!attach.id}" name="viewid"/> 
+                    </apex:commandLink>
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Del" onclick="return confirm('Are you sure?')" 
+                                      style="color:#015ba7;" action="{!deleteAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="deleteid"/> 
+                    </apex:commandLink>
+                </apex:column>
+                <apex:column headerValue="Title">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Title" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="title"/>
+                            <apex:outputPanel rendered="{!TitleSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!TitleSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputText value="{!attach.name}"></apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Created Date">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created Date" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="created"/>
+                            <apex:outputPanel rendered="{!CreatedSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!CreatedSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Last Modified">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Last Modified" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="last"/>
+                            <apex:outputPanel rendered="{!LastSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!LastSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.LastModifiedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Created By">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created By" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="by"/>
+                            <apex:outputPanel rendered="{!BySortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!BySortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedbyId}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!executedDocs.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>
+        <script>
+        function TransferToAttachments(){
+            debugger;
+            var idsArray = [];
+            $('input.chkExecutedDocs:checkbox:checked').each(function () {
+                idsArray.push($(this).val());
+            });
+            if(idsArray.length > 0){
+                TransferExecutedToAttachments("'"+idsArray+"'");
+            }
+            else{
+                alert ("Please select at least one attachment to transfer");
+            }
+            return false;
+        }
+        </script>
+    </apex:form>
+    
+    
+    <apex:form >
+        <apex:pageBlock title="Attachments" rendered="{!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!newAttachment}" value="New Attachment"/>
+                <apex:commandButton action="{!newAttachmentTest}" value="New Attachment with Renaming"/>
+                <apex:commandButton id="TransferToDoc" onclick="return TransferToExeDoc();" reRender="" value="Transfer to Executed Documents" />
+            </apex:pageBlockButtons>
+            
+            <apex:actionFunction action="{!getCheckedAttachments}" name="passToController" reRender="" >
+                <apex:param value="" name="attachmentIDs"/>
+            </apex:actionFunction>
+            
+            
+            <apex:pageBlockTable id="attachmenttable" value="{!attachmentWithoutExecutedDocs}" var="attach" rendered="{!attachmentWithoutExecutedDocs.size > 0}">
+                <apex:column HeaderValue="Action" width="200">
+                    <input type="checkbox" id="attachments_" value="{!attach.id}" class="chkAttachment" />
+                    
+                     |&nbsp;
+                    <apex:commandLink value="Edit" style="color:#015ba7;" action="{!editAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="editid"/> 
+                    </apex:commandLink> 
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="View" style="color:#015ba7;" action="{!viewAttachment}" target="_blank" >
+                        <apex:param value="{!attach.id}" name="viewid"/> 
+                    </apex:commandLink>
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Del" onclick="return confirm('Are you sure?')" 
+                                      style="color:#015ba7;" action="{!deleteAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="deleteid"/> 
+                    </apex:commandLink>
+                </apex:column>
+                <apex:column headerValue="Title">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Title" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="title"/>
+                            <apex:outputPanel rendered="{!TitleSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!TitleSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputText value="{!attach.name}"></apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Created Date">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created Date" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="created"/>
+                            <apex:outputPanel rendered="{!CreatedSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!CreatedSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Last Modified">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Last Modified" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="last"/>
+                            <apex:outputPanel rendered="{!LastSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!LastSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.LastModifiedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Created By">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created By" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="by"/>
+                            <apex:outputPanel rendered="{!BySortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!BySortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedbyId}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!attachmentWithoutExecutedDocs.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>
+        <apex:includeScript value="{!$Resource.jQueryV331}"/>
+        <script>
+        function TransferToExeDoc(){
+            debugger;
+            var idsArray = [];
+            $('input.chkAttachment:checkbox:checked').each(function () {
+                idsArray.push($(this).val());
+            });
+            if(idsArray.length > 0){
+                passToController("'"+idsArray+"'");
+            }
+            else{
+                alert ("Please select at least one attachment to transfer");
+            }
+            return false;
+        }
+        </script>
+    </apex:form>
+    
+    
+    <!--<apex:relatedList list="Cases__r"/>-->
+    <apex:form >
+        <!--<apex:pageBlock title="Sales Order History">
+            <apex:pageBlockTable id="historylist" value="{!SOHistory}" var="history" rendered="{!SOHistory.size > 0}">
+                <apex:column headerValue="Date">
+                    <apex:outputText value="{0, date, M'/'dd'/'yyyy HH:mm a}">
+                        <apex:param value="{!history.CreatedDate}" /> 
+                    </apex:outputText>
+                </apex:column>
+                <apex:column headerValue="User">
+                    <apex:outputText value="{!history.CreatedBy.Name}"></apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Action">
+                    Changed <apex:outputText value=" {! $ObjectType.AcctSeedERP__Sales_Order__c.fields.AcctSeedERP__Status__c.Label} " style="font-weight: bold;"></apex:outputText>  
+                    to <apex:outputText value=" {!history.NewValue}" style="font-weight: bold;"></apex:outputText>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!SOHistory.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>-->
+        <apex:outputPanel id="dummyPanel"></apex:outputPanel>
+        <apex:actionFunction name="removeHelperValue" action="{!removeHelperValue}" rerender=""/>
+        <apex:actionFunction name="ResetFields" action="{!ResetFields}" reRender="dummyPanel"/>
+    </apex:form>
+    <apex:relatedList list="ProcessSteps" ></apex:relatedList>
+    <script>
+            removeHelperValue();
+    </script>
+    
+    <apex:outputPanel rendered="{!AccountHasChanged || ContactHasChanged || SOLHasChanged}">
+        <script>
+    
+            setTimeout(function(){ ResetFields(); }, 3000);
+        
+        </script>
+    
+    </apex:outputPanel>
+
+
+    <script>
+    /*
+        var counter = 0;
+        $('td').filter(function(){
+            if($(this).text() == 'Sales Rep'){
+                counter++;
+                if(counter > 1){
+                    $(this).css("display", "none");
+                    $(this).next().css("display", "none");
+                }
+            }
+        });
+    */
+    </script>
+    
+
+	<script>
+	var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+
+    $('a[href*="/{!LEFT(AcctSeedERP__Sales_Order__c.Id, 15)}/a?retURL"]').click(function(e){
+
+        window.location.replace(comUrl + 
+        '/apex/SalesOrderOwnerPage?soId={!AcctSeedERP__Sales_Order__c.Id}&retURL={!AcctSeedERP__Sales_Order__c.Id}');
+        
+        e.preventDefault();
+
+    });
+    </script>
+    <script>
+
+        var InActive = '{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__r.Status__c}' == 'In Active' ? true : false;
+        var Rejected = '{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__r.Status__c}' == 'Rejected' ? true : false;
+        var Pending = '{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__r.Status__c}' == 'Pending' ? true : false;
+        var Hold = '{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__r.Status__c}' == 'Hold' ? true : false;
+        
+        var msg = '';
+
+        // If Account is rejected
+        if(Rejected){
+            console.log("Sales order is locked message shown...");
+            msg = 'Sales Order is Locked . The Account is Rejected.';
+        }
+
+        // If Account is pending
+        else if(InActive){
+            msg = 'Sales Order is Locked . The Account is In Active.';
+        }
+        
+        // If Account is pending
+        else if(Pending){
+            msg = 'Sales Order is Locked . The Account is Pending.';
+        }
+        
+        // If Account is hold
+        else if(Hold){
+            msg = 'Sales Order is Locked . The Account is on Hold.';
+        }
+
+        $('a[href*="/setup/ui/recordtypeselect.jsp?"]').click(function(e){
+              
+              if(msg != ''){
+                e.preventDefault();
+                alert('Record Type cannot be changed. ' + msg);
+              }else{
+                  return true;
+              }
+        });
+
+        $('a[href*="apex/SalesOrderSalesRepPage?"]').click(function(e){
+              
+              if(msg != ''){
+                e.preventDefault();
+                alert('Sales Rep/Team cannot be changed. ' + msg);
+              }else{
+                  return true;
+              }
+              
+        });
+
+        $('a[href*="apex/SalesOrderOwnerPage?"]').click(function(e){
+              
+              if(msg != ''){
+                e.preventDefault();
+                alert('Owner cannot be changed. ' + msg);
+              }else{
+                  return true;
+              }
+              
+        });
+    
+    </script>
+
+</apex:page>

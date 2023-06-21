@@ -1,0 +1,155 @@
+<apex:page controller="createPurchaseOrderController" Tabstyle="AcctSeedERP__Sales_Order__c" title="Sales Order" >
+    <apex:form >
+        <apex:sectionHeader title="Sales Order" subtitle="{!so.name}"/>
+        <apex:pageBlock title="Sales Order Products"  id="drafts">
+            <apex:pageMessages id="msg" escape="false" rendered="{!!showdraft}"></apex:pageMessages>
+            <apex:pageBlockTable value="{!SalesOrderLinesListing}" var="listitem" rendered="{!visible}">
+                <apex:column headervalue="Product">
+                    <apex:outputText value="{!listitem.SalesOrderLine.AcctSeedERP__Product__r.Name}"></apex:outputText>
+                </apex:column>               
+                <apex:column headervalue="Product Code">
+                    <apex:outputText value="{!listitem.SalesOrderLine.ProductCode__c}"></apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Item Description">
+                    <apex:outputField value="{!listitem.SalesOrderLine.AcctSeedERP_Description__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headervalue="Size">
+                    <apex:outputField value="{!listitem.SalesOrderLine.Size__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headervalue="Quantity">
+                    <apex:outputText value="{0,number, #0}">
+                        <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Quantity_Ordered__c}"/>
+                    </apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Quantity Allocated">
+                    <apex:outputText value="{!listitem.SalesOrderLine.Quantity_Allocated_Formula__c}"></apex:outputText>
+                </apex:column> 
+                <apex:column headervalue="Quantity Shipped">
+                    <apex:outputText value="{!listitem.SalesOrderLine.Quantity_Shipped_Formula__c}"></apex:outputText>
+                </apex:column> 
+                <apex:column headervalue="Sales Price">
+                    <apex:outputText value="{0,number, Currency}">
+                        <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Unit_Price__c}"/>
+                    </apex:outputText> 
+                </apex:column>
+                <apex:column headervalue="Total">
+                    <apex:outputText value="{0,number, Currency}">
+                        <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Total__c}"/>
+                    </apex:outputText>
+                </apex:column>
+                <apex:column ><apex:facet name="header">Vendor </apex:facet><apex:inputField value="{!listitem.Product.AcctSeedERP__Default_Vendor__c}" required="true"/></apex:column>
+            </apex:pageBlockTable>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="mySaveStatus1">
+                    <apex:facet name="stop">
+                        <apex:commandButton value="View Draft Purchase Orders" onclick="proceedWithDrafts()" status="mySaveStatus1" reRender="mySaveStatus1, pgblock" rendered="{!visible}"/>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:commandButton value="Processing..." disabled="true"/>
+                    </apex:facet>
+                </apex:actionStatus>
+                <apex:commandButton value="Back" action="{!back}" immediate="true" status="mySaveStatus1" reRender="mySaveStatus1"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="proceedWithDrafts" action="{!draft}"/>
+    </apex:form>
+    <apex:form >
+        <apex:pageBlock title="Draft Purchase Orders"  id="pgblock" rendered="{!showdraft}">
+            <apex:pageMessage severity="info" detail="To include a line on the purchase order, you must specify a Unit Cost and a Quantity greater than or equal to the Quantity Needed." strength="3">
+            </apex:pageMessage>
+            <apex:pageMessages id="msgs" escape="false" rendered="{!showdraftError}"></apex:pageMessages>
+            <style>
+                .empty{
+                display: none !important;
+                }
+            </style>
+            <!--  <apex:pageMessages id="msg" escape="false"></apex:pageMessages> -->
+            <apex:repeat value="{!Drafting}" var="d">
+                <apex:pageBlockSection title="Purchase Order" columns="1" collapsible="false">
+                    <div style="width: 100%; height: 20px;">
+                        <apex:outputText value="{!d.Vendor}" label="Vendor:"></apex:outputText>
+                        <apex:inputField value="{!d.PurchaseOrder.AcctSeedERP__Type__c}" required="true"/>
+                    </div>
+                    <apex:pageBlockTable value="{!d.SalesOrderLineList}" var="LineItem" rendered="{!visible}" style="width: 100%">
+                        <apex:column headervalue="Product">
+                            <apex:outputText value="{!LineItem.AcctSeedERP__Product__r.Name}"></apex:outputText>
+                        </apex:column>               
+                        <apex:column headervalue="Product Code">
+                            <apex:outputText value="{!LineItem.ProductCode__c}"></apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Item Description">
+                            <apex:inputField value="{!LineItem.AcctSeedERP_Description__c}"></apex:inputField>
+                        </apex:column>
+                        <apex:column headervalue="Size">
+                            <apex:inputField value="{!LineItem.Size__c}"></apex:inputField>
+                        </apex:column>
+                        <apex:column headervalue="Quantity Needed">
+                            <apex:outputText value="{0,number, #0}">
+                                <apex:param value="{!LineItem.AcctSeedERP__Quantity_Needed__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Quantity">
+                            <apex:inputField id="quantityordered" value="{!LineItem.AcctSeedERP__Quantity_Ordered__c}" html-min="1">
+                            </apex:inputField>
+                            <script>    
+                            var val = document.getElementById('{!$Component.quantityordered}').value.replace(/,/g,'');
+                            document.getElementById('{!$Component.quantityordered}').value = 
+                            (val == '' || val == null)?'':Math.round(val);
+                        </script>
+                        </apex:column>
+                        <apex:column headervalue="Quantity Allocated">
+                            <apex:outputText value="{!LineItem.Quantity_Allocated_Formula__c}"></apex:outputText>
+                        </apex:column> 
+                        <apex:column headervalue="Quantity Shipped">
+                            <apex:outputText value="{!LineItem.Quantity_Shipped_Formula__c}"></apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Unit Cost"> 
+                            <apex:inputField id="unitcost" value="{!LineItem.AcctSeedERP__Product__r.AcctSeed__Unit_Cost__c}" html-min="1" required="true">
+                            </apex:inputField>
+                            <script>    
+                            var val = document.getElementById('{!$Component.unitcost}').value;
+                            document.getElementById('{!$Component.unitcost}').value = 
+                                (val == '' || val == null)?'':parseFloat(val).toFixed(2);
+                            </script>
+                        </apex:column>
+                        <apex:column headervalue="Total">
+                            <apex:outputText value="{0,number, Currency}">
+                                <apex:param value="{!LineItem.AcctSeedERP__Total__c}"/>
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+            </apex:repeat>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="mySaveStatus2">
+                    <apex:facet name="stop">
+                        <apex:commandButton value="Create Purchase Orders" rendered="{!visible}" onclick="proceedWithPOs()" status="mySaveStatus2" reRender="mySaveStatus2"/>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:commandButton value="Processing..." disabled="true"/>
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="proceedWithPOs" action="{!create}"/>
+        <script>
+        window.onload = function(){
+            var selects = document.getElementsByTagName('select');
+            var slen = selects.length;
+            
+            if(slen > 0){
+                for(var i = 0; i < slen; i++){
+                    var olen = selects[i].length;
+                    if(olen > 0){
+                        if(selects[i][0].innerText == '--None--'){
+                            selects[i].selectedIndex = "1"; 
+                        }else{
+                            selects[i].selectedIndex = selects[i].selectedIndex;
+                        }	
+                    }
+                }
+            }
+        }
+          </script>
+    </apex:form>
+</apex:page>

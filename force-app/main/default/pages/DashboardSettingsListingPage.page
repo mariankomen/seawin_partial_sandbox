@@ -1,0 +1,50 @@
+<apex:page controller="DashboardSettingsListingController">
+
+    <apex:pageblock title="Dashboard Settings" id="pbId">       
+        
+        <apex:form id="mainForm">
+            <apex:actionFunction name="refreshPageSize" action="{!refreshPageSize}" status="fetchStatus" reRender="pbId"/>
+            <apex:pageblocktable value="{!UserList}" var="usr" >
+                <apex:column headerValue="Action">
+                    <apex:outputlink value="/apex/DashboardSettingsPage?id={!usr.Id}" 
+                    target="_blank" style="color:blue;">Change Dashboard Settings</apex:outputlink>
+                </apex:column>
+                <apex:column value="{!usr.Name}" />
+                <apex:column value="{!usr.Alias}" />
+                <apex:column value="{!usr.Username}" />
+                <apex:column headerValue="Profile Name" value="{!usr.Profile.Name}"/>
+                <apex:column value="{!usr.Default_GL_Account_Variable__c}" />
+            </apex:pageblocktable>
+            <br></br>
+            <apex:panelGrid columns="8"> 
+                 
+                <apex:selectList value="{!size}" multiselect="false" size="1" onchange="refreshPageSize();">
+                    <apex:selectOptions value="{!paginationSizeOptions}"/>
+                </apex:selectList>
+                 
+                <apex:commandButton status="fetchStatus" reRender="pbId" value="First" action="{!setCon.first}" disabled="{!!setCon.hasPrevious}" title="First Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="pbId" value="Previous" action="{!setCon.previous}" disabled="{!!setCon.hasPrevious}" title="Previous Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="pbId" value="Next" action="{!setCon.next}" disabled="{!!setCon.hasNext}" title="Next Page"/> 
+  
+                <apex:commandButton status="fetchStatus" reRender="pbId" value="Last" action="{!setCon.last}" disabled="{!!setCon.hasNext}" title="Last Page"/> 
+  
+                <apex:outputText >{!(setCon.pageNumber * size)+1-size}-{!IF((setCon.pageNumber * size)>noOfRecords, noOfRecords,
+                     (setCon.pageNumber * size))} of {!noOfRecords}
+                </apex:outputText> 
+                       
+                <apex:outputPanel >                      
+                    <apex:actionStatus id="fetchStatus" >
+                        <apex:facet name="start" >
+                          <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:outputPanel> 
+  
+            </apex:panelGrid>
+        </apex:form>
+
+    </apex:pageblock>
+
+</apex:page>

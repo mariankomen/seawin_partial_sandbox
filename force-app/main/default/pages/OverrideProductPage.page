@@ -1,0 +1,91 @@
+<apex:page standardcontroller="Product2" extensions="OverrideProductPageExtension" sidebar="false" id="page">
+
+    <!--
+        KIT : Kit_Parents_Products_Id = This is used for Kit Parents (Products) list on on Product Record Type: Product.
+        KIT CHILDREN: Kit_Children_Products_Id = This is used for Kit Children (Products) list on on Product Record Type: Kit.
+        KIT CHILDREN: Parts_Parent_Products_Id = This is used for Part Parents (Products) list on on Product Record Type: Part.
+        PARTS: Parts_Products_Id = This is used for Parts (Products) list on Product Record Type: Product.
+    -->
+
+    <apex:outputPanel rendered="{!Product2.RecordType.Name == 'Kit'}">
+        <!-- 
+            Show only Kit Children (Products) List.
+        -->
+        <style>
+            /* hide the Kit Parents (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Kit_Parents_Products_Id}'] {
+                display: none;
+            }
+            /* hide the Part Parents (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Parts_Parent_Products_Id}'] {
+                display: none;
+            }
+            /* hide the Parts (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Parts_Products_Id}'] {
+                display: none;
+            }
+        </style>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!Product2.RecordType.Name == 'Product'}">
+        <!-- 
+            Show only Kit Parents (Products) list and Parts (Products) list.
+        -->
+        <style>
+            /* hide the Kit Children (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Kit_Children_Products_Id}'] {
+                display: none;
+            }
+            /* hide the Part Parents (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Parts_Parent_Products_Id}'] {
+                display: none;
+            }
+        </style>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!Product2.RecordType.Name == 'Part'}">
+        <!-- 
+            Show only Part Parents (Products) list.
+        -->
+        <style>
+            /* hide the Kit Parents (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Kit_Parents_Products_Id}'] {
+                display: none;
+            }
+            /* hide the Kit Children (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Kit_Children_Products_Id}'] {
+                display: none;
+            }
+            /* hide the Parts (Products) list */
+            div[id='page_detail_{!LEFT(Product2.Id, 15)}_{!Parts_Products_Id}'] {
+                display: none;
+            }
+        </style>
+
+    </apex:outputPanel>
+
+    <apex:detail id="detail" relatedList="true" inlineEdit="true" oncomplete="location.reload();" />
+
+    <!--
+<apex:outputPanel rendered="{!Product2.RecordType.Name == 'Kit'}">
+
+<apex:relatedList list="Kit_Children_Product__r"/>
+</apex:outputPanel>
+
+<apex:outputPanel rendered="{!Product2.RecordType.Name == 'Product'}">
+
+<apex:relatedList list="Kit_Parent_Product__r"/>
+<apex:relatedList list="Parts_Products__r"/>
+</apex:outputPanel>
+
+<apex:outputPanel rendered="{!Product2.RecordType.Name == 'Part'}">
+<apex:relatedList list="Parts_Parent_Product__r"/>
+</apex:outputPanel>-->
+    <!--
+<apex:relatedList list="CombinedAttachments" 
+rendered="{!!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}"/>
+<apex:relatedList list="PriceBookEntries"/>
+<apex:relatedList list="AcctSeedERP__Product_Price_Tables__r"></apex:relatedList>
+<apex:relatedList list="AcctSeedERP__Inventory_Balance__r"/>
+
+<apex:relatedList list="OpenActivities"/>
+<apex:relatedList list="Histories"/>-->
+</apex:page>

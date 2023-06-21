@@ -1,0 +1,435 @@
+<apex:page standardController="AcctSeedERP__Purchase_Order__c" extensions="PurchaseOrderPDFExtension" applyBodyTag="false" renderAs="pdf">
+    <head>
+         <style type="text/css" media="print">
+            @page:first {
+            @top-right {
+            content: element(headerFirst);
+            }
+            @bottom-left {
+            content: element(footer);
+            }
+            margin-top:150px;
+            }
+            @page {
+            @top-right {
+            content: element(header);
+            }
+            @bottom-left {
+            content: element(footer);
+            }
+            }
+            div.headerFirst {
+            position: running(headerFirst);
+            }
+            div.header {
+            position: running(header);
+            
+            }
+            div.content {
+            position: relative;
+            }
+            div.footer {
+            display: block;
+            padding: 5px;
+            position: running(footer);
+            }
+            .pagenumber:before {
+            content: counter(page);
+            }
+            .pagecount:before {
+            content: counter(pages);
+            }
+            body {
+            font-family: "Arial""Sans-Serif";
+            font-size: 11px !important;
+            }
+            
+            /* table css */
+            table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            }
+            
+            #itemstable {
+                table-layout: normal;
+            }
+            
+            .table-header {
+            background-color: #726D6C;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            color: white !important;
+            }
+            
+            .no-border{
+                border: none !important;
+            }
+            
+            #itemstable td, th {
+            border-right: 1px solid black;
+            text-align: left;
+            padding: 4px;
+            }
+            .last-col{
+            border-right: none !important;
+            }
+            
+            #itemstable tr:nth-child(even) {
+            background-color: #dddddd;
+            }
+            .header-font{
+            font-weight: normal;    
+            }
+            
+            /* Terms and Conditions css */
+
+            .font-family-class{
+            
+            font-family: "Times New Roman", Times, serif;
+            }
+            .font-family-class-terms{
+            
+            font-family: Arial, Helvetica, sans-serif;
+            }
+            .para-class-margin{
+                margin-top: -11px; color: #404040;
+            }
+            .para-class{
+                color: #404040;
+            }
+            .heading-body{
+            
+                font-weight: bold; color: #4D4744;
+            }
+            
+            /* top detail css */
+            .padding-td{
+                padding-bottom:7px;
+            }
+            .extra-padding-td{
+                padding-bottom:30px;
+            }
+            .top-detail-col-width{
+                
+                width: 70%;
+            
+            }
+            .break-word{
+                word-wrap: break-word;
+            }
+            .td-width{
+                width: 104px !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="headerFirst" style="margin-top: 70px;">
+            <table style="width:100%">
+                <tr>
+                    <td style="vertical-align:top;">
+                        <apex:image url="{!headerUrl}" width="717" height="70" />
+
+                        <div style="width: 100%; height: 2px; background-color: #1093E9;">
+                            
+                        </div>
+                    
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer">
+            <!--<div>Page&nbsp;<span class="pagenumber" />&nbsp;of&nbsp;<span class="pagecount" />
+</div>-->
+            <apex:image url="{!footerUrl}" width="717" height="30" />
+        
+        </div>
+        <div class="content">
+            <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                <tr>
+                    <td style="width:40%;vertical-align:top">
+                        <table style="width:100%;">
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.name),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Contact Name:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.name}"/>
+                                    
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor__r.name),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Purchase From:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor__r.name}" />
+                                    <apex:outputText value="<br/>" escape="false" />
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.Phone),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Phone:"/>
+                                    
+                                </td>
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.Phone}"/>
+                                    
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.Email),
+                                       'display: none;','')}">
+                                <td class="extra-padding-td td-width">
+                                    <apex:outputText value="Email:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="extra-padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Contact__r.Email}" />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width:50%;vertical-align:top">
+                        <table style="width:100%;">
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.Name),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText style="font-weight: bold;" value="PO Number:"/>
+                                </td>
+                                <td style="color: #404040 !important; font-weight: bold;" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.Name}" />
+                                    
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.Sales_order__r.AcctSeedERP__Opportunity__r.name),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Project:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.Sales_order__r.AcctSeedERP__Opportunity__r.name}"/>
+                                    
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; 
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Order_Date__c),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="PO Date:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{0,date,M/d/yyyy}">
+                                        <apex:param value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Order_Date__c}"/>
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top;
+                                       {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.Owner.Name),
+                                       'display: none;','')}">
+                                <td class="extra-padding-td td-width">
+                                    <apex:outputText value="Sales Rep:"/>
+                                </td>
+                                <td style="color: #404040 !important" class="extra-padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.Owner.Name}"/>
+                                    
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="width:50%;vertical-align:top">
+                        <table style="width:100%;">
+                            <tr style="vertical-align:top">
+                                <td class="padding-td td-width">
+
+                                </td>                              
+                                <td style="color: #404040 !important" class="padding-td">
+                                  </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width:50%;vertical-align:top">
+                        <table style="width:100%;">
+                            <tr style="vertical-align:top; {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Contact__c),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Shipping Contact:" />
+                                </td>                              
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Contact__r.Name}"/>
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top; {!IF(ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Contact__r.Phone),
+                                       'display: none;','')}">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Shipping Phone:" />
+                                </td>                              
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Contact__r.Phone}"/>
+                                </td>
+                            </tr>
+                            <tr style="vertical-align:top">
+                                <td class="padding-td td-width">
+                                    <apex:outputText value="Ship To:" />
+                                </td>                              
+                                <td style="color: #404040 !important" class="padding-td">
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Company__r.Name}"
+                                                     rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Company__r)}"/>
+                                    <apex:outputText value="<br/>" escape="false" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Company__r)}" />
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Street__c}" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Street__c)}" />
+                                    <apex:outputText value="<br/>" escape="false" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Street__c)}" />
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_City__c}" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_City__c)}" />
+                                    <apex:outputText value="&nbsp;" escape="false" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_City__c)}" />
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_State__c}" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_State__c)}" />
+                                    <apex:outputText value="&nbsp;" escape="false" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_State__c)}" />
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Postal_Code__c}" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Postal_Code__c)}" />
+                                    <apex:outputText value="<br/>" escape="false" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Postal_Code__c)}" />
+                                    <apex:outputText value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Country__c}" rendered="{!!ISBLANK(AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Country__c)}" />
+                                    
+                                    
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                
+            </table>
+            <table id="itemstable" style="width:100%;">
+                <tr>
+                    <th class="header-font table-header no-border" style="width: 24%;">Product Image</th>
+                    <th class="header-font table-header no-border" style="width: 12%;">Product Code</th>
+                    <th class="header-font table-header no-border" style="width: 34%;">Item Description</th>
+                    <th class="header-font table-header no-border" style="width: 9%;">Size</th>
+                    <th class="header-font table-header no-border" style="width: 4%;">QT</th>
+                    <th class="header-font table-header no-border" style="width: 8%;">Unit Price</th>
+                    <th class="last-col header-font table-header no-border" style="width: 9%;">Total Price</th>
+                </tr>
+                <apex:variable var="trcolor" value=""/>
+                <apex:repeat value="{!Lines}" var="item">
+                    <tr style="background-color: {!trcolor}">
+                        <td style="width: 24%;">
+                        <apex:outputPanel rendered="{!!ISBLANK(item.AcctSeedERP__Product__r.Product_Image_Short_URL__c)}">
+                        <img src="{!item.AcctSeedERP__Product__r.Product_Image_Short_URL__c}" 
+                                                     alt="{!item.AcctSeedERP__Product__r.name}" width="100%"/>
+                        </apex:outputPanel>
+                        </td>
+                        <td style="width: 12%;">
+                            <apex:outputField value="{!item.Product_Code__c}" style="width: 100%;"/>
+                        </td>
+                        <td style="width: 34%;">
+                        <apex:outputField value="{!item.Description__c}" style="width: 100%;"/>
+                        </td>
+                        <td style="width: 9%;">
+                        <apex:outputField value="{!item.Size__c}" style="width: 100%;"/>
+                        </td>
+                        <td style="width: 4%;">
+                        <apex:outputField value="{!item.Quantity_Formula__c}" style="width: 100%;"/>
+                        </td>
+                        <td style="width: 8%;">
+                            <apex:outputField value="{!item.Purchase_Price__c}" style="width: 100%;"/>
+                        </td>
+                        <td class="last-col" style="width: 9%;">
+                            <apex:outputField value="{!item.Total_Price__c}" style="width: 100%;"/>
+                        </td>
+                        <apex:variable var="trcolor" value="{!IF(trcolor == '', '#dddddd', '')}"/>
+                    </tr>
+                </apex:repeat>
+            </table>
+            <br/>
+            <div style="width: 100%;">
+                <table style="width:300px;border-collapse:collapse;float:right" >
+                    <tr class="tableRowAmount">
+                        <td style="padding:3px">
+                                <apex:outputText value="Grand Total:"/>
+                        </td>
+                        <td style="text-align:right;padding:3px">
+                                <apex:outputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Total__c}"/>
+                        </td>
+                    </tr>
+                    <!--<tr class="tableRowAmount">
+                        <td style="padding:3px">
+                                <apex:outputText value="Deposit Due:"/>
+                        </td>
+                        <td style="text-align:right; padding:3px;">
+                                <apex:outputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Total__c}"/>
+                        </td>
+                    </tr>
+                    <tr class="tableRowAmount">
+                        <td style="padding:3px;">
+                                <apex:outputText value="Balance:"/>
+                        </td>
+                        <td style="text-align:right; padding:3px;">
+                                <apex:outputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Total__c}"/>
+                        </td>
+                    </tr>-->
+                </table>
+            </div>
+            <br/>
+            <br/>
+            <h3>Payments</h3>
+            <apex:outputPanel rendered="{!payable_lines.size > 0}">
+                <table id='itemstable'>
+                    <tr>
+                        <th class="header-font table-header no-border" style="width: 15%;">Payable Name </th>
+                        <th class="header-font table-header no-border" style="width: 13%;">Payee</th>
+                        <th class="header-font table-header no-border" style="width: 10%;">Issue Date</th>
+                        <th class="header-font table-header no-border" style="width: 14%;">Payment Status</th>
+                        <th class="header-font table-header no-border" style="width: 10%;">Total</th>
+                        <th class="header-font table-header no-border" style="width: 12%;">Paid Amount</th>
+                        <th class="last-col header-font table-header no-border" style="width: 18% !important;">Balance</th>
+                    </tr>
+                    <apex:variable var="trcolor" value=""/>
+                    <apex:repeat value="{!payable_lines}" var="item">
+                        <tr style="background-color: {!trcolor}">
+                            <td style="width: 15%;">
+                                <apex:outputField value="{!item.Name}" />
+                            </td>
+                            
+                            <td style="width: 13%;">
+                                <apex:outputField value="{!item.AcctSeed__Payee__c}" />
+                            </td>
+                            <td style="width: 10%;">
+                                <apex:outputField value="{!item.AcctSeed__Date__c}" />
+                            </td>
+                            
+                            <td style="width: 14%;">
+                                <apex:outputField value="{!item.AcctSeed__Payment_Status__c}" />
+                            </td>
+                            <td style="width: 10%;">
+                                <apex:outputField value="{!item.AcctSeed__Total__c}" />
+                            </td>
+                            <td style="width: 12%;">
+                                <apex:outputField value="{!item.AcctSeed__Paid_Amount__c}" />
+                            </td>
+                            <td class="last-col" style="width: 18% !important;">
+                                <apex:outputField value="{!item.AcctSeed__Balance__c}" />
+                            </td>
+    
+    
+                            <apex:variable var="trcolor" value="{!IF(trcolor == '', '#dddddd', '')}"/>
+                        </tr>
+                    </apex:repeat>
+    
+                </table>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!payable_lines.size <= 0}">
+                <apex:outputText value="There are no associated payments."/>
+            </apex:outputPanel>
+
+
+
+        </div>
+    </body>
+</apex:page>

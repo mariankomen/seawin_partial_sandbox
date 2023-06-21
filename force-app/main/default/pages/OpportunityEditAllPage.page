@@ -1,0 +1,110 @@
+<apex:page controller="OpportunityEditAllController" tabStyle="Opportunity" title="Edit Products for: {!opp.Name}">
+
+    <style type="text/css">
+    textarea {
+        width: 175px;
+        min-width: 175px;
+        min-height: 75px;
+        max-width: 95%;
+    }
+    .descriptionBlock {
+        max-width: 175px;
+        min-height: 75px;
+        text-overflow: ellipsis;
+    }
+    .descriptionBlock > span {
+        white-space: normal !important;
+    }
+    .main_table{
+        max-width: 100%;
+        table-layout:fixed;
+    }
+    .first_row {
+        background: #e6ebeb;
+    }
+    td, tr {
+        padding: 4px 2px 4px 5px;
+        border: none !important;
+        border-bottom: 1px solid #f2f3f3 !important;
+    }
+    /* tr {width:100%;} */
+    table {
+        border-spacing: 0;
+        max-width: 100%;
+    }
+  
+    </style>
+    <apex:form id="theForm">
+        <apex:outputPanel rendered="{!isOpportunityProduct}">
+            <apex:sectionHeader title="Opportunity" subtitle="{!subTitle}" />
+            <apex:outputText value="Edit products for this opportunity." />
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!isOptionalProduct}">
+            <apex:sectionHeader title="Opportunity" subtitle="Edit Optional Products" />
+            <apex:outputText value="Edit optional products for this opportunity." />
+        </apex:outputPanel>
+        <br/>
+        <br/>
+        <apex:pageMessages ></apex:pageMessages>
+
+            <apex:pageBlock >
+                <apex:pageBlockButtons >
+                    
+                    <apex:commandButton value="Save" action="{!saveEdit}" reRender="theForm"/>
+
+                    <apex:commandButton value="Back" action="{!back}" immediate="true" />
+                </apex:pageBlockButtons>
+
+
+                <apex:pageBlockTable id="thePageBlockTable" value="{!wrapper_lines}" var="line"  columnsWidth="3%,25%,10%,10%, 20%, 20%" styleClass="main_table">
+
+                    <apex:column style="width: 75px !important;">
+                        <apex:commandLink value="Delete" action="{!TrashIt}" oncomplete="window.location.reload();" rendered="{!!line.hasRelatedBillLine}">
+                            <apex:param name="deletableId" value="{!line.recordId}"/>
+                        </apex:commandLink>
+                    </apex:column> 
+
+                    <apex:column value="{!line.productName}" headerValue="Product Name"/>
+
+                    <apex:column headerValue="Quantity">
+                        <apex:inputText value="{!line.quantity}" rendered="{!!line.hasRelatedBillLine}"/>
+                        <apex:outputText value="{!line.quantity}" rendered="{!line.hasRelatedBillLine}"/>
+                    </apex:column>
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputText value="{!line.sales_price}" rendered="{!!line.hasRelatedBillLine}"/>
+                        <apex:outputText value="{!line.sales_price}" rendered="{!line.hasRelatedBillLine}"/>
+                    </apex:column>
+
+                    <apex:column headerValue="Size">
+                        <apex:outputPanel rendered="{!line.allow_changes}">
+                            <apex:inputText value="{!line.size}"/>
+                        </apex:outputPanel>
+
+                        <apex:outputPanel rendered="{!!line.allow_changes}">
+                            <apex:outputText value="{!line.size}"/>
+                        </apex:outputPanel>
+                    </apex:column>
+
+                    <apex:column headerValue="Item Description" >
+                        <apex:outputPanel rendered="{!line.allow_changes}">
+                            <apex:inputTextarea value="{!line.description}"/>
+                        </apex:outputPanel>
+
+                        <apex:outputPanel rendered="{!!line.allow_changes}">
+                            <div class='descriptionBlock'>
+                                <apex:outputText value="{!line.description}" style="white-space:pre;" escape="false" styleClass="descriptionBlock"/>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:column>
+                </apex:pageBlockTable>
+
+            </apex:pageBlock>
+            <script type="text/javascript">
+                function onSuccessfullSave(){
+                    setTimeout(() => {
+                        window.parent.location = '/{!opportunityId}'
+                    },2000)
+                }
+            </script>
+    </apex:form>
+</apex:page>

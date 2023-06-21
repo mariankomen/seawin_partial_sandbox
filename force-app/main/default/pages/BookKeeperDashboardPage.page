@@ -1,0 +1,222 @@
+<apex:page controller="BookKeeperDashboardController">
+    <style>
+        .listButtons li:not(.lastItem) {
+        display: none;
+        }
+    </style>
+    <apex:pageBlock title="USA Hospitality Bookkeeper Dashboard">
+        <apex:enhancedList type="AcctSeedERP__Sales_Order__c" height="400" rowsPerPage="10"
+                           ListId="00B1I000008E6CQ" customizable="false" />
+        
+        
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <img src="/img/s.gif" alt="Billing" class="pageTitleIcon" title="Billing"/>
+                            <h2 class="title">Billing Aging</h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel rendered="{!BillingPieData != null}">
+                                <div id="bill_container">
+                                    
+                                </div>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!BillingPieData == null}">
+                                <div class="x-grid3-scroller" style="width: 1234px; height: 269px; background: white;">
+                                    <div class="x-grid3-body" style="width: 1213px;">
+                                        <div class="x-grid-empty">No records to display.</div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <img src="/img/s.gif" alt="Billing" class="pageTitleIcon" title="Billing"/>
+                            <h2 class="title">Billing Top 10 Customers</h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel rendered="{!SOPieData != null}">
+                                <div id="so_container"></div>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!SOPieData == null}">
+                                <div class="x-grid3-scroller" style="width: 1234px; height: 269px; background: white;">
+                                    <div class="x-grid3-body" style="width: 1213px;">
+                                        <div class="x-grid-empty">No records to display.</div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </apex:pageBlock>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script>
+    
+    var BillingData = new Array();
+    var midArray;
+    
+    <apex:repeat value="{!BillingPieData}" var="billing">
+        <apex:repeat value="{!billing.Data}" var="b">
+            midArray = {name:'{!b.Name}', y:{!b.Amount}, custom:'{!b.Age}'};
+    
+    BillingData.push(midArray);
+    </apex:repeat>
+    </apex:repeat>
+    Highcharts.chart('bill_container', {
+        credits: {
+            enabled: false
+        },
+        title: {
+            text: '',
+            style: {
+                fontWeight: 'bold',
+                fontSize: '11px'
+            }
+        },
+        legend: {
+            align: 'center',
+            verticalAlign: 'bottom',
+            layout: 'horizontal',
+            margin: 50
+        },
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: 0,
+            plotShadow: false,
+            events: {
+                load: function() {
+                    var chart = this,
+                        points = chart.series[0].points,
+                        len = points.length,
+                        total = 0;
+                    
+                    for (var i = 0; i < len; i++) {
+                        total += points[i].y;
+                    }
+                    
+                    var txt = 'Total:<br/> ' + total.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                    });
+                    
+                    var rend = chart.renderer,
+                        pie = chart.series[0],
+                        left = chart.plotLeft + pie.center[0],
+                        top = chart.plotTop + pie.center[1],
+                        text = rend.text(txt, left, top).attr({
+                            'text-anchor': 'middle',
+                            'zIndex': 10
+                        }).css({
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            color: 'black'
+                        }).add();
+                }
+            }
+        },
+        tooltip: {
+            pointFormat: '<span style="color:{point.color}">\u25CF</span>{series.name}: <b>${point.y:,.2f}</b> <br> Age: {point.custom}'
+        },
+        plotOptions: {
+            pie: {
+                dataLabels: {
+                    format: '<b>{point.name}</b>:<br>{point.percentage:.1f} %',
+                    style: {
+                        color: 'black'
+                    }
+                },
+                startAngle: -90,
+                endAngle: 360,
+                center: ['50%', '50%'],
+                size: '100%',
+                showInLegend: true
+            }
+        },
+        series: [{
+            type: 'pie',
+            name: 'Amount',
+            innerSize: '50%',
+            data: BillingData
+        }]
+    });
+    
+    </script>
+    <script>
+    var SOData = new Array();
+    var subArray;
+    
+    <apex:repeat value="{!SOPieData}" var="so">
+        <apex:repeat value="{!so.Data}" var="d">
+            subArray = new Array();
+    subArray.push('{!d.Name}');
+    subArray.push({!d.Amount});
+    
+    SOData.push(subArray);
+    </apex:repeat>
+    </apex:repeat> 
+    
+    Highcharts.chart('so_container', {
+        credits: {
+            enabled: false
+        },
+        title:{
+            text:''
+        },
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: 0,
+            plotShadow: false
+        },
+        legend: {
+            align: 'center',
+            verticalAlign: 'bottom',
+            layout: 'horizontal',
+            margin: 50
+        },
+        tooltip: {
+            valueDecimals: 2,
+            valuePrefix: '$'
+        },
+        accessibility: {
+            point: {
+                valueSuffix: '$'
+            }
+        },
+        plotOptions: {
+            pie: {
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>:<br>{point.percentage:.1f} %',
+                    style: {
+                        //fontWeight: 'bold',
+                        color: 'black'
+                    }
+                },
+                size: '100%',
+                showInLegend: true
+            }
+        },
+        series: [{
+            type: 'pie',
+            name: 'Amount',
+            data: SOData
+        }]
+    });
+    </script>
+</apex:page>

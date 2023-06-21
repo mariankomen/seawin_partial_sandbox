@@ -1,0 +1,225 @@
+<apex:page standardcontroller="AcctSeedERP__Purchase_Order__c" extensions="AddPurchaseOrderPageExtension" sidebar="false"
+           action="{!pageAction}">
+    
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js" />
+    
+    <apex:form >
+        <apex:pageBlock title="Purchase Order Edit">
+            
+            <apex:pageBlockbuttons >
+                <apex:commandButton value="Save" action="{!save}" />
+                <apex:commandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockbuttons>
+            
+            <apex:PageMessages ></apex:PageMessages>
+            
+            <apex:pageBlockSection title="Information" columns="2" collapsible="false">
+       
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Record Type"></apex:outputLabel>
+                    <apex:outputText value="{!recTypName}"></apex:outputText>      
+                </apex:pageBlockSectionItem>
+              
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Type__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.GL_Account_Variable_1__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Purchase_Order_Format__c}" />  
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Owner"></apex:outputLabel>
+                    <apex:outputText value="{!$User.FirstName + ' ' + $User.LastName}"></apex:outputText>
+                </apex:pageBlockSectionItem>     
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Sales_Order__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Order_Date__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Opportunity_Readonly__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Project__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Status__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Stage__c}" required="true"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Purchase Order Management" columns="2" collapsible="false">
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Production_Date__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Shipped_Date__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Order_ETA__c}" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Expected_Delivery__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Customer_s_ETA__c}" />
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Vendor & Shipping Information" columns="2" collapsible="false">
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor__c}" id="vendor_id" required="true"/>
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Company__c}" id="shipping_company_id" required="true"/>
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.Vendor_Contact_Custom__c}"/>
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Contact__c}"/>
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Street__c}" id="vendor_street_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Street__c}" id="shipping_street_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_City__c}" id="vendor_city_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_City__c}" id="shipping_city_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_State__c}" id="vendor_state_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_State__c}" id="shipping_state_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Postal_Code__c}" id="vendor_postal_code_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Postal_Code__c}" id="shipping_postal_code_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor_Country__c}" id="vendor_country_id" />
+                <apex:inputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Shipping_Country__c}" id="shipping_country_id" />
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Additional Information" columns="2" collapsible="false">
+                <apex:inputTextarea value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Comment__c}" cols="75" rows="3" />
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+    </apex:form>
+    
+    
+    <script>
+    
+    $(function () {
+        var vendorlkid = getFieldId('vendor_id_lkid');     
+        var vendorId = getFieldId('vendor_id');     
+        var vendorStreetId = getFieldId('vendor_street_id');
+        var vendorCityId = getFieldId('vendor_city_id');
+        var vendorStateId = getFieldId('vendor_state_id');
+        var vendorPostalCodeId = getFieldId('vendor_postal_code_id');
+        var vendorCountryId = getFieldId('vendor_country_id');
+        
+        var shippingCompanylkid = getFieldId('shipping_company_id_lkid');
+        var shippingCompanyId = getFieldId('shipping_company_id');
+        var shippingStreetId = getFieldId('shipping_street_id');
+        var shippingCityId = getFieldId('shipping_city_id');
+        var shippingStateId = getFieldId('shipping_state_id');
+        var shippingPostalCodeId = getFieldId('shipping_postal_code_id');
+        var shippingCountryId = getFieldId('shipping_country_id');   
+        
+        var vendorlkidValue = getFieldValue(vendorlkid);
+        var shippingCompanylkidValue = getFieldValue(shippingCompanylkid);
+        
+        
+        function getFieldId(id) {
+            
+            return $('input[id$='+id+']');
+        }
+        
+        
+        function getFieldValue(id) {
+            
+            return id.val();
+        }
+        
+        
+        function setFieldOnPageWithStyle(id, value) {
+            
+            id.val(value);
+        }
+        
+        
+        function setFieldsOnPage(accountId, type) {
+            
+            if (type === 'vendor') {
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.AddPurchaseOrderPageExtension.getContact}',
+                    accountId,
+                    function (result, event) {
+                        if (event.status) {                       
+                            setFieldOnPageWithStyle(vendorStreetId, typeof result.MailingStreet === 'undefined' ? '' : result.MailingStreet);
+                            setFieldOnPageWithStyle(vendorCityId, typeof result.MailingCity === 'undefined' ? '' : result.MailingCity);
+                            setFieldOnPageWithStyle(vendorStateId, typeof result.MailingState === 'undefined' ? '' : result.MailingState);
+                            setFieldOnPageWithStyle(vendorPostalCodeId, typeof result.MailingPostalCode === 'undefined' ? '' : result.MailingPostalCode);
+                            setFieldOnPageWithStyle(vendorCountryId, typeof result.MailingCountry === 'undefined' ? '' : result.MailingCountry);
+                        }else if (event.type === 'exception') {
+                            document.getElementById("responseErrors").innerHTML =
+                                event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                        } else {
+                            document.getElementById("responseErrors").innerHTML = event.message;
+                        }
+                    },
+                    { escape: true }
+                );
+            }
+            
+            if (type === 'company') {
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.AddPurchaseOrderPageExtension.getAccount}',
+                    accountId,
+                    function (result, event) {
+                        if (event.status) {
+                            setFieldOnPageWithStyle(shippingStreetId, typeof result.ShippingStreet === 'undefined' ? '' : result.ShippingStreet);
+                            setFieldOnPageWithStyle(shippingCityId, typeof result.ShippingCity === 'undefined' ? '' : result.ShippingCity);
+                            setFieldOnPageWithStyle(shippingStateId, typeof result.ShippingState === 'undefined' ? '' : result.ShippingState);
+                            setFieldOnPageWithStyle(shippingPostalCodeId, typeof result.ShippingPostalCode === 'undefined' ? '' : result.ShippingPostalCode);
+                            setFieldOnPageWithStyle(shippingCountryId, typeof result.ShippingCountry === 'undefined' ? '' : result.ShippingCountry);
+                            
+                        }else if (event.type === 'exception') {
+                            document.getElementById("responseErrors").innerHTML =
+                                event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                        } else {
+                            document.getElementById("responseErrors").innerHTML = event.message;
+                        }
+                    },
+                    { escape: true }
+                );
+            }
+        }
+        
+        
+        function updateVendorFields(){
+            
+            newVendorlkidValue = getFieldValue(vendorlkid);
+            
+            if (vendorlkidValue !==  newVendorlkidValue) {       
+                vendorlkidValue = newVendorlkidValue;
+                if (newVendorlkidValue === '' || newVendorlkidValue == null) {
+                    
+                    setFieldOnPageWithStyle(vendorStreetId, '');
+                    setFieldOnPageWithStyle(vendorCityId, '');
+                    setFieldOnPageWithStyle(vendorStateId, '');
+                    setFieldOnPageWithStyle(vendorPostalCodeId, '');
+                    setFieldOnPageWithStyle(vendorCountryId, '');
+                }
+                else {
+                    setFieldsOnPage(vendorlkidValue, 'vendor');
+                }
+            }
+        }
+        
+        
+        function updateShippingCompanyFields(){
+            
+            newShippingCompanylkidValue = getFieldValue(shippingCompanylkid);
+            
+            if (shippingCompanylkidValue !==  newShippingCompanylkidValue) {       
+                shippingCompanylkidValue = newShippingCompanylkidValue;
+                if (newShippingCompanylkidValue === '' || newShippingCompanylkidValue == null) {
+                    
+                    setFieldOnPageWithStyle(shippingStreetId, '');
+                    setFieldOnPageWithStyle(shippingCityId, '');
+                    setFieldOnPageWithStyle(shippingStateId, '');
+                    setFieldOnPageWithStyle(shippingPostalCodeId, '');
+                    setFieldOnPageWithStyle(shippingCountryId, '');
+                }
+                else {
+                    setFieldsOnPage(shippingCompanylkidValue, 'company');
+                }
+            }
+        }
+        
+        
+        //Vendor Section
+        vendorId.change(function () {
+            setTimeout(function(){ updateVendorFields(); }, 10);        
+        })
+        
+        //Shipping Company Section
+        shippingCompanyId.change(function () {
+            setTimeout(function(){ updateShippingCompanyFields(); }, 10);        
+        })
+        
+        $('body').click(function () {
+            console.log('body click');
+            setTimeout(function(){ updateVendorFields(); }, 10);        
+        })
+        
+    });
+    
+    </script>
+    
+</apex:page>

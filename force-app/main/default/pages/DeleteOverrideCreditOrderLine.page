@@ -1,0 +1,27 @@
+<apex:page standardcontroller="Credit_Order_Line__c" extensions="DeleteCreditOrderLineController" action="{!initialAction}">
+
+    <!-- <apex:form>
+        <apex:pageBlock title="Deallocate Credit Order Lines">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Back" action="/{!retUrl}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageMessages escape="false" />
+
+        </apex:pageBlock>
+    </apex:form> -->
+
+    <script>
+        let alloc = '{!allocated_condition}'
+        let ship = '{!shipped_condition}'
+        let bill = '{!billed_condition}'
+        let url = '/' + '{!retUrl}'
+        if(bill === 'true'){
+            alert('Credit Order Line can not be deleted because it associated with billing lines.')
+        }else if(ship === 'true'){
+            alert('Credit Order Line can not be deleted because it associated with shipping lines.')
+        }else if(alloc === 'true'){
+            alert('Credit Order Line can not be deleted because it is allocated.')
+        }
+        window.location.href = url
+    </script>
+</apex:page>

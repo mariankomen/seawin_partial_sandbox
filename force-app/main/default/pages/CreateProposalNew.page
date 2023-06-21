@@ -1,0 +1,35 @@
+<apex:page standardcontroller="Quote" extensions="CreateProposalExtensionNew">
+    <apex:slds />
+
+    <style>
+    .slds-scope table{
+        width: auto;
+    }
+    </style>
+    <apex:sectionHeader title="Quote" subtitle="Create Proposal"/>
+
+    <apex:form id="mainForm">
+
+        <apex:commandButton action="/{!quoteRecord.Id}" value="Back" html-data-ref="goBackButton" styleClass="slds-button slds-button_brand"></apex:commandButton>
+        <apex:includeLightning />
+        <apex:outputPanel styleClass="custPopup" layout="block">
+            <div id="LightningComponentid" />
+        </apex:outputPanel>	   
+            
+        <script>
+        $Lightning.use("c:createProposalAuraApp", function() {
+                $Lightning.createComponent("c:createProposalCmp",{
+                    quoteId: "{!quoteRecord.Id}"
+                },
+                "LightningComponentid",
+                function(cmp) {
+                    console.log('LWC Componenet added in VF page');
+                });
+            });
+        </script>
+
+
+    </apex:form>
+    
+
+</apex:page>

@@ -1,0 +1,67 @@
+<apex:page standardController="AcctSeed__Billing__c" title="{!AcctSeed__Billing__c.Name & ' | Credit Card Fee'}" 
+           extensions="BillingCreditCardFeeExtension" id="page">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}"/>
+
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/jquery.dataTables.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/tax-intermediate-screen.css')}" />
+
+    <apex:form id="form">
+        <apex:sectionHeader title="{!$ObjectType.AcctSeed__Billing__c.labelPlural}"
+                subtitle="{!$ObjectType.AcctSeed__Billing__c.labelPlural} Credit Card Fee" />
+        <apex:pageBlock id="block" rendered="{!isAllowed}">
+            <apex:pageMessage severity="info" detail="Only those products can be added where Credit Card Fee is checked on the product." 
+                              strength="2">
+            </apex:pageMessage>
+            <apex:pageMessages escape="false"/>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="saveStatus"
+                        onstart="AcctSeed.ASModule.disableButtons('Processing...')"/>
+                <apex:commandButton value="Save"
+                        status="saveStatus"
+                        action="{!saveBillingLine}" reRender="form"/>
+                <apex:commandButton action="{!IF($User.ContactId == null, '', '/sales')}/{!AcctSeed__Billing__c.Id}"
+                        value="Back" immediate="true"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!wrap}" var="w" id="table">
+                <apex:column headerValue="Product">
+                    <apex:inputField id="product" value="{!w.line.Product_Info__c}" required="true"
+                                     onchange="OnProductChange(); return false;">
+                    </apex:inputField>
+                </apex:column>
+                <apex:column headerValue="Product Code">
+                    <apex:OutputText value="{!w.ProductCode}"></apex:OutputText>
+                </apex:column>
+                <apex:column headerValue="Item Description">
+                    <apex:inputField value="{!w.line.Item_Description__c}" style="height: 50px; width: 250px;"></apex:inputField>
+                </apex:column>
+                <apex:column headerValue="Quantity">
+                    <apex:inputField value="{!w.line.AcctSeed__Hours_Units__c}" html-disabled="true"></apex:inputField>
+                </apex:column>
+                <apex:column headerValue="Unit Price">
+                    <apex:inputField value="{!w.line.AcctSeed__Rate__c}"></apex:inputField>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        <apex:pageBlock id="messageblock" rendered="{!NOT(isAllowed)}">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!IF($User.ContactId == null, '', '/sales')}/{!AcctSeed__Billing__c.Id}"
+                        value="Back" immediate="true"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessage severity="error" detail="Credit Card Fees cannot be calculated for a posted record." 
+                              strength="2">
+            </apex:pageMessage>
+        </apex:pageBlock>
+        <apex:actionFunction name="CallOnProductSelect" action="{!OnProductSelect}" immediate="true" reRender="form">
+            <apex:param name="productId" value=""/>
+        </apex:actionFunction>
+        <script>
+            function OnProductChange(){
+                
+                var productId = document.getElementById("page:form:block:table:0:product_lkid").value;
+                
+                CallOnProductSelect(productId);
+            }
+        </script>
+    </apex:form>
+</apex:page>

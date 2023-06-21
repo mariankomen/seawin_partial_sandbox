@@ -1,0 +1,20 @@
+<apex:page controller="NewPurchaseOrdersController" title="Latest Purchase Orders">
+    <apex:form >
+    <apex:sectionHeader title="Purchase Order" subtitle="Latest Purchase Orders"/>
+        <apex:pageBlock title="" rendered="{!purchases.size > 0}">  
+            <apex:pageBlockTable value="{!Purchases}" var="p" >                   
+                <apex:column headervalue="Name" >
+                    <apex:outputLink value="/{!p.id}">
+                    {!p.Name}
+                    </apex:outputLink>
+                </apex:column>
+                <apex:column headervalue="Vendor" value="{!p.AcctSeedERP__Vendor__c}" /> 
+                <apex:column headervalue="Order Date" value="{!p.AcctSeedERP__Order_Date__c}" /> 
+                <apex:column headervalue="Status" value="{!p.AcctSeedERP__Status__c}" />
+                <apex:column headervalue="Type" value="{!p.AcctSeedERP__Type__c}" />  
+                <apex:column headervalue="Total" value="{!p.AcctSeedERP__Total__c}" />  
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+        <apex:outputText value="There are no latest purchase orders." rendered="{!purchases.size < 1}"></apex:outputText>
+    </apex:form>
+</apex:page>

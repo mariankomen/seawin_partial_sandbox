@@ -1,0 +1,136 @@
+<apex:page controller="OpportunityProductsSortController" tabStyle="Opportunity">
+    <head>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script> -->
+        <style>
+            .hiddenColumn{
+            display: none !important;   
+            }
+            .col_1{
+                width: 30%;
+            }
+            .col_2{
+                width: 10%;
+            }
+            .col_3{
+                width: 10%;
+            }
+            .col_4{
+                width: 10%;
+            }
+            .col_5{
+                width: 40%;
+            }
+            
+        </style>
+    </head>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"/>
+    <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/themes/smoothness/jquery-ui.css"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"/>
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" />
+
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Opportunity" subtitle="{!opportunityName}" />
+        <apex:pageBlock title="Opportunity Lines">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" onclick="savesort(); return false;" reRender="" />
+                <apex:commandButton value="Back" action="{!back}"/>
+            </apex:pageBlockButtons>
+            <apex:pagemessages ></apex:pagemessages>
+
+            <apex:outputPanel rendered="{!wrapper_lines.size > 0}">
+                <div style="height: 30px; width: 100%; margin-bottom: 5px; margin-top: 17px;">
+                    <apex:outputText value="Note: Drag and Drop the respective products to sort." ></apex:outputText>
+                </div>
+            </apex:outputPanel>
+            
+            <apex:pageBlockTable value="{!wrapper_lines}" var="line" styleClass="mainTable" rendered="{!wrapper_lines.size > 0}">
+                <apex:column value="{!line.recordId}" title="{!line.recordId}" headerClass="hiddenColumn" styleClass="hiddenColumn"/>
+                <apex:column value="{!line.productName}" headerValue="Product Name"  styleClass="col_1"/>
+                <apex:column value="{!line.quantity}" headerValue="Quantity" styleClass="col_2"/>
+                <apex:column value="{!line.sales_price}" headerValue="Sales Price" styleClass="col_3"/>
+                <apex:column value="{!line.size}" headerValue="Size" styleClass="col_4"/>
+                <apex:column value="{!line.description}" headerValue="Item Description" styleClass="col_5"/>
+            </apex:pageBlockTable>
+
+            <apex:outputPanel rendered="{!wrapper_lines.size == 0}">
+                <div style="height: 30px; width: 100%; margin-bottom: 5px; margin-top: 17px;">
+                    <apex:outputText value="There are not associated products." ></apex:outputText>
+                </div>
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:outputPanel >
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+        <script type="text/javascript">
+            let elements_map = []
+            //jQuery.noConflict();
+            $(function () {
+                    $(".mainTable").sortable({
+                        items: 'tr:not(:first)',
+                        cursor: 'pointer',
+                        axis: 'y',
+                        dropOnEmpty: false,
+                        start: function (e, ui) {
+                            console.log(ui)
+                            ui.item.addClass("selected");
+                        },
+                        stop: function (e, ui) {
+                            elements_map = []
+                            ui.item.removeClass("selected");
+                            let counter = 1
+                            document.querySelectorAll('.mainTable').forEach(el => {
+                                // console.log(el)
+                                Array.from(el.children[2].children).forEach(item => {
+                                    let rows = Array.from(item.children)
+                                    console.log(rows[0].title)
+                                    elements_map.push({
+                                        solId: rows[0].title,
+                                        sortNumber: counter
+                                    })
+                                    counter++
+
+                                })
+                            })
+                            console.log('elements_map: ',elements_map)
+                        }
+                    });
+            });
+            function savesort(){
+
+            let url_string = window.location.href
+            let url = new URL(url_string);
+            let oppId = url.searchParams.get("oppId");
+            let recType = url.searchParams.get("recordType");
+            if(Object.keys(elements_map).length !== 0){
+                Visualforce.remoting.timeout = 120000;
+
+                Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.OpportunityProductsSortController.executeSorting}',JSON.stringify(elements_map),oppId,recType,
+                    function(result, event){
+                        console.log('active by stage result: ', result)
+                        if (event.status) {
+                            
+                            setTimeout(() => {
+                                document.location = '/'+oppId;
+                            },1000)
+                        } else if (event.type === 'exception') {
+                            
+                                console.log('Exception has occured in Active Opportunities by Stage...');
+                                
+                        } else {
+                                console.log('Error occured in Active Opportunities by Stage...');
+                                
+                        }
+                    }, 
+                    {escape: true}
+                );
+            }else{
+                alert('You did not sort any element.')
+            }
+
+            }
+        </script>
+    </apex:outputPanel>
+</apex:page>

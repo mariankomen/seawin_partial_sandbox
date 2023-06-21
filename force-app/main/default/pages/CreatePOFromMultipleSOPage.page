@@ -1,0 +1,205 @@
+<apex:page controller="CreatePOFromMultipleSOController" Tabstyle="AcctSeedERP__Sales_Order__c" title="Sales Order" >
+    <apex:form id="form">
+        <apex:sectionHeader title="Sales Order" subtitle="{!so.name}"/>
+        <apex:pageBlock title="Sales Order Products"  id="to">
+            <apex:pageMessages id="msg" escape="false" rendered="{!!showdraft}"></apex:pageMessages>
+            <apex:pageMessage severity="warning" escape="false" detail="{!WarningMessage}" strength="3" rendered="{!WarningMessage != null}"></apex:pageMessage>
+            <apex:pageMessage severity="info" detail="You must include a value for vendor for every line you want to create a purchase order." strength="3" rendered="{!visible}">
+            </apex:pageMessage>
+            <apex:pageBlockSection id="firstpgblock" title="Options" columns="1" collapsible="false" rendered="{!visible}">
+                <div style="width: 100%; height: 20px;">
+                    <apex:inputCheckbox value="{!aggregateCheck}" label="Aggregate by Product?">
+                        <apex:actionSupport action="{!aggregateExecute}" event="onchange" reRender="tobe,tobechecked">
+                        </apex:actionSupport>
+                    </apex:inputCheckbox>
+                </div>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="tobe" title="Sales Order Products" columns="1" collapsible="false" rendered="{!visible}">
+                <apex:pageBlockTable id="tobechecked" value="{!SalesOrderLinesListing}" var="listitem" rendered="{!visible}">
+                    <apex:column >
+                        <apex:facet name="header"> <apex:inputCheckbox id="masterchecked">
+                            <apex:actionSupport event="onclick" onsubmit="checkAll(this)" reRender="msg" immediate="true"/>
+                            </apex:inputCheckbox>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!listitem.selected}" styleClass="childcheckboxes" id="checkedone">
+                            <apex:actionSupport event="onclick" reRender="msg" onsubmit="MasterCheck()"/>
+                        </apex:inputCheckbox>
+                    </apex:column>
+                    <apex:column headervalue="Product">
+                        <apex:outputText value="{!listitem.SalesOrderLine.AcctSeedERP__Product__r.Name}"></apex:outputText>
+                    </apex:column>               
+                    <apex:column headervalue="Product Code">
+                        <apex:outputText value="{!listitem.SalesOrderLine.ProductCode__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Item Description">
+                        <apex:outputField value="{!listitem.SalesOrderLine.AcctSeedERP_Description__c}"></apex:outputField>
+                    </apex:column>
+                    <apex:column headervalue="Size">
+                        <apex:outputField value="{!listitem.SalesOrderLine.Size__c}"></apex:outputField>
+                    </apex:column>
+                    <apex:column headervalue="Quantity">
+                        <apex:outputText value="{0,number, #0}">
+                            <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Quantity_Ordered__c}"/>
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Quantity Allocated">
+                        <apex:outputText value="{!listitem.SalesOrderLine.Quantity_Allocated_Formula__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Available Quantity">
+                            <apex:outputText value="{!listitem.SalesOrderLine.Available_Quantity__c}"></apex:outputText>
+                    </apex:column> 
+                    <apex:column headervalue="Quantity Shipped">
+                        <apex:outputText value="{!listitem.SalesOrderLine.Quantity_Shipped_Formula__c}"></apex:outputText>
+                    </apex:column> 
+                    <apex:column headervalue="Sales Price">
+                        <apex:outputText value="{0,number, Currency}">
+                            <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Unit_Price__c}"/>
+                        </apex:outputText> 
+                    </apex:column>
+                    <apex:column headervalue="Total">
+                        <apex:outputText value="{0,number, Currency}">
+                            <apex:param value="{!listitem.SalesOrderLine.AcctSeedERP__Total__c}"/>
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column ><apex:facet name="header">Vendor </apex:facet><apex:inputField value="{!listitem.Product.AcctSeedERP__Default_Vendor__c}"/></apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="mySaveStatus1">
+                    <apex:facet name="stop">
+                        <apex:commandButton value="View Draft Purchase Orders" onclick="proceedWithDrafts()" status="mySaveStatus1" reRender="mySaveStatus1, pgblock" rendered="{!visible}"/>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:commandButton value="Processing..." disabled="true"/>
+                    </apex:facet>
+                </apex:actionStatus>
+                <apex:commandButton value="Back" action="{!back}" immediate="true" status="mySaveStatus1" reRender="mySaveStatus1"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="proceedWithDrafts" action="{!draft}"/>
+    </apex:form>
+    <apex:form >
+        <apex:pageBlock title="Draft Purchase Orders"  id="pgblock" rendered="{!showdraft}">
+            <apex:pageMessage severity="info" detail="To include a line on the purchase order, you must specify a Unit Cost and a Quantity greater than or equal to the Quantity Needed." strength="3">
+            </apex:pageMessage>
+            <apex:pageMessages id="msgs" escape="false"></apex:pageMessages>
+            <style>
+                .empty{
+                display: none !important;
+                }
+            </style>
+            <apex:repeat value="{!Drafting}" var="d">
+                <apex:pageBlockSection title="Purchase Order" columns="1" collapsible="false">
+                    <div style="width: 100%; height: 20px;">
+                        <apex:outputText value="{!d.Vendor}" label="Vendor:"></apex:outputText>
+                    </div>
+                    <apex:pageBlockTable value="{!d.plw}" var="LineItem" rendered="{!visible}" style="width: 100%">
+                        <apex:column headervalue="Product">
+                            <apex:outputText value="{!LineItem.Product.name}"></apex:outputText>
+                        </apex:column>               
+                        <apex:column headervalue="Product Code">
+                            <apex:outputText value="{!LineItem.Product.ProductCode}"></apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Item Description">
+                            <apex:inputField value="{!LineItem.lsline.AcctSeedERP_Description__c}"></apex:inputField>
+                        </apex:column>
+                        <apex:column headervalue="Size">
+                            <apex:inputField value="{!LineItem.lsline.Size__c}"></apex:inputField>
+                        </apex:column>
+                        <apex:column headervalue="Quantity Needed">
+                            <apex:outputText value="{0,number, #0}">
+                                <apex:param value="{!LineItem.needed}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Quantity">
+                            <apex:inputField id="quantityordered" value="{!LineItem.lsline.AcctSeedERP__Quantity_Ordered__c}" html-min="1">
+                            </apex:inputField>
+                            <script>    
+                            var val = document.getElementById('{!$Component.quantityordered}').value.replace(/,/g,'');
+                            document.getElementById('{!$Component.quantityordered}').value = 
+                            (val == '' || val == null)?'':Math.round(val);
+                        </script>
+                        </apex:column>
+                        <apex:column headervalue="Quantity Allocated">
+                            <apex:outputText value="{!LineItem.allocated}"></apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Available Quantity">
+                            <apex:outputText value="{!LineItem.stock}"></apex:outputText>
+                        </apex:column> 
+                        <apex:column headervalue="Quantity Shipped">
+                            <apex:outputText value="{!LineItem.shipped}"></apex:outputText>
+                        </apex:column>
+                        <apex:column headervalue="Unit Cost"> 
+                            <apex:inputField id="unitcost" value="{!LineItem.product.AcctSeed__Unit_Cost__c}" html-min="1" required="true">
+                            </apex:inputField>
+                            <script>    
+                            var val = document.getElementById('{!$Component.unitcost}').value.replace(/,/g,'');
+                            document.getElementById('{!$Component.unitcost}').value = 
+                                (val == '' || val == null)?'':parseFloat(val).toFixed(2);
+                            </script>
+                        </apex:column>
+                        <apex:column headervalue="Total">
+                            <apex:outputText value="{0,number, Currency}">
+                                <apex:param value="{!LineItem.product.AcctSeed__Unit_Cost__c * LineItem.needed}"/>
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+            </apex:repeat>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="mySaveStatus2">
+                    <apex:facet name="stop">
+                        <apex:commandButton value="Create Purchase Orders" rendered="{!visible}" onclick="proceedWithPOs()" status="mySaveStatus2" reRender="mySaveStatus2"/>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:commandButton value="Processing..." disabled="true"/>
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="proceedWithPOs" action="{!create}"/>
+        <script>
+        function checkAll(cb)
+        {
+            // get all the child checkboxes
+            var c = document.getElementsByClassName("childcheckboxes");
+            var clen = c.length;
+            
+            // check or uncheck all based on the master checkbox
+            for(var i = 0; i < clen; i++){
+                
+                c[i].checked = cb.checked; 
+                
+            }
+        }
+        
+        window.onload = function(){
+            MasterCheck();
+        }
+        
+        function MasterCheck(){
+            
+            // get all the child checkboxes
+            var c = document.getElementsByClassName("childcheckboxes");
+            var clen = c.length;
+            
+            var allchecked = 0;
+            // check or uncheck the master checkbox based on the child checkboxes
+            for(var i = 0; i < clen; i++){
+                if(c[i].checked){
+                    allchecked++;
+                }
+            }
+            
+            // check the master checkbox, if all checked
+            var mchk = document.getElementById('{!$Component.form.to.tobe.tobechecked.masterchecked}');
+            
+            if(clen == allchecked){
+                mchk.checked = true;
+            }else{
+                mchk.checked = false;
+            }
+        }
+        </script>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,48 @@
+<apex:page controller="AddEmailAddressPopupCtrl" showHeader="false" showChat="false" showQuickActionVfHeader="false"
+           sidebar="false">
+    <style>
+        .leftMargin{
+        margin-left: 18px;   
+        }
+    </style>
+    <apex:form >
+        <apex:pageBlock title="Add CC Recipients">
+            <c:AddEmailAddressPopupComponent ContactsLabel="Account Contacts"
+                                             SalesRepLabel="Sales Reps"
+                                             shipmentId="{!shipmentId}"
+                                             contactsOption="{!allContacts}"
+                                             salesRepOption="{!allSalesReps}"
+                                             rightLabel="CC Recipients"
+                                             rightOption="{!selectedContacts}"
+                                             selectedEmails="{!selectedEmails}"
+                                             size="14"
+                                             width="360px"/>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!save}" oncomplete="CloseAndRefresh('{!selectedEmails}', 
+                                                                              '{!existingCc}', '{!completeTo}');"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" oncomplete="JustCloseTheWindow();"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+    <apex:outputText >{!message}</apex:outputText>
+    <script>
+    function CloseAndRefresh(emails, existing, complete){
+        var mainEmails = '';
+        if(emails.startsWith(';')){
+            mainEmails = existing + emails.slice(0, -1);
+        }else{
+            mainEmails = existing + ';' + emails.slice(0, -1);
+        }
+        
+        window.opener.location.href="/apex/ShipmentPDFManagerCustom?id={!shipmentId}&ccemails="+mainEmails+"&completeTo="+complete;
+        window.top.close();
+    }
+    
+    </script>
+    <script>
+    
+    function JustCloseTheWindow(){
+        window.top.close();
+    }
+    </script>
+</apex:page>

@@ -1,0 +1,235 @@
+<apex:page standardController="AcctSeedERP__Shipment__c" extensions="ShipmentPDFManagerCustomExtension">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, 'javascript/common-pdf-manager.js')}"/>
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Shipment" subtitle="{!AcctSeedERP__Shipment__c.Name}" />
+        <apex:pageBlock id="firstpageblock">
+            <apex:pageMessages id="thePageMessages" escape="false"/>
+            <apex:pageBlockButtons id="buttons">
+                <apex:actionStatus id="saveStatus" onstart="AcctSeed.ASModule.disableButtons('Processing...')" />
+                <apex:commandButton id="saveAttachButton"
+                                    action="{!saveAttach}"
+                                    value="Save PDF"
+                                    onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');" />
+                <apex:commandButton id="emailAttachButton"
+                                    action="{!saveAndEmail}"
+                                    value="Send Email"
+                                    onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');"/>
+                <apex:commandButton id="cancelButton" action="{!cancel}" value="Back" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Shipment Information" columns="2" collapsible="false" rendered="{!showPage}">
+                <apex:outputField id="name" value="{!AcctSeedERP__Shipment__c.Name}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Carrier" for="carrier_name" />
+                    <apex:outputText id="carrier_name" value="{!AcctSeedERP__Shipment__c.Carrier__r.Name}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField id="total" value="{!AcctSeedERP__Shipment__c.AcctSeedERP__Sales_Order__c}" />
+                <apex:outputField id="shipment_date" value="{!AcctSeedERP__Shipment__c.AcctSeedERP__Shipment_Date__c}" />
+                <apex:outputField id="postingStatus" value="{!AcctSeedERP__Shipment__c.AcctSeedERP__Status__c}" />
+                <apex:outputField value="{!AcctSeedERP__Shipment__c.AcctSeedERP__Shipping_Reference__c}"/>
+                <apex:outputField value="{!AcctSeedERP__Shipment__c.AcctSeedERP__Packing_Slip_Format__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="secondsection" title="Email Sender and Recipient Information" columns="2" collapsible="false" rendered="{!showPage}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="From Address" for="fromAddress" />
+                    <apex:outputPanel >
+                        <apex:selectList id="fromAddress" value="{!selectedOrgWideEmailAddress}"
+                                         multiSelect="false" size="1" rendered="{!fromAddressPicklistEnabled}">
+                            <apex:selectOptions value="{!orgWideEmailSelectOptions}"/>
+                        </apex:selectList>
+                        <apex:outputText value="{!selectedOrgWideEmailAddress}" rendered="{!!fromAddressPicklistEnabled}"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC Me" for="ccUser" />
+                    <apex:inputCheckbox id="ccUser" value="{!sendccUser}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="secondsectionthirditem">
+                    <apex:outputLabel value="Send to Contact" />
+                    <apex:actionRegion >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <!--<apex:inputText id="sendToId" value="{!sendToEmail}">
+                            </apex:inputText>-->
+                            <apex:inputTextarea cols="5" id="sendToId" value="{!sendToEmail}" style="margin: 0px; width: 295px; height: 88px;"/>
+                            <span> 
+                                <a href="" onclick="openToLookupPopup('{!AcctSeedERP__Shipment__c.AcctSeedERP__Sales_Order__r.AcctSeedERP__Customer__c}')" title="To Lookup (New Window)" 
+                                   style="cursor:pointer;">
+                                    <img src="/img/s.gif" alt="Contact Lookup (New Window)" 
+                                         class="lookupIcon" onblur="this.className = 'lookupIcon';" 
+                                         onfocus="this.className = 'lookupIconOn';" 
+                                         onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" 
+                                         onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" 
+                                         title="Add To Recipients (New Window)"/></a>
+                            </span>
+                        </div>
+                        <apex:outputPanel id="errorPanel" style="color:red;display:none" layout="block"/>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="secondsectionfourthitem">
+                    <apex:outputLabel value="CC Addresses" for="ccAddresses" />
+                    <apex:actionRegion >
+                        <div class="{!IF(sendccUser, 'requiredInput', '')}">
+                            <div class="{!IF(sendccUser, 'requiredBlock', '')}"></div>
+                            <!--<apex:inputText id="cc" value="{!ccEmail}">
+                            </apex:inputText>-->
+                            <apex:inputTextarea cols="5" id="cc" value="{!ccEmail}" style="margin: 0px; width: 295px; height: 88px;"/><span> 
+                            <a href="" onclick="openCCLookupPopup('{!AcctSeedERP__Shipment__c.AcctSeedERP__Sales_Order__r.AcctSeedERP__Customer__c}')" title="CC Lookup (New Window)" 
+                               style="cursor:pointer;">
+                                <img src="/img/s.gif" alt="Contact Lookup (New Window)" 
+                                     class="lookupIcon" onblur="this.className = 'lookupIcon';" 
+                                     onfocus="this.className = 'lookupIconOn';" 
+                                     onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" 
+                                     onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" 
+                                     title="Add CC Recipients (New Window)"/></a>
+                            </span>
+                        </div>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="email" title="Email Subject and Body Information" 
+                                   columns="1" collapsible="false" rendered="{!showPage}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Subject" />
+                    <apex:actionRegion >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputText id="emailSubject" value="{!custmEmailTemplate.emailSubject}" style="width:65%"/>
+                        </div>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem helpText="Note that if there are multiple recipients then this template would use that recipients name while sending the email. Changes to the template should not be made here but in Setup > Classic Email Templates > Shipment Email Template">
+                    <apex:outputLabel value="Body" />
+                    <apex:actionRegion >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputTextarea id="emailBody" value="{!custmEmailTemplate.emailBody}"
+                                                style="width:65%;line-height:1em;height:7em;"
+                                                richText="false"/>
+                        </div>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="attachment" title="Email Attachments" columns="1" collapsible="false" 
+                                   rendered="{!showPage}">
+                <apex:pageBlockTable id="attachmentBlock" value="{!attachmentList}" var="at" title="" rendered="{!IF(attachmentList.size > 0, true, false)}" style="margin-bottom: 10px">
+                    <apex:column >
+                        <apex:facet name="header"> <apex:inputCheckbox styleClass="mainCheckbox">
+                            <apex:actionSupport event="onclick" onsubmit="checkAll(this)" rerender="attachmentBlock"/>
+                            </apex:inputCheckbox>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!at.selected}" id="checkedone" styleClass="subCheckbox" onchange="subClick()">
+                        </apex:inputCheckbox>
+                    </apex:column>                    
+                    <apex:column headervalue="Name" value="{!at.attachment.Name}" />
+                    <!--<apex:column headervalue="Description" value="{!at.attachment.Description}" />
+<apex:column headervalue="Content Type" value="{!at.attachment.ContentType}" />-->
+                </apex:pageBlockTable>
+                <apex:outputPanel rendered="{!IF(attachmentList.size > 0, false, true)}" style="margin-bottom: 10px">
+                    <apex:outputText value="No shipment attachments found."></apex:outputText>
+                </apex:outputPanel>
+                <!--
+<apex:inputfile value="{!attach.body}" filename="{!attach.name}" contentType="{!attach.contentType}">
+</apex:inputfile>
+<apex:outputPanel layout="block" style="width:40%;">
+<table id="mainTable" ></table>
+</apex:outputPanel>-->
+                <!--<apex:inputHidden id="proxyInput" value="{!serializedCustomEmailAttachments}"/>-->
+            </apex:pageBlockSection>
+            <apex:outputPanel id="extraOutputPanel"></apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+    <apex:pageBlock title="Shipment PDF Preview" rendered="{!showPage}">
+        <apex:iframe src="/apex/ShipmentPDFCustom?id={!AcctSeedERP__Shipment__c.id}" rendered="{!showPage}"/>
+    </apex:pageBlock>
+    <script>
+    var newWinTo=null;
+    function openToLookupPopup(id)
+    {
+        var url="/apex/AddToRecipientsPopup?shipmentId={!AcctSeedERP__Shipment__c.id}&existingTo="+
+            document.getElementById('{!$Component.theForm.firstpageblock.secondsection.secondsectionthirditem.sendToId}').
+        value+
+            "&completeCc="+
+            document.getElementById('{!$Component.theForm.firstpageblock.secondsection.secondsectionfourthitem.cc}').
+        value+"&accountId=" + id;
+        newWinTo=window.open(url, 'Popup','height=550,width=900,left=100,top=100,resizable=no,scrollbars=yes,'+
+                             'toolbar=no,status=no');
+        if (window.focus) 
+        {
+            newWinTo.focus();
+        }
+        
+        return false;
+    }
+    
+    function closeToLookupPopup()
+    {
+        if (null!=newWinTo)
+        {
+            newWinTo.close();
+        }  
+    }
+    </script>
+    <script>
+    var newWincc=null;
+    function openCCLookupPopup(id)
+    {
+        var url="/apex/AddCCRecipientsPopup?shipmentId={!AcctSeedERP__Shipment__c.id}&existingCc="+
+            document.getElementById('{!$Component.theForm.firstpageblock.secondsection.secondsectionfourthitem.cc}').
+        value+
+            "&completeTo="+
+            document.getElementById('{!$Component.theForm.firstpageblock.secondsection.secondsectionthirditem.sendToId}').
+        value+"&accountId=" + id;
+        newWincc=window.open(url, 'Popup','height=550,width=900,left=100,top=100,resizable=no,scrollbars=yes,toolbar=no,'+
+                             'status=no');
+        if (window.focus) 
+        {
+            newWincc.focus();
+        }
+        
+        return false;
+    }
+    
+    function closeLookupPopup()
+    {
+        if (null!=newWincc)
+        {
+            newWincc.close();
+        }  
+    }
+    </script>
+    <script>
+    function checkAll(cb)
+    {
+        var subElem = document.getElementsByClassName("subCheckbox");
+        for(var i = 0; i < subElem.length; i++)
+        {
+            subElem[i].checked = cb.checked;
+        }
+    }
+    function subClick(){
+
+        var somethingUnchecked = false;
+        var subElem = document.getElementsByClassName("subCheckbox");
+        
+        var NoOfSubCheckboxes = subElem.length;
+
+        var reallyChecked = 0;
+        for(var i = 0; i < subElem.length; i++)
+        {
+            if(subElem[i].checked){
+                reallyChecked++;
+            }
+        } 
+        
+        var mainElem = document.getElementsByClassName("mainCheckbox");
+        if(NoOfSubCheckboxes == reallyChecked){
+            mainElem[0].checked = true;
+        }else{
+            mainElem[0].checked = false;
+        }
+    }
+    </script>
+    
+</apex:page>

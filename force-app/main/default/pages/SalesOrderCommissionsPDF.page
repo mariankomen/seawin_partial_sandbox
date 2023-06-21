@@ -1,0 +1,139 @@
+<apex:page standardStylesheets="false" title="ABC" applyBodyTag="false" applyHtmlTag="false" controller="CommissionsPDFController" sidebar="false" showHeader="false" renderAs="pdf">
+   <html>
+   <head>
+    <title>ABC</title>
+    <style type="text/css">
+        a{
+            color: #000 !important;
+        }
+        .spec_rep{
+            top: 100px;
+        }
+        p {font-size: 12px;}
+        .commissionTable{
+            margin: 10px !important;
+        }        
+        @page {
+            size:landscape;
+            margin-top: 150px;
+            padding:0px;
+            margin-bottom: 90px;
+            
+            @top-left {
+                content: element(header);
+            }                           
+            @bottom-left {   
+                content: element(footer);
+            } 
+        }        
+        div.header {
+            margin-top:10px;
+            position: running(header);
+            width: 100%;
+            margin-right: 10px;
+        }
+        div.footer {                    
+            position: running(footer);
+            width: 100%;
+        }
+        .repeatTableHeader{-fs-table-paginate: paginate;}
+        .section_title {
+            
+            /* text-decoration: underline; */
+            /* padding-bottom: 3px; */
+        }
+        .section_title_head{
+            margin: 0 auto;
+            padding-bottom: 25px;
+            margin-left: 364px;
+            margin-right: 364px;
+            text-align: center;
+            padding: 3px;
+            border-bottom: 1px solid #000;
+        }
+    </style>
+    
+    </head>
+    <body style="font-family:SansSerif !important;margin-left:12px;margin-right:12px;">
+        <div class="header">
+            <!-- <apex:image url="{!$Resource.SO_CommissionPDF_header}" width="937" height="70" /> -->
+            <apex:image url="{!$Resource.SOC_large_header}" width="100%" height="70" />
+            <div style="width: 100%; height: 2px; background-color: #1093E9;">
+                            
+            </div>
+        </div>        
+        <!-- <div class="footer" >
+            <apex:image url="{!$Resource.SO_CommissionPDF_header}" width="717" height="30" />
+        </div> -->
+        <div class="commissionTable">
+            <div class='section_title_head' style='text-align: center;'>
+                <apex:outputText value="Commissions Pipeline" styleClass="section_title"/>
+            </div>
+            <apex:pageBlock rendered="{!showCommissionsPipeline}">
+                <div style='margin-top: 15px;'>
+                    <apex:variable value="{!1}" var="i"/>
+                    <apex:dataTable value="{!commPipeline}" var="c" headerClass="theHead" style="width: 100%;border: 0.5px solid black; color: #000; font-size: 10px; text-align: center;">
+                        <apex:column style="padding: 5px;border: 0.5px solid black; font-size: 12px;" headervalue="#">
+                            {!i}
+                            <apex:variable value="{!i + 1}" var="i"/>
+                        </apex:column>
+                        
+                        
+                        <apex:column value="{!c.sales_order_name}" style="padding: 5px;border: 0.5px solid black; font-size: 12px;" headervalue="Sales Order"/>
+                        <apex:column value="{!c.opportunity_name}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Opportunity Name"/>
+                        <apex:column value="{!c.commissionable_total} $" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commissionable Products Total Amount"/>
+                        <apex:column value="{!c.commissionable_percent}%" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Percent"/>
+                        <apex:column value="{!c.commission_amount}$" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Amount"/>
+                        <apex:column value="{!c.commission_paid}$" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Paid"/>
+                        <apex:column value="{!c.commission_balance}$" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Balance"/>
+                    </apex:dataTable>
+                    
+                </div>
+            </apex:pageBlock>
+
+            <apex:pageBlock rendered="{!!showCommissionsPipeline}">
+                <p>
+                    There are no associated commissions.
+                </p>
+            </apex:pageBlock>
+            
+            <div class='section_title_head' style='margin-top: 25px; text-align: center;'>
+                <apex:outputText value="Commissions Due" styleClass="section_title" style="margin-top: 25px;"/>
+            </div>
+            
+
+            <apex:pageBlock rendered="{!showCommissionsDue}">
+                <div style='margin-top: 15px;'>
+                    <apex:variable value="{!1}" var="i"/>
+                    <apex:dataTable value="{!commDue}" var="c" headerClass="theHead" style="width: 100%; border: 0.5px solid black; color: #000; font-size: 10px; text-align: center;">
+                        <apex:column style="padding: 5px;border: 0.5px solid black; font-size: 12px;" headervalue="#">
+                            {!i}
+                            <apex:variable value="{!i + 1}" var="i"/>
+                        </apex:column>
+                        
+                        <apex:column value="{!c.opportunity_name}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Opportunity"/>
+                        <apex:column value="{!c.sales_order_name}" style="padding: 5px;border: 0.5px solid black; font-size: 12px;" headervalue="Sales Order Name"/>
+                        <apex:column value="{!c.sales_order_total}$" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Total"/>
+                        <apex:column value="{!c.account_name}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Account Name"/>
+                        <apex:column value="{!c.commission_name}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Name"/>
+                        <apex:column value="{!c.commission_amount}$" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Amount"/>
+                        <apex:column value="{!c.commission_holder}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Commission Holder"/>
+                        <apex:column value="{!c.role}" style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Role"/>
+                        <apex:column style="padding: 5px;order-bottom: 1px solid #ddd;border: 0.5px solid black; font-size: 12px;" headervalue="Created Date">
+                            <apex:outputText value="{0,date,MM/dd/yyyy}">
+                           <apex:param value="{!c.created_date}" />
+                       </apex:outputText>
+                        </apex:column>
+                    </apex:dataTable>
+                </div>
+            </apex:pageBlock>
+
+            <apex:pageBlock rendered="{!!showCommissionsDue}">
+                <p>
+                    There are no associated commissions.
+                </p>
+            </apex:pageBlock>
+        </div>
+    </body>
+    </html>
+</apex:page>

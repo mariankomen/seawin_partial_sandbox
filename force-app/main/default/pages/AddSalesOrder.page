@@ -1,0 +1,234 @@
+<apex:page standardController="AcctSeedERP__Sales_Order__c" 
+extensions="AddSalesOrderPageExtension" sidebar="false" action="{!RedirectToRecordTypeSelectScreen}">
+
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js" />
+
+    <apex:form >
+        <apex:sectionHeader title="Sales Order Edit" subtitle="New Sales Order"/>
+        <apex:pageBlock title="Sales Order Edit">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveOverride}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+
+            <apex:pageMessages ></apex:pageMessages>
+
+            <apex:pageBlockSection title="Information" columns="2" collapsible="false">
+                <apex:inputField value="{!so.AcctSeedERP__Opportunity__c}" />
+                <apex:outputField value="{!so.RecordTypeId}" />
+
+                <apex:inputField value="{!so.AcctSeedERP__Customer__c}" id="billing_id" required="true" />
+                <apex:OutputField value="{!so.Sales_Rep_O__c}"/>
+
+                <apex:inputField value="{!so.Contact__c}" id="billing_contact_id" />
+                <apex:inputField value="{!so.Referral_Sales_Rep__c}" />
+
+                <apex:inputField value="{!so.AcctSeedERP__Status__c}" required="true" />
+                <apex:inputField value="{!so.Price_Level__c}" required="true" />
+
+                <apex:inputField value="{!so.Stage__c}" required="true" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                <apex:inputField value="{!so.GL_Account_Variable_1__c}" required="true" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                
+                <apex:inputField value="{!so.Project__c}" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!so.LeadSource__c}" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Project Management" columns="2" collapsible="false">
+                <apex:inputField value="{!so.Customer_s_ETA__c}" />
+                <apex:inputField value="{!so.PO_Number__c}" />
+                <apex:inputField value="{!so.Estimated_Shipping_Date__c}" />
+                <apex:inputField value="{!so.PO_Date__c}" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Additional Information" columns="2" collapsible="false">
+                <apex:inputTextarea value="{!so.Special_Instruction__c}" rows="3" cols="40" />
+                <apex:inputTextarea value="{!so.Notes__c}" rows="3" cols="40" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Address Information" columns="2" collapsible="false">
+                <apex:inputTextarea value="{!so.AcctSeedERP__Billing_Street__c}" cols="40" rows="2" id="billing_street_id" />
+                <apex:inputField value="{!so.Shipping_Account__c}" id="shipping_company_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Billing_City__c}"  id="billing_city_id" />
+                <apex:inputField value="{!so.Shipping_Name__c}" id="shipping_name_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Billing_State__c}" id="billing_state_id" />
+                <apex:inputTextarea value="{!so.AcctSeedERP__Shipping_Street__c}" cols="40" rows="2"  id="shipping_street_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Billing_PostalCode__c}" id="billing_postal_code_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Shipping_City__c}" id="shipping_city_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Billing_Country__c}" id="billing_country_id" />
+                <apex:inputField value="{!so.AcctSeedERP__Shipping_State__c}" id="shipping_state_id" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!so.AcctSeedERP__Shipping_PostalCode__c}" id="shipping_postal_code_id" />
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!so.AcctSeedERP__Shipping_Country__c}" id="shipping_country_id" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="System Information" columns="2" collapsible="false">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Owner"></apex:outputLabel>
+                    <apex:OutputField value="{!so.OwnerId}" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+    </apex:form>
+
+
+    <script>
+
+        $(function () {
+
+            var billinglkid = getFieldId('billing_id_lkid');
+            var billingId = getFieldId('billing_id');
+            var billingStreetId = getFieldId('billing_street_id', 'textarea');
+            var billingCityId = getFieldId('billing_city_id');
+            var billingStateId = getFieldId('billing_state_id');
+            var billingPostalCodeId = getFieldId('billing_postal_code_id');
+            var billingCountryId = getFieldId('billing_country_id');
+            var billingCotactlkid = getFieldId('billing_contact_id_lkid');
+            var billingContactId = getFieldId('billing_contact_id');
+
+            var shippingCompanylkid = getFieldId('shipping_company_id_lkid');
+            var shippingCompanyId = getFieldId('shipping_company_id');
+            var shippingStreetId = getFieldId('shipping_street_id', 'textarea');
+            var shippingCityId = getFieldId('shipping_city_id');
+            var shippingStateId = getFieldId('shipping_state_id');
+            var shippingPostalCodeId = getFieldId('shipping_postal_code_id');
+            var shippingCountryId = getFieldId('shipping_country_id');
+
+            var billinglkidValue = getFieldValue(billinglkid);
+            var shippingCompanylkidValue = getFieldValue(shippingCompanylkid);
+
+
+            function getFieldId(id, type='input') {
+
+                return $(type+'[id$=' + id + ']');
+            }
+
+
+            function getFieldValue(id) {
+
+                return id.val();
+            }
+
+
+            function setFieldOnPageWithStyle(id, value, type='') {
+
+                id.val(value);
+            }
+
+
+            function setFieldsOnPage(accountId, type) {
+
+                console.log('accountId', accountId);
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.AddSalesOrderPageExtension.getAccount}',
+                    accountId,
+                    function (result, event) {
+                        console.log('===event===', event);
+                        console.log('===result===', result);
+                        if (event.status) {
+                            if (type === 'billing') {
+
+                                if(typeof result.Contacts !== 'undefined' && parseInt(result.Contacts.length) == 1){
+                                    setFieldOnPageWithStyle(billingContactId, typeof result.Contacts[0].Name === 'undefined' ? '' : result.Contacts[0].Name);
+                                    setFieldOnPageWithStyle(billingCotactlkid, typeof result.Contacts[0].Id === 'undefined' ? '' : result.Contacts[0].Id);
+                                }
+
+                                setFieldOnPageWithStyle(billingStreetId, typeof result.BillingStreet === 'undefined' ? '' : result.BillingStreet);
+                                setFieldOnPageWithStyle(billingCityId, typeof result.BillingCity === 'undefined' ? '' : result.BillingCity);
+                                setFieldOnPageWithStyle(billingStateId, typeof result.BillingState === 'undefined' ? '' : result.BillingState);
+                                setFieldOnPageWithStyle(billingPostalCodeId, typeof result.BillingPostalCode === 'undefined' ? '' : result.BillingPostalCode);
+                                setFieldOnPageWithStyle(billingCountryId, typeof result.BillingCountry === 'undefined' ? '' : result.BillingCountry);
+                            }
+                            if (type === 'company') {
+
+                                setFieldOnPageWithStyle(shippingStreetId, typeof result.ShippingStreet === 'undefined' ? '' : result.ShippingStreet);
+                                setFieldOnPageWithStyle(shippingCityId, typeof result.ShippingCity === 'undefined' ? '' : result.ShippingCity);
+                                setFieldOnPageWithStyle(shippingStateId, typeof result.ShippingState === 'undefined' ? '' : result.ShippingState);
+                                setFieldOnPageWithStyle(shippingPostalCodeId, typeof result.ShippingPostalCode === 'undefined' ? '' : result.ShippingPostalCode);
+                                setFieldOnPageWithStyle(shippingCountryId, typeof result.ShippingCountry === 'undefined' ? '' : result.ShippingCountry);
+                            }
+                        } else if (event.type === 'exception') {
+                            document.getElementById("responseErrors").innerHTML =
+                                event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                        } else {
+                            document.getElementById("responseErrors").innerHTML = event.message;
+                        }
+                    },
+                    { escape: true }
+                );
+            }
+
+
+            function updateBillingFields() {
+
+                newBillinglkidValue = getFieldValue(billinglkid);
+
+                if (billinglkidValue !== newBillinglkidValue) {
+                    billinglkidValue = newBillinglkidValue;
+                    if (newBillinglkidValue === '' || newBillinglkidValue == null) {
+
+                        setFieldOnPageWithStyle(billingStreetId, '');
+                        setFieldOnPageWithStyle(billingCityId, '');
+                        setFieldOnPageWithStyle(billingStateId, '');
+                        setFieldOnPageWithStyle(billingPostalCodeId, '');
+                        setFieldOnPageWithStyle(billingCountryId, '');
+                        //setFieldOnPageWithStyle(billingContactId, null);
+                        //setFieldOnPageWithStyle(billingCotactlkid, null);
+                    }
+                    else {
+                        setFieldsOnPage(billinglkidValue, 'billing');
+                    }
+                }
+            }
+
+
+            function updateShippingCompanyFields() {
+
+                newShippingCompanylkidValue = getFieldValue(shippingCompanylkid);
+
+                if (shippingCompanylkidValue !== newShippingCompanylkidValue) {
+                    shippingCompanylkidValue = newShippingCompanylkidValue;
+                    if (newShippingCompanylkidValue === '' || newShippingCompanylkidValue == null) {
+
+                        setFieldOnPageWithStyle(shippingStreetId, '');
+                        setFieldOnPageWithStyle(shippingCityId, '');
+                        setFieldOnPageWithStyle(shippingStateId, '');
+                        setFieldOnPageWithStyle(shippingPostalCodeId, '');
+                        setFieldOnPageWithStyle(shippingCountryId, '');
+                    }
+                    else {
+                        setFieldsOnPage(shippingCompanylkidValue, 'company');
+                    }
+                }
+            }
+
+
+            //Billing Section
+            billingId.change(function () {
+                setTimeout(function () { updateBillingFields(); }, 10);
+            })
+
+            //Shipping Company Section
+            shippingCompanyId.change(function () {
+                setTimeout(function () { updateShippingCompanyFields(); }, 10);
+            })
+
+            $('body').click(function () {
+                console.log('body click');
+                setTimeout(function () { updateBillingFields(); }, 10);
+                setTimeout(function () { updateShippingCompanyFields(); }, 10);
+            })
+
+        });
+
+    </script>
+
+</apex:page>

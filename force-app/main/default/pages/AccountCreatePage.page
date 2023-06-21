@@ -1,0 +1,247 @@
+<apex:page standardcontroller="Account" extensions="AccountCreateExtension" 
+showheader="true" showHeader="true" id="accountpage" action="{!RedirectToSalesRepPage}">
+    <style>
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+            margin: 7px 0px 0px 0px;
+        }
+    	.requiredLegend {
+            padding: 0 2px;
+            background-color: transparent !important;
+            font-weight: normal;
+            color: #000;
+        }
+        .accountTab .tertiaryPalette, .individualPalette .accountBlock .tertiaryPalette, .layoutEdit .individualPalette .accountBlock .tertiaryPalette {
+            background-image: url(/img/alohaSkin/opacity75.png);
+            border-width: 0;
+            color: black !important;
+            padding: 4px 16px;
+            border-top: 1px solid #fff;
+        }
+        #para {
+            padding: 0;
+            margin: 16px 0;
+            font-size: 109%;
+            text-align: left;
+        }
+    </style>
+    <apex:stylesheet value="{!URLFOR($Resource.dupeCSS)}" />
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js" />
+
+    <apex:sectionHeader title="Account Edit" subtitle="New Account"></apex:sectionHeader>
+
+    <apex:form id="form">
+        <apex:pageBlock id="account" title="Account Edit">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!Save}" rendered="{!NOT(hasDuplicateResult)}"/>
+                <apex:commandButton value="Save & New" action="{!SaveAndNew}" rendered="{!NOT(hasDuplicateResult)}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true"/>
+                <apex:commandButton value="Save (Ignore Alert)" action="{!Save_Alert}" rendered="{!hasDuplicateResult}"/>
+                <apex:commandButton value="Save & New (Ignore Alert)" action="{!SaveAndNew_Alert}" rendered="{!hasDuplicateResult}"/>
+            </apex:pageBlockButtons>
+
+            <apex:pageMessages escape="false" rendered="{!NOT(hasDuplicateResult)}"></apex:pageMessages>
+            
+            <div class="pbError" style="text-align:center; {!IF(NOT(hasDuplicateResult), 'display: none;', '')}">
+                {!duplicateRecords.size} Possible Duplicate Record Found<br></br>You are creating a duplicate record. We recommend you use an existing record instead.
+            </div>
+            <div class="DedupeMatchResult" style="{!IF(NOT(hasDuplicateResult), 'display: none;', '')}">
+                <div class="MatchResultObjectType">
+                    <img src="/img/icon/accounts16.png" alt="Account" title="Account"/>Accounts</div>
+                <div class="listRelatedObject accountBlock MatchResultList">
+                    <apex:pageBlockTable value="{!duplicateRecords}" var="item" 
+                    rendered="{!hasDuplicateResult}" columns="10" columnsWidth="">
+                        <apex:column >
+                            <apex:facet name="header">Name</apex:facet>
+                            <apex:outputLink value="/{!item['Id']}">{!item['Name']}</apex:outputLink>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Billing Country</apex:facet>
+                            <apex:outputField value="{!item['BillingCountry']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Billing Street</apex:facet>
+                            <apex:outputField value="{!item['BillingStreet']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Billing City</apex:facet>
+                            <apex:outputField value="{!item['BillingCity']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Billing Zip/Postal Code</apex:facet>
+                            <apex:outputField value="{!item['BillingPostalCode']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Billing State/Province</apex:facet>
+                            <apex:outputField value="{!item['BillingState']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Phone</apex:facet>
+                            <apex:outputField value="{!item['Phone']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Website</apex:facet>
+                            <apex:outputField value="{!item['Website']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Account Owner</apex:facet>
+                            <apex:outputField value="{!item['OwnerId']}"/>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Last Modified Date</apex:facet>
+                            <apex:outputField value="{!item['LastModifiedDate']}"/>
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </div>
+            </div>
+            <apex:pageBlockSection columns="2" collapsible="false">
+
+            </apex:pageBlockSection>
+            <!-- Account Information -->
+            <apex:pageBlockSection title="Account Information" columns="2" collapsible="false">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="requiredLegend brandTertiaryFgr">
+                        <span class="requiredExampleOuter">
+                            <span class="requiredExample">&nbsp;</span>
+                        </span>
+                        <span class="requiredText"> = Required Information.</span>
+                    </span>
+                    </span>
+                    <h3>Account Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:inputField value="{!acct.Name}"/>
+                <apex:outputField value="{!acct.Sales_Rep_O__c}"/>
+
+                <apex:inputField value="{!acct.Website}"/>
+                <apex:inputField value="{!acct.Manufacture_Representative__c}"/>
+
+                <apex:inputField value="{!acct.Type}" required="true"/>
+                <apex:inputField value="{!acct.ParentId}"/>
+                
+                <apex:inputField value="{!acct.Phone}"/>
+                <apex:inputField value="{!acct.Industry}"/>
+                
+                <apex:inputField value="{!acct.Email__c}"/>
+                <apex:inputField value="{!acct.Price_Level__c}"/>
+                
+                <apex:inputField value="{!acct.Fax}"/>
+                <apex:inputField value="{!acct.Description}"/>
+
+                <apex:inputField value="{!acct.Contact_Person__c}"/>
+                <apex:inputField value="{!acct.Status__c}"/>
+            </apex:pageBlockSection>
+            <!-- Address Information -->
+            <apex:pageBlockSection id="address" title="Address Information" columns="2" collapsible="false">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="bodySmall"><a 
+                        href="javascript: copyAddr('accountpage:form:account:address:billingstreet','accountpage:form:account:address:billingcity','accountpage:form:account:address:billingzip','accountpage:form:account:address:billingcountry','accountpage:form:account:address:billingstate','accountpage:form:account:address:shippingstreet','accountpage:form:account:address:shippingcity','accountpage:form:account:address:shippingzip','accountpage:form:account:address:shippingcountry','accountpage:form:account:address:shippingstate', true, true, false);">
+                        Copy Billing Address to Shipping Address</a></span>
+                    </span>
+                    <h3>Address Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:inputField value="{!acct.AcctSeed__Billing_Contact__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Shipping_Contact__c}"/>
+
+                <apex:inputField id="billingstreet" value="{!acct.BillingStreet}"/>
+                <apex:inputField id="shippingstreet" value="{!acct.ShippingStreet}"/>
+
+                <apex:inputField id="billingcity" value="{!acct.BillingCity}"/>
+                <apex:inputField id="shippingcity" value="{!acct.ShippingCity}"/>
+
+                <apex:inputField id="billingstate" value="{!acct.BillingState}"/>
+                <apex:inputField id="shippingstate" value="{!acct.ShippingState}"/>
+
+                <apex:inputField id="billingzip" value="{!acct.BillingPostalCode}"/>
+                <apex:inputField id="shippingzip" value="{!acct.ShippingPostalCode}"/>
+
+                <apex:inputField id="billingcountry" value="{!acct.BillingCountry}"/>
+                <apex:inputField id="shippingcountry" value="{!acct.ShippingCountry}"/>
+            </apex:pageBlockSection>
+
+            <!-- Quote Lines -->
+            <apex:pageBlockSection title="Quote Lines" columns="2" collapsible="false">
+
+                <apex:inputField value="{!acct.Shower_Doors__c}"/>
+                <apex:inputField value="{!acct.Barn_Doors__c}"/>
+
+                <apex:inputField value="{!acct.Wall_Surrounds__c}"/>
+                <apex:inputField value="{!acct.LED_Mirrors__c}"/>
+
+                <apex:inputField value="{!acct.Shower_Bases__c}"/>
+                <apex:inputField value="{!acct.Vanities_Kitchens__c}"/>
+
+            </apex:pageBlockSection>
+
+            <!-- Accounting Information -->
+            <apex:pageBlockSection title="Accounting Information" columns="2" collapsible="false">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="requiredLegend brandTertiaryFgr">
+                        <span class="requiredExampleOuter">
+                            <span class="requiredExample">&nbsp;</span>
+                        </span>
+                        <span class="requiredText"> = Required Information.</span>
+                    </span>
+                    </span>
+                    <h3>Accounting Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:inputField value="{!acct.AcctSeed__Accounting_Active__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__GL_Account_Variable_1__c}" required="true"/>
+
+                <apex:inputField value="{!acct.AcctSeed__Accounting_Type__c}" required="true"/>
+                <apex:inputField value="{!acct.AcctSeed__Credit_Card_Vendor__c}"/>
+
+                <apex:inputField value="{!acct.AcctSeed__Default_Expense_GL_Account__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__X1099_Vendor__c}"/>
+
+                <apex:inputField value="{!acct.AcctSeed__File_Import_Match_Name__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Default_1099_Box__c}"/>
+
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!acct.AcctSeed__Taxpayer_Identification_Number__c}"/>
+
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <!-- Commission Structure (Manufacturer Rep) -->
+            <apex:pageBlockSection title="Commission Structure (Manufacturer Rep)" columns="2" collapsible="false">
+
+                <apex:inputField value="{!acct.Price_Level_1_12__c}"/>
+                <apex:inputField value="{!acct.Price_Level_21_26__c}"/>
+
+                <apex:inputField value="{!acct.Price_Level_13_20__c}"/>
+                <apex:inputField value="{!acct.Price_Level_27_30__c}"/>
+            </apex:pageBlockSection>
+
+            <!-- Accounting Payable Information -->
+            <apex:pageBlockSection title="Accounting Payable Information" columns="2" collapsible="false">
+
+                <apex:inputField value="{!acct.Payment_Terms__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Discount_Percent__c}"/>
+
+                <apex:inputField value="{!acct.AcctSeed__Account_Payable_Terms__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Discount_Days_Due__c}"/>
+            </apex:pageBlockSection>
+
+            <!-- Billing Information -->
+            <apex:pageBlockSection title="Billing Information" columns="2" collapsible="false">
+
+                <apex:inputField value="{!acct.AcctSeed__Billing_Terms_Name__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Billing_Discount_Percent__c}"/>
+
+                <apex:inputField value="{!acct.Deposit__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Billing_Discount_Days_Due__c}"/>
+
+                <apex:inputField value="{!acct.AcctSeed__Billing_Days_Due__c}"/>
+                <apex:inputField value="{!acct.AcctSeed__Billing_Format__c}"/>
+            </apex:pageBlockSection>
+
+            <!-- System Information -->
+            <apex:pageBlockSection title="System Information" columns="2" collapsible="false">
+
+                <apex:outputField value="{!acct.OwnerId}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

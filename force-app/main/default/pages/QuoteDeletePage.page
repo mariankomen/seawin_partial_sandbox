@@ -1,0 +1,14 @@
+<apex:page standardcontroller="Quote" extensions="QuoteDeleteExtension" action="{!TryDelete}">
+ 
+    <apex:sectionHeader title="Quote" subtitle="Delete Quote"></apex:sectionHeader>
+  	
+    <apex:form >
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be deleted."
+                          severity="error" rendered="{!DeleteErrorMsgQuote}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    
+</apex:page>

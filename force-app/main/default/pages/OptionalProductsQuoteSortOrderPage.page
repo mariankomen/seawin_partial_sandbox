@@ -1,0 +1,88 @@
+<apex:page standardcontroller="Optional_Products_Quote__c" recordSetVar="quotelines" extensions="OptionalProductsQuoteSortOrder">
+    
+    <style>
+        .hiddenColumn{
+        display: none !important;   
+        }
+    </style>
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Quote" subtitle="{!qt.name}"/>
+        <apex:pageBlock id="thePageBlock" title="Optional Products Quote">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:outputPanel rendered="{!visible}">
+                <div style="height: 30px; width: 100%; margin-bottom: 5px; margin-top: 17px;">
+                    <apex:outputText value="Note: Drag and Drop the respective products to sort."></apex:outputText>
+                </div>
+            </apex:outputPanel>
+            <apex:pageBlockTable value="{!lines}" var="line" id="theTable" rendered="{!visible}">
+                <apex:column value="{!line.id}" headerClass="hiddenColumn" styleClass="hiddenColumn"/>
+                <apex:column value="{!line.product__r.name}"/>
+                <apex:column value="{!line.Product_Code_Formula__c}"/>
+                <apex:column value="{!line.Item_Description__c}"/>
+                <apex:column value="{!line.Size__c}"/>
+                <apex:column value="{!line.Quantity__c}"/>
+                <apex:column value="{!line.UnitPrice__c}"/>
+                <apex:column value="{!line.TotalPrice__c}"/>
+            </apex:pageBlockTable>
+            <apex:pageBlockButtons rendered="{!visible}">
+                <apex:commandButton value="Save" onclick="savesort(); return false;" reRender="" />
+                <apex:commandButton value="Back" action="{!Back}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="sendsort" action="{!createsort}" reRender="" oncomplete="" rendered="{!visible}">
+            <apex:param name="sortstring" value=""/>
+        </apex:actionFunction>
+        <apex:inputText id="sortedarray" style="display: none" rendered="{!visible}"></apex:inputText>       
+    </apex:form>
+    <apex:outputPanel rendered="{!visible}">
+        <apex:stylesheet value="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+        <script>
+        //var $g = jQuery.noConflict();
+        var sortEventHandler = function(event, ui){
+            var listElements = $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").children();
+
+            var finalSort = [];
+            var position = 1;
+            listElements.each(function(i, row){
+                var initSort = {};
+                $(this).find('td').each (function(i,row) {
+                    if(i == 0){
+                        
+                        // listValues[$(this).text()] = position;
+                        initSort['id'] = $(this).text();
+                        initSort['sorts'] = position;
+                    }
+                });
+                finalSort.push(initSort);
+                position++;
+            });
+            
+            var jsonStr = JSON.stringify(finalSort);
+            
+            document.getElementById("{!$Component.theForm.sortedarray}").value = jsonStr;
+        };
+        $(document).ready(function(){
+            $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").sortable({
+                stop: sortEventHandler,
+                cursor: 'move'
+            });
+            $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").on("sortchange", sortEventHandler);
+        });
+        
+        function savesort(){
+            
+            var val = document.getElementById("{!$Component.theForm.sortedarray}").value;
+            
+            if(val == ''){
+                alert('No Sorting has been done yet.');
+            }
+            
+            //action function call
+            sendsort(val);
+            
+        }
+        </script>
+    </apex:outputPanel>
+</apex:page>

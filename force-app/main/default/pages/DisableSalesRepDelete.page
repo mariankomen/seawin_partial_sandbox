@@ -1,0 +1,4 @@
+<apex:page standardcontroller="Sales_Rep__c">
+  <h1>Sales Rep delete is currently disabled.</h1>
+  <h3>Please contact your administrator.</h3>
+</apex:page>

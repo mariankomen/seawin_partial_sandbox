@@ -1,0 +1,315 @@
+<apex:page id="thePage" standardController="AcctSeedERP__Sales_Order__c" extensions="CreateBillingInvoiceExtension">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/bootstrap-tagsinput.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}" />
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/bootstrap-tagsinput.css')}" />
+    
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Sales Order" subtitle="{!AcctSeedERP__Sales_Order__c.Name}" />
+        <apex:pageBlock id="thePageBlock" title="Create Billing">
+            <apex:pageMessage severity="info" strength="3" summary="All items have been billed." rendered="{!AlreadyBilled}" />
+            <apex:pageMessage severity="info" strength="3" summary="There are no sales order lines associated with this sales order" rendered="{!!isLines}" />
+            <apex:pageMessage severity="info" strength="3" summary="You must include a value for the quantity to bill field for each line you want to include on the billing" rendered="{!isLines && !AlreadyBilled}" />
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="saveStatus" onstart="AcctSeed.ASModule.disableButtons('Processing...')" onstop="AcctSeed.ASModule.format()"/>
+                <apex:commandButton status="saveStatus" value="Create Billing" action="{!createBilling}" reRender="theForm" rendered="{!isLines && !AlreadyBilled}"/>
+                <apex:commandButton value="Back" action="/{!AcctSeedERP__Sales_Order__c.Id}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2" rendered="{!isLines}">
+                <apex:outputField value="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Customer__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Billing Date" />
+                    <apex:InputField value="{!billingTemp.AcctSeed__Date__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!AcctSeedERP__Sales_Order__c.AcctSeedERP__Ledger__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Due Date" />
+                    <apex:InputField value="{!billingTemp.AcctSeed__Due_Date2__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    
+                </apex:pageBlockSectionItem>
+                <!--<apex:pageBlockSectionItem rendered="{!firstbilling}">
+<apex:outputLabel value="Bill Deposit/All?:" />
+<apex:selectList title="deposittypeselect" id="deposit" value="{!depositbill}" size="1" styleClass="isdeposit" onchange="calculateBillOnload(true, this.title)">
+<apex:selectOption itemValue="all" itemLabel="All" />
+<apex:selectOption itemValue="deposit" itemLabel="Deposit" />
+</apex:selectList>
+</apex:pageBlockSectionItem>-->
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockTable id="thePageBlockTable" value="{!solWrapper}" var="sow" cellpadding="6" rendered="{!isLines}">
+                <apex:column value="{!sow.soLine.AcctSeedERP__Product__r.Name}" />
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Ordered">
+                    <apex:outputText id="quantityOrdered" value="{0, number, 0.0000}">
+                        <apex:param value="{!sow.soLine.AcctSeedERP__Quantity_Ordered__c}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Allocated">
+                    <apex:outputText id="quantityAllocated" value="{0, number, 0.0000}">
+                        <apex:param value="{!sow.quantityReceived}" />
+                    </apex:outputText>
+                    <apex:inputHidden id="unitPrice" value="{!sow.soLine.AcctSeedERP__Unit_Price__c}" />
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Shipped">
+                    <apex:outputText id="quantityShipped" value="{0, number, 0.0000}">
+                        <apex:param value="{!sow.soLine.AcctSeedERP__Quantity_Shipped__c}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Billed">
+                    <apex:outputText id="quantityBilled" value="{0, number, ####0.0000}" style="width:80px">
+                        <apex:param value="{!sow.quantityBilled}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Unbilled">
+                    <apex:outputText id="quantityUnbilled" value="{0, number, ####0.0000}">
+                        <apex:param value="{!sow.soLine.AcctSeedERP__Quantity_Ordered__c - sow.quantityBilled}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" style="width:120px">
+                    <apex:facet name="header">
+                        <apex:actionRegion >
+                            Quantity to Bill
+                            <br/>Bill All Quantity?:&nbsp;
+                            <apex:selectList title="billtypeselect" id="billAllSelect" value="{!billType}" size="1" onchange="calculateBillOnload(true, this.title)" styleClass="istype">
+                                <apex:selectOption itemValue="no" itemLabel="No"/>
+                                <apex:selectOption itemValue="yes" itemLabel="Yes" />
+                            </apex:selectList>
+                        </apex:actionRegion>
+                    </apex:facet> 
+                    <apex:actionRegion >
+                        <apex:inputText id="billtype" title="myTitle" styleClass="align-right clearText billtypefilled" value="{!sow.billTypeVal}" style="width:80px" 
+                                        required="false" onkeyup="recalculateBill(this.id, this.title,this.value, {!sow.UnbilledAmount}, {!sow.soLine.AcctSeedERP__Unit_Price__c}, {!sow.soLine.AcctSeedERP__Quantity_Ordered__c}, {!sow.quantityBilled})"
+                                        disabled="{!sow.quantityBilled == sow.soLine.AcctSeedERP__Quantity_Ordered__c}">
+                        </apex:inputText>
+                    </apex:actionRegion>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Billed Amount">
+                    <apex:outputText id="billedAmount" value="{0, number, Currency}">
+                        <apex:param value="{!sow.billedAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Unbilled Amount">
+                    <apex:outputText id="unbilledAmount" value="{0, number, Currency}">
+                        <apex:param value="{!sow.unbilledAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Unit Price">
+                    <apex:outputText id="unit_price_cell" value="{0,number,$#,##0.00}">
+                        <apex:param value="{!sow.soLine.AcctSeedERP__Unit_Price__c}" />
+                    </apex:outputText>
+                    <apex:inputHidden id="unitPriceCell" value="{!sow.soLine.AcctSeedERP__Unit_Price__c}"/>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" footerClass="align-right" headerValue="Amount to Bill">
+                    <apex:outputText id="billAmount" value="{0, number, Currency}" styleClass="clearAmount">
+                        <apex:param value="{!sow.billAmount}" />
+                    </apex:outputText>
+                    <apex:inputHidden value="{!sow.BillAmountHidden}" id="billAmountInput" />
+                    <apex:facet name="footer">  
+                        <apex:outputText id="footerAmount" value="{0, number, Currency}" styleClass="clearAmount">
+                            <apex:param value="{!Amount}" />
+                        </apex:outputText>
+                    </apex:facet>
+                </apex:column>                
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+    var keyvalue = [];
+    function calculateBillOnload(isOnChange, inputtype = ''){
+        
+        // selected
+        var SelectedElement = document.getElementsByClassName('istype');
+        var selected = SelectedElement[0].value;
+        
+        var TextInputs = document.getElementsByClassName('billtypefilled');
+        
+        if(isOnChange){
+            
+            //var selectedisDeposit = SelectedElementIsDeposit[0].value;
+            
+            for(var j = 0; j < TextInputs.length; j++){
+                
+                var tempId = TextInputs[j].id;
+                
+                var splittedTemp = tempId.split(':');
+                var turnTemp = tempId.split(':')[4];
+                
+                var billtypeval = '';
+                var quantityval = '';
+                var quantityunbilled = '';
+                var unBilledAmountTemp = '';
+                for(var o = 0; o < 5; o++){
+                    billtypeval += (o == 4)?turnTemp+':billtype':splittedTemp[o]+':';
+                    quantityval += (o == 4)?turnTemp+':quantityUnbilled':splittedTemp[o]+':';
+                    quantityunbilled += (o == 4)?turnTemp+':quantityUnbilled':splittedTemp[o]+':';
+                    unBilledAmountTemp += (o == 4)?turnTemp+':unbilledAmount':splittedTemp[o]+':';  
+                    
+                }
+                
+                // if its quantity then set the full quantity in the billtypeVal input
+                var unbilled = parseFloat(document.getElementById(quantityunbilled).innerHTML);
+                
+                if(selected == 'yes'){
+                    
+                    // get the quantity
+                    var quantity = parseFloat(document.getElementById(quantityval).innerHTML);
+                    
+                    // set the value
+                    document.getElementById(billtypeval).value = (unbilled > 0) ? quantity : '';
+                    
+                }else if(selected == 'no'){
+                    document.getElementById(billtypeval).value = '';
+                }
+            }
+        }
+        var FooterAmountIdStr = '';
+        // calculate the bill amount and footer amount for the already populated percentages
+        
+        for(var i = 0; i < TextInputs.length; i++){
+            
+            // calcuate the ids of footer amount and bill amount so we can update their amounts based on billtype
+            var id = TextInputs[i].id;
+            
+            var splitted = id.split(':');
+            var turn = id.split(':')[4];
+            
+            var BillAmountIdStr = '';
+            var BillAmountInputStr = '';
+            var unitpricefield = '';
+            var unBilledAmount = '';
+            
+            for(var k = 0; k < 5; k++){
+                BillAmountIdStr += (k == 4)?turn+':billAmount':splitted[k]+':';
+                BillAmountInputStr += (k == 4)?turn+':billAmountInput':splitted[k]+':';
+                unBilledAmount += (k == 4)?turn+':unbilledAmount':splitted[k]+':';
+                unitpricefield += (k == 4)?turn+':unit_price_cell':splitted[k]+':';
+            }
+            if(i == 0){
+                for(var x = 0; x < 5; x++){
+                    
+                    FooterAmountIdStr += (x == 4)?'footerAmount':splitted[x]+':';
+                }
+            }
+            
+            // entered
+            var entered = (TextInputs[i].value == undefined) || (TextInputs[i].value == '') || 
+                (TextInputs[i].value == null) ? 0 : parseFloat(TextInputs[i].value);
+            
+            var UnBilledAmountStepOne = document.getElementById(unBilledAmount).innerHTML.indexOf('(') != -1 ?
+                -document.getElementById(unBilledAmount).innerHTML.replace(/[()]/g, '').replace('$', '').replace(/,/g, '') : 
+            document.getElementById(unBilledAmount).innerHTML.replace('$', '').replace(/,/g, '');
+            
+            var UnitPriceStepOne = document.getElementById(unitpricefield).innerHTML.replace('$', '').replace(/,/g, '');
+            
+            // actual
+            var actual = parseFloat(UnBilledAmountStepOne);
+            
+            // unitprice
+            var unitprice = parseFloat(UnitPriceStepOne);
+            
+            // set the title for text field to be used with reCalculateBill
+            TextInputs[i].attributes.getNamedItem('title').value = selected;
+            
+            var amount = 0;
+            amount = entered * unitprice;
+            
+            // amount = amount.toFixed(2);
+            amount = trueRound(amount, 2);
+            
+            // Bill amount
+            
+            document.getElementById(BillAmountIdStr).innerHTML = (amount == '') ? "$0.00" : 
+            amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            document.getElementById(BillAmountInputStr).value = (amount == '') ? "0.00" : amount;
+            
+            // add it to the key value pair
+            
+            var ElementIndex = id.split(':')[4];
+            keyvalue[ElementIndex] = amount;
+            
+        }
+        
+        // grand total
+        var grandtotal = 0;
+        for(var i = 0; i < keyvalue.length; i++){
+            if(keyvalue[i] != undefined){
+                grandtotal += parseFloat(keyvalue[i]);
+            }
+        }
+        
+        var gt = trueRound(grandtotal, 2);
+        document.getElementById(FooterAmountIdStr).innerHTML = 
+            (grandtotal == 0) ? "$0.00" : gt.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    }
+    
+    /*
+    window.onload = function(){
+        
+        calculateBillOnload(false);
+    }
+    */
+    
+    
+    function recalculateBill(id,selected, entered, actual, unitprice, quantityOrdered, quantityUnbilled){
+        
+        var splitted = id.split(':');
+        var turn = id.split(':')[4];
+        
+        var BillAmountIdStr = '';
+        var BillAmountInputStr = '';
+        for(var k = 0; k < 5; k++){
+            BillAmountIdStr += (k == 4)?turn+':billAmount':splitted[k]+':';
+            BillAmountInputStr += (k == 4)?turn+':billAmountInput':splitted[k]+':';
+        }
+        
+        var FooterAmountIdStr = '';
+        for(var x = 0; x < 5; x++){
+            
+            FooterAmountIdStr += (x == 4)?'footerAmount':splitted[x]+':';
+        }
+        
+        var amount = 0;
+        if(entered > (quantityOrdered - quantityUnbilled)){
+            alert('The quantity cannot be more than ' + (quantityOrdered - quantityUnbilled).toFixed(4));
+            document.getElementById(id).value = '';
+        }else{
+            amount = entered * unitprice;
+        }
+        
+        // amount = amount.toFixed(2);
+        amount = trueRound(amount, 2);
+        
+        
+        
+        // Bill amount
+        document.getElementById(BillAmountIdStr).innerHTML = (amount == '') ? "$0.00" : 
+        amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });;
+        document.getElementById(BillAmountInputStr).value = (amount == '') ? "0.00" : amount;
+        
+        // add it to the key value pair
+        
+        var ElementIndex = id.split(':')[4];
+        keyvalue[ElementIndex] = amount;
+        
+        // grand total
+        var grandtotal = 0;
+        for(var i = 0; i < keyvalue.length; i++){
+            if(keyvalue[i] != undefined){
+                grandtotal += parseFloat(keyvalue[i]);
+            }
+        }
+        
+        var gtotal = trueRound(grandtotal, 2);
+        document.getElementById(FooterAmountIdStr).innerHTML = 
+            (grandtotal == 0) ? "$0.00" : gtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });;
+    }
+    
+    function trueRound(value, digits){
+        return parseFloat((Math.round((value*Math.pow(10,digits)).toFixed(digits-1))/Math.pow(10,digits)).toFixed(digits));
+    }
+    
+    </script>
+</apex:page>

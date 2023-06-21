@@ -1,0 +1,26 @@
+<apex:page standardcontroller="AcctSeedERP__Sales_Order__c" extensions="LockedSalesOrderExtension">
+    <style>
+        html{ background-color: white;}/*this line is added by murtaza to keep the color consistent for communities as well*/
+        .messageText br {
+          display: none;
+        }
+        .message {
+            font-weight: bold;
+            margin: 4px 110px;
+        }
+        .message .messageText {
+            margin-left: 8px;
+            font-size: 12px;
+            
+        }
+        
+        .warningM3 .msgIcon, .warningMedium {
+                    display: none;
+                    }
+            .message .messageText h4 {
+                display: none;
+            }
+    
+    </style>
+    <apex:pageMessages ></apex:pageMessages>
+</apex:page>

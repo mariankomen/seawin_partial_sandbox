@@ -1,0 +1,11 @@
+<apex:page standardController="Sales_Rep__c">
+<apex:form id="form">
+      <apex:sectionHeader title="Sales Rep" subtitle="Sales Rep Create"/>
+      <apex:pageBlock title="">
+      <apex:pageBlockButtons location="Both">
+      <apex:commandButton value="Back" action="{!cancel}"/>
+      </apex:pageBlockButtons>
+          <apex:pagemessage strength="2" severity="error" detail="Sales Rep is automatically created when a user is added to Salesforce Org. If a user has been added please check the full Sales Rep list to see the Sales Rep for the user."></apex:pagemessage>
+      </apex:pageBlock>
+  </apex:form>
+</apex:page>

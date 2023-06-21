@@ -1,0 +1,22 @@
+<apex:page standardcontroller="OpportunityLineItem" extensions="EditOpportunityLineItemExtension" action="{!Edit}">
+    <apex:sectionHeader title="Opportunity" subtitle="Edit Opportunity Products"></apex:sectionHeader>
+    <apex:form rendered="{!!EditProductPermission}">
+        <apex:pageBlock >
+            <apex:pageMessage strength="2"
+                              detail="Insufficient Privileges, You are not allowed to make these changes. Please contact your adminstrator."
+                              severity="error">
+            </apex:pageMessage>
+            <apex:commandButton value="Back" action="{!CancelButton}" style="width: 80px; margin-left:18px;" />
+        </apex:pageBlock>
+    </apex:form>
+    
+    <apex:form rendered="{!SOExists}">
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be edited."
+                          severity="error">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!CancelButton}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    
+</apex:page>

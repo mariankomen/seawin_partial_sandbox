@@ -1,0 +1,14 @@
+<apex:page standardController="Opportunity" extensions="OpportunityEditOverrideExtension" action="{!EditProcess}">
+    
+    <apex:sectionHeader title="Opportunity" subtitle="Edit Opportunity"></apex:sectionHeader>
+  	
+    <apex:form >
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be edited."
+                          severity="error" rendered="{!EditErrorMsgOpp}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    
+</apex:page>

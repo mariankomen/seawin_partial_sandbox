@@ -1,0 +1,92 @@
+<apex:page controller="AllocateCreditOrderLineController" tabStyle="Credit_Order__c" title="{!credit_order.name} - Allocate" docType="html-5.0">
+
+    <style type="text/css">
+        .so_line_table{
+            margin-left: 100px;
+        }
+        .align-right{
+            text-align: right;
+        }
+    </style>
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Credit Order" subtitle="{!credit_order.Name}" />
+        <apex:pageBlock id="thePageBlock" title="Allocate Credit Order">
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="saveStatus" onstart="AcctSeed.ASModule.disableButtons('Processing...')" />
+                <apex:commandButton id="recalcButton" value="Save & Refresh" action="{!save_refresh}"  status="saveStatus" reRender="theForm"  />
+                <apex:commandButton id="saveButton" value="Save & Complete"  action="{!save_complete}" status="saveStatus" reRender="theForm"  />
+                <apex:commandButton id="cancelButton" value="Back" action="/{!credit_order.Id}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageMessages escape="false" />
+
+            <apex:pageBlockSection columns="2">
+                <apex:outputField value="{!credit_order.Customer__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Allocate Date" />
+                    <apex:inputField value="{!credit_Order.Customer_s_ETA__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!credit_order.Ledger__c}" />
+                <apex:outputText />
+                <apex:outputText />
+            </apex:pageBlockSection>
+
+            <apex:repeat value="{!wrapper_lines}" var="line">
+                <apex:pageBlockTable value="{!line.col}" var="orderLine">
+                    <apex:column value="{!orderLine.Name}" style="width:30px;vertical-align:top" />
+                    <apex:column value="{!orderLine.Product__r.Name}" style="width:30px;vertical-align:top" />
+                    <apex:column value="{!orderLine.Product__r.ProductCode}" style="width:30px;vertical-align:top" />
+                    <apex:column value="{!orderLine.Description__c}" style="width:30px;vertical-align:top" />
+                    <apex:column styleClass="align-right" headerClass="align-right" value="{!orderLine.Quantity_Ordered__c}" style="width:30px;vertical-align:top" />
+                    <apex:column styleClass="align-right" headerClass="align-right" value="{!orderLine.Allocated_Quantity__c}" style="width:30px;vertical-align:top" />
+                    <apex:column styleClass="align-right" headerClass="align-right" value="{!orderLine.Quantity_Needed__c}" style="width:30px;vertical-align:top" />
+                </apex:pageBlockTable>
+                <br/>
+                    <apex:outputPanel rendered="{!line.available <= 0}" style="margin-left:50px;font-weight:bold">
+                        No inventory available to allocate
+                    </apex:outputPanel>
+                <br/>
+
+                <apex:pageBlockTable value="{!line.col}" var="inv" style="width:90%;margin-bottom:25px" align="right" cellpadding="6" cellspacing="0" rendered="{!line.available > 0}">
+                    <apex:column value="{!inv.Sales_Order_Line__r.Name}" style="width:30px;vertical-align:top" />
+                    <apex:column value="{!line.available}" style="width:30px;vertical-align:top" >
+                        <apex:facet name="header">
+                            <apex:outputLabel value="Available" />
+                        </apex:facet>
+                    </apex:column>
+                    <apex:column value="{!line.col.Allocated_Quantity__c}" style="width:30px;vertical-align:top" >
+                        <apex:facet name="header">
+                            <apex:outputLabel value="Committed" />
+                        </apex:facet>
+                    </apex:column>
+                    
+                    <apex:column styleClass="align-right" headerClass="align-right" style="width:78px">
+                        <apex:facet name="header">
+                            <apex:outputLabel value="Allocate" />
+                        </apex:facet>
+                        <apex:input type="number" html-data-quantity="{!line.available}" styleClass="align-right" value="{!line.allocate}" style="width:60px" required="false" onchange="handleChange(this,event)" />
+                    </apex:column>
+
+                </apex:pageBlockTable>
+
+                <br/>
+            </apex:repeat>
+
+        </apex:pageBlock>
+    </apex:form>
+    <script type="text/javascript">
+
+        function handleChange(element, event){
+            let max_quantity = +$(element).attr("data-quantity")
+            if(event.target.value > max_quantity){
+                alert('Allocated quantity can not be greated than Quantity Available.')
+                element.value = 0;
+            }else if(event.target.value < 0){
+                alert('Allocated quantity can not be negative.')
+                element.value = 0;
+            }
+        }
+    </script>
+
+</apex:page>

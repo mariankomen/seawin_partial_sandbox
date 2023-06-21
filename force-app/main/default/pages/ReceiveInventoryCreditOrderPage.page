@@ -1,0 +1,154 @@
+<apex:page standardController="Credit_Order__c" extensions="ReceiveInventoryCreditOrder" tabStyle="Credit_Order__c">
+
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"/>
+
+    <style>
+        .align_right{
+            text-align: right;
+        }
+    </style>
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Credit Order" subtitle="{!Credit_Order__c.Name}" id="first_section" />
+        <apex:pageBlock id="thePageBlock" title="Receive Credit Order Lines">
+            
+            <apex:pageBlockButtons >
+                <apex:commandButton status="saveStatus" value="Save" action="{!receiveIntentory}" rendered="{!!allReceived}"/>
+                <apex:commandButton value="Back" action="/{!credit_order_id}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2" >
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Customer" />
+                    <apex:outputField value="{!Credit_Order__c.Customer__c}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Receive Date" />
+                    <apex:inputField value="{!inbound_movement.AcctSeedERP__Movement_Date__c}"  />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Ledger" />
+                    <apex:outputField value="{!Credit_Order__c.Ledger__c}" />
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection>
+
+
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <br/>
+            <apex:pageBlockTable id="thePageBlockTable" value="{!inventory_items}" var="line" cellpadding="6">
+                <apex:column headerValue="Credit Order Line name" >
+                    <apex:outputText value="{!line.col.Name}" />
+                </apex:column>
+                <apex:column headerValue="Product Name" >
+                    <apex:outputText value="{!line.col.Product__r.Name}" />
+                </apex:column>
+                <apex:column headerValue="Product Code" >
+                    <apex:outputText value="{!line.col.Product__r.ProductCode}" />
+                </apex:column>
+
+                <apex:column headerValue="Warehouse" headerClass="align-top" style="width:30px;vertical-align:top;">
+                    <apex:facet name="header">
+                        <apex:outputPanel layout="block">
+                        Warehouse
+                        <br/>
+                        <apex:outputPanel >All:&nbsp;</apex:outputPanel>
+                            <apex:selectList id="allWarehouse" label="warehouse"
+                                             value="{!selectedWarehouse}"
+                                             size="1"
+                                             >
+                                <apex:actionSupport event="onchange" action="{!getHandleSelectAllWarehouses}" rerender="thePageBlockTable"/>
+                                <apex:selectOptions value="{!warehouses}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:facet>
+                    <apex:selectList id="singleWarehouse" label="warehouse" styleClass="singleWarehouseClass"
+                                             value="{!line.warehouse_id}"
+                                             size="1"
+                                             >
+                                <apex:selectOptions value="{!warehouses}" />
+                    </apex:selectList>
+                </apex:column>
+
+
+                <apex:column headerValue="Location" headerClass="align-top" style="width:30px;vertical-align:top;">
+                    <apex:facet name="header">
+                        <apex:outputPanel layout="block">
+                        Location
+                        <br/>
+                        <apex:outputPanel >All:&nbsp;</apex:outputPanel>
+                            <apex:selectList id="allLocations" label="locations"
+                                             value="{!selectedLocation}"
+                                             size="1"
+                                             >
+                                <apex:actionSupport event="onchange" action="{!getHandleSelectAllLocations}" rerender="thePageBlockTable"/>
+                                <apex:selectOptions value="{!locations}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:facet>
+                    <apex:selectList id="singleLocation" label="warehouse" styleClass="singleLocationClass"
+                                             value="{!line.location_id}"
+                                             size="1"
+                                             >
+                    <apex:selectOptions value="{!locations}" />
+                    </apex:selectList>
+                </apex:column>
+
+                <apex:column headerValue="Quantity Received" headerClass="align_right" style="text-align: end;">
+                    <apex:outputText value="{!line.received_quantity}" styleClass="align_right"/>
+                </apex:column>
+                <apex:column headerValue="Quantity Unreceived" headerClass="align_right" style="text-align: end;">
+                    <apex:outputText value="{!line.unreceived_quantity}" style="text-align: flex-end;"/>
+                </apex:column>
+
+                <apex:column headerValue="Quantity" style="width:30px;vertical-align:top; text-align:end;" headerClass="align_right">
+                    <apex:facet name="header">
+                        <apex:outputPanel layout="block">
+                        Quantity
+                        <br/>
+                        <apex:outputPanel >All:&nbsp;</apex:outputPanel>
+                            <apex:selectList id="allQuantity" label="locations"
+                                             value="{!selectedAllQuantity}"
+                                             size="1"
+                                             
+                                             >
+                                <apex:actionSupport event="onchange" action="{!getHandlerSelectAllQuantity}" rerender="thePageBlockTable"/>
+                                <apex:selectOptions value="{!allQuantity}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:facet>
+                    <apex:inputText value="{!line.quantity_to_receive}" styleClass="align_right" onchange="handleChangeQuantity(this, event, {!line.unreceived_quantity})"/>
+                </apex:column>
+
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+
+    <script>
+        function masterWarehouseSelect(element, event){
+            $('.singleWarehouseClass').each(function( index ) {
+                $(this).val(event.target.value);
+            });
+        }
+
+        function handleChangeQuantity(element, event, unreceived){
+            const input_value = +event.target.value
+
+            if(input_value < 0){
+                alert('Quantity to receive can not be negative.')
+                element.value = 0;                
+            }else if(input_value > unreceived){
+                alert('Quantity to receive can not be greater than quantity unreceived.')
+                element.value = 0;                
+            }
+            console.log(unreceived)
+            console.log(event.target.value)
+
+        }
+
+
+    </script>
+</apex:page>

@@ -1,0 +1,35 @@
+<apex:page standardcontroller="AcctSeed__Product_Part__c" extensions="PartProductExtension">
+    <apex:form >
+    	<apex:sectionHeader title="Kit" subtitle="{!Subtitle}"/>
+        
+        <apex:pageBlock >
+            <apex:PageBlockButtons location="both">
+            <apex:CommandButton value="Save" action="{!savePart}"></apex:CommandButton>
+            <apex:CommandButton value="Save & More" action="{!SaveAndMore}"></apex:CommandButton>
+            <apex:CommandButton value="Back" action="{!Back}" immediate="true"></apex:CommandButton>
+            </apex:PageBlockButtons>
+        	<apex:PageBlockSection >
+            	<apex:PageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.AcctSeed__Product_Part__c.Fields.Kit_Product__c.Label}">
+                        </apex:outputLabel>
+            			<apex:inputField value="{!Part.Kit_Product__c}" required="true"></apex:inputField>
+            	</apex:PageBlockSectionItem>
+                <apex:PageBlockSectionItem >
+                    	<apex:outputLabel value="Owner"></apex:outputLabel>
+            			<apex:outputField value="{!Part.OwnerId}"></apex:outputField>
+            	</apex:PageBlockSectionItem>
+            </apex:PageBlockSection>
+            <apex:PageBlockSection >
+            	<apex:PageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.AcctSeed__Product_Part__c.Fields.Kit_Children__c.Label}">
+                        </apex:outputLabel>
+            			<apex:inputField value="{!Part.Kit_Children__c}" required="true"></apex:inputField>
+            	</apex:PageBlockSectionItem>
+                <apex:PageBlockSectionItem >
+                        <apex:outputLabel value="Quantity"></apex:outputLabel>
+            			<apex:inputField value="{!Part.AcctSeed__Quantity__c}" required="true"></apex:inputField>
+            	</apex:PageBlockSectionItem>
+            </apex:PageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

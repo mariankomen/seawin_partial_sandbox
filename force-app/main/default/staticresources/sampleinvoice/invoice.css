@@ -1,0 +1,99 @@
+.rekey{
+    float: left;width:160px;height:190px;padding-right:20px;
+}
+.qrcode{
+    width:110px;
+    height:110px;
+}
+.topInfor{
+    width: 300px;height: 150px;float: left;
+}
+.invoice{
+    float: right;width: 200px;height: 170px;
+}
+.invoicePart1{
+    width: 150px;
+    height:60px;
+    border: solid 1px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 20px/10px;
+    text-align: center;
+    margin: auto;
+    background-color: rgb(238, 235, 235);
+}
+.invoicePart2{
+    width: 110px;
+    margin: auto;
+    margin-top: 15px;
+}
+.centralPart{
+    border: solid 1px;
+    border-radius: 20px/10px;
+    text-align: center;
+    margin: auto;
+    width: 100%;
+    height: 147px;
+    background-color: rgb(238, 235, 235);
+}
+.centralPart1{
+    width: 45%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-left: 100px;
+    float: left;
+    text-align: left;
+}
+.centralPart2{
+    margin-top: 8px;
+    text-align: left;
+    margin-right: 70px;
+}
+.condiv{
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.productdiv{
+    width: 100%;
+    margin: auto;
+}
+.producttable{
+    width: 100%;
+    border-collapse: collapse;
+}
+.bstd{
+    border: solid 1px;
+}
+.brtd{
+    border-radius: 7px;
+}
+.brntd{
+    border-right: none;
+}
+.blntd{
+    border-left: none;
+}
+.trtd{
+    text-align:right;
+}
+.subdiv{
+    position:relative;
+}
+.subdivpart1{
+    margin-left: 115px;
+    margin-top: 40px;
+    text-align: center;
+    position: absolute;
+    height: 50px;
+    width: 340px;
+}
+.subdivpart2{
+    float: right;
+    width: 230px;
+}
+.notesdiv{
+    clear:both;
+    margin-left:0px;
+    margin-top:10px;
+}

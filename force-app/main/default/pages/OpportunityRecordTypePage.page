@@ -1,0 +1,63 @@
+<apex:page controller="OpportunityRecordTypeExtension" tabStyle="Opportunity" >
+    <apex:sectionHeader title="New Opportunity" subtitle="Select Opportunity Record Type"></apex:sectionHeader>
+  	
+    <apex:form >
+        
+       
+        <p>
+            Select a record type for the new opportunity. To skip this page in the future, 
+            change your record type settings on your personal setup page.
+        </p>
+        
+        <apex:pageBlock >
+            
+            <h2 style="font-size: 1.3em;color: #000;"> Select Opportunity Record Type</h2>
+           
+            <div class="pbSubsection pbBottomButtons">
+                
+                <div style="margin-left:120px">                   
+                    Record Type of new record
+                
+                    <div style="display:inline-block;background-color:red;width: 3px;
+                                height: 16px;margin-top: 9px;margin-left: 12px;margin-bottom: -3px;">  
+                    </div>
+                    <div style="display:inline-block; margin: -3px">
+                        <apex:selectList size="1" value="{!selected}" style="font-size:13px;width:240px">
+                            <apex:selectOptions value="{!Options}" />
+                        </apex:selectList>
+                        
+                    </div>
+                    
+                </div>
+                <br/>
+                <apex:outputPanel style="color:red;" rendered="{!Options.size<1}">
+                    <apex:outputText value="Please check that either required record type is Active OR" style="margin-left:280px"></apex:outputText><br/>
+                    <apex:outputText value="current User profile has record types in the Profile Settings Under record type Settings" style="margin-left:280px"></apex:outputText>
+                </apex:outputPanel>
+            </div>
+            
+            <div class="pbBottomButtons">
+                <div style="margin-left: 410px;margin-top: 10px;">
+                    <apex:commandButton value="Continue" action="{!OnContinue}" disabled="{!Options.size<1}"/>
+                    <apex:commandButton value="Cancel" action="{!Cancel}"/>
+                </div>
+            </div>
+           
+        </apex:pageBlock>
+        <br/>
+        <h3 class="rrrecordTypesHeading">Available Opportunity Record Types</h3>
+       
+        <apex:pageBlock mode="maindetail">
+            <apex:pageBlockTable value="{!filteredRecTypeList}" var="recTyp" style="width:490px;margin-top:10px">
+                <apex:column headerValue="Record Type Name">
+                    <b><apex:outputField value="{!recTyp.Name}"></apex:outputField></b>
+                </apex:column>
+                <apex:column headerValue="Description">
+                    <apex:outputField value="{!recTyp.Description}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+                
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

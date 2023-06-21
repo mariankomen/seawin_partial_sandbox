@@ -1,0 +1,142 @@
+<apex:page docType="html-5.0" standardcontroller="AcctSeedERP__Purchase_Order__c" extensions="PurchaseOrderSalesProcessPath" 
+           showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" 
+           applyBodyTag="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <title>Purchase Order Sales Process Path</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <apex:slds />
+            <style>
+                .text-decoration-none{
+                text-decoration: none !important;
+                }
+                .hideThis{
+                display: none;
+                }
+                .loader-background {
+                position:fixed;
+                width:100%;
+                left:0;right:0;top:0;bottom:0;
+                /*background-color: rgba(255,255,255,0.7);*/
+                z-index:9998;
+                }
+            </style>
+        </head>
+        <body>
+            <apex:form >
+                <apex:pageMessages ></apex:pageMessages>
+                <div class="slds-scope">
+                    <div class="slds-grid">
+                        <div class="slds-tabs--path" role="application">
+                            <ul id="myList" class="slds-tabs--path__nav" role="tablist" style="{!renderList}">
+                                <apex:repeat value="{!StageValuesList}" var="key" rendered="{!renderList}">
+                                    <li class="slds-tabs--path__item 
+                                               {!IF(PO.Stage__c == key && 
+                                               PO.Stage__c != 'Received',
+                                               'slds-is-current ',
+                                               IF(PO.Stage__c == key && PO.Stage__c == 'Partially Received' ,'slds-is-lost ',
+                                               IF(PO.Stage__c == key && PO.Stage__c == 'Received','slds-is-complete slds-is-won','')))}
+                                               {!IF(StagePositionMap[key] < StagePositionMap[PO.Stage__c],
+                                               'slds-is-complete ','')}
+                                               {!IF(StagePositionMap[key] > StagePositionMap[PO.Stage__c],'slds-is-incomplete','')}" role="presentation">
+                                        <a class="slds-tabs--path__link text-decoration-none" id="tabs-path-1" 
+                                           aria-controls="content-path-1" 
+                                           aria-selected="false" tabindex="-1" role="tab" href="javascript:void(0);" 
+                                           aria-live="assertive" onclick="changeStage('{!IF($Profile.Name == 'Hospitality Inside Sales Rep', '', key)}');">
+                                            <span class="slds-tabs--path__stage">
+                                                <svg aria-hidden="true" class="slds-icon slds-icon--x-small">
+                                                    <use xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#check"></use>
+                                                </svg>
+                                                <span class="slds-assistive-text">Stage Complete</span>
+                                            </span>
+                                            <span class="slds-tabs--path__title">{!key}</span>
+                                        </a>
+                                    </li>
+                                </apex:repeat>
+                            </ul>
+                            <div style="{!IF(!renderList, '', 'display: none;')}" class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                                <span class="slds-assistive-text">error</span>
+                                <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="Description of icon when needed">
+                                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                        <use xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+                                    </svg>
+                                </span>
+                                <h2>The Sales Process Path cannot be shown. Please select a Stage relevant to the Sales Process/Purchase Order Record type.
+                                    <!-- <a href="javascript:void(0);">More Information</a> -->
+                                </h2>
+                                <div class="slds-notify__close">
+                                    <button class="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse" title="Close">
+                                        <svg class="slds-button__icon" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <apex:actionStatus id="status">
+                            <apex:facet name="start">
+                                <div class="loader-background">
+                                </div>
+                                <div style="position: fixed; top: 47%; left: 50%; z-index:9999;">
+                                    <img src="/img/loading.gif" width="23" height="23"/>
+                                </div>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </div>
+                </div>
+                <apex:actionfunction name="midFunction" action="{!changeStage}" rerender="redirectPanel" status="status">
+                    <apex:param name="stageNameIs" value=""></apex:param>
+                </apex:actionfunction>
+                
+                <apex:includeScript value="/soap/ajax/26.0/connection.js" />
+                
+                <script>
+                
+                function changeStage(val){
+                    debugger;
+                    if(val == 'Term Clearance' && !{!$User.Switch_to_Term_Clearance__c}){
+                        alert('Insufficient Privileges. No permission to change stage to Term Clearance. Please contact your superior.');
+                        return false;
+                    }else if(val == '' || val == null){
+                        alert("Insufficient Privileges. Please contact your administrator.");
+                        return false;
+                    }else{
+                        if(val == 'Received' || val == 'Partially Received'){
+                            if({!NULLVALUE(PO.Total_Products_Quantity__c,0) > 0}){
+                                window.parent.location.href="/apex/AcctSeedERP__PurchaseOrderReceive?id={!AcctSeedERP__Purchase_Order__c.id}&scontrolCaching=1";
+                            }else{
+                                if("{!PO.Stage__c}" != "Received"){
+                                    if (confirm('All the products are non-inventory and cannot be received, do you want to change the stage to received and status to closed?')) {
+                                        window.parent.location.href="/apex/PurchaseOrderReceivePage?scontrolCaching=1&id={!AcctSeedERP__Purchase_Order__c.Id}";
+                                    } 
+                                }
+                            }
+                        }else{
+                            midFunction(val);
+                        }
+                    }
+                }
+                </script>
+                <apex:outputpanel rendered="{!PO.Stage__c == 'Received'}">
+                    <script
+                    src="https://code.jquery.com/jquery-3.4.1.min.js"
+                    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+                    crossorigin="anonymous"></script>
+                    <script>
+                    //$('#myList li:last-child').remove();
+                    </script>
+                </apex:outputpanel>
+                <apex:outputPanel id="redirectPanel" >
+                    <apex:outputText rendered="{!shouldRedirect}">
+                        <script type="text/javascript">
+                        window.top.location = '{!redirectUrl}';
+                        </script>
+                    </apex:outputText>
+                </apex:outputPanel>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

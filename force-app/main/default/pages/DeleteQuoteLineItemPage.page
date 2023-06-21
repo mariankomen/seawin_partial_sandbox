@@ -1,0 +1,17 @@
+<apex:page standardcontroller="QuoteLineItem" extensions="DeleteQuoteLineItemExtension" action="{!PageAction}">
+    <apex:sectionHeader title="Quote" subtitle="Delete Quote Line Item"></apex:sectionHeader>
+    <apex:form >
+        <apex:pageblock >
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Back" action="{!back}"></apex:commandButton>
+            </apex:pageBlockButtons>
+            <apex:pageMessage strength="2" rendered="{!PrivilegeError}" detail="Insufficient Privileges. You are not allowed to make these changes. Please contact your adminstrator." 
+                              severity="error">
+            </apex:pageMessage>
+            <apex:pageMessage strength="2" rendered="{!!PrivilegeError && BillingError}" 
+                              detail="Quote Line Items can not be deleted, as billing has already been created." 
+                              severity="error">
+            </apex:pageMessage>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

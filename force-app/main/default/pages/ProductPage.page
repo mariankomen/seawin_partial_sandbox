@@ -1,0 +1,467 @@
+<apex:page controller="ProductPageExtension" tabStyle="{!IF(strTabName<>null,strTabName,'Product2')}" id="mainPage"
+    sidebar="false">
+
+<style>
+
+    [id="mainPage:mainForm:productblock"] .pbHeader {height: 20px; width: 20px;}
+    [id="mainPage:mainForm:pnlGrid"] tr td {
+        vertical-align: top;
+    }
+
+</style>
+    
+    <apex:sectionHeader title="Product" subtitle="Search Products"/>
+    <apex:form id="mainForm">
+
+        <!-- Render this if no permission to add products -->
+        <apex:pageBlock rendered="{!!AddProductPermission}" id="productpermission">
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Back" id="backbutton" action="{!GoBack}" 
+                    style="width: 100px" immediate="true" rendered="{!IsAddScreen}"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1">
+                    <apex:pageMessages escape="false"></apex:pageMessages>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="Search" rendered="{!AddProductPermission}" id="buttonblock">
+            <apex:pageBlockSection columns="1">
+                <apex:panelGroup >
+                    <apex:outputLabel for="searchText" style="margin-right: 20px; font-weight: bold;">
+                        Search by Text:
+                    </apex:outputLabel>
+                    <apex:selectList multiselect="false" size="1" value="{!selectedSearchVal}" id="tteess" styleClass="searchOptions" 
+                                     style="min-width:140px; margin-right: 10px">
+                        <apex:selectOptions value="{!SearchValList}"></apex:selectOptions>
+                    </apex:selectList>
+
+                    <apex:inputText id="searchText" value="{!searchText}" 
+                                    style="width: 13%; margin-right: 20px"/>
+                    
+                    <apex:commandButton id="searchClick"  value="Search" action="{!searchByName}" 
+                                        rerender="pb, mainForm"
+                                        status="fetchStatus" style="width: 100px;"
+                                        oncomplete="handleSelectBoxStyle(); ({!prods.size} == 1 && {!IsAddScreen}) ? IfSingleProduct() : ''"/>
+                    
+                    <apex:commandButton value="New Product" id="NewProduct" action="{!createNew}" style="width: 100px"/>
+                    <apex:commandButton value="Mass Edit" id="massEdit" action="{!massEditMode}" rerender="mainForm" style="width: 100px"/>
+                    <apex:commandButton value="Update Categories" id="updateCategories" style="width: 135px" 
+                    action="{!SaveProductCategory}" status="updateCategory" reRender="pb"/>
+                    <apex:commandButton value="Back" id="backbutton" action="{!GoBack}" 
+                    style="width: 100px" immediate="true" rendered="{!IsAddScreen}"/>
+                    <apex:actionStatus id="fetchStatus" startStyle="position: relative; left: 10px; top: 5px;" 
+                                       stopStyle="position: relative; left: 10px; top: 5px;">
+                        <apex:facet name="start" >
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                    <apex:actionStatus id="updateCategory" startStyle="position: relative; left: 10px; top: 5px;" 
+                                       stopStyle="position: relative; left: 10px; top: 5px;">
+                        <apex:facet name="start" >
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                    
+                    <apex:commandButton value="Go to standard List View" id="gotostandard" action="/01t/o" />
+                    <apex:commandButton value="Configure Product Properties" id="gotoprodprop" action="/apex/ProductPropertiesPage" />
+                    <apex:commandButton value="Go to Master Product" id="gomasterprod" action="/a2K/o" />
+                </apex:panelGroup>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="2">
+                    <apex:pageMessages escape="false"></apex:pageMessages>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="2" rendered="{!DropShipMessage}">
+                    <apex:pageMessage severity="info" 
+                    detail="The Purchase Order type is Drop Shipment. Only Non-Inventory Products are 
+                    available including taxes etc." 
+                              strength="2"></apex:pageMessage>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+
+        <apex:panelGrid columns="2" id="pnlGrid" rendered="{!AddProductPermission}">
+            
+            <apex:pageBlock title="Filters" id="productblock">
+                <apex:facet name="header">
+                    <apex:actionStatus id="categoryclick" startStyle="position: relative; 
+                    left: 249px;
+                    top: 4px;" 
+                                       stopStyle="position: relative; 
+                                       left: 249px;
+                                       top: 4px;">
+                        <apex:facet name="start" >
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:facet>
+                <apex:pageblockSection >
+                    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Family" style="font-weight: bold" ></apex:outputLabel> 
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                <apex:pageblockSection >
+                    <apex:pageblockSectionItem >
+                        <!--<apex:inputField value="{!prod2.Category__c}" id="leftFamilyTbl" html-size="10" styleClass="mainCategory" 
+                                         onchange="onChangeCatMethod();" />-->
+                        <apex:selectList value="{!selectedFamily}" multiselect="false" size="10" 
+                        onchange="onFamilyChange();" style="min-width:190px;margin-left:10px" 
+                        id="leftFamilyTbl">
+                            <apex:selectOptions value="{!FamilyPicklist}"/>
+                        </apex:selectList>
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                
+                <apex:pageblockSection >
+                    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Category" style="font-weight: bold"></apex:outputLabel> 
+                    </apex:pageblockSectionItem>  
+                </apex:pageblockSection>
+                <apex:pageblockSection id="categorypicklist">
+                    <apex:pageblockSectionItem >                      
+                        <!--<apex:inputField value="{!prod2.Sub_Category__c}" id="leftCtgryTbl" 
+                            style="min-width:190px;margin-left:10px" 
+                                         html-size="10" onchange="onChangeCatMethod();" />-->
+                        <apex:selectList value="{!selectedCategory}" multiselect="false" size="10" 
+                        onchange="onCategoryChange();" style="min-width:190px;margin-left:10px" id="leftCtgryTbl">
+                            <apex:selectOptions value="{!CategoryPicklist}"/>
+                        </apex:selectList>
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                <apex:pageblockSection >
+                    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Sub Category" style="font-weight: bold" ></apex:outputLabel>
+                    </apex:pageblockSectionItem>  
+                </apex:pageblockSection>
+                <apex:pageblockSection >
+                    <apex:pageblockSectionItem >                      
+                        <!--<apex:inputField value="{!prod2.Complementary_Category__c}" id="leftSubCtgryTbl" 
+                                         style="min-width:190px;margin-left:10px" html-size="10" onchange="onSubCategoryChange();" />-->
+                        <apex:selectList value="{!selectedSubCategory}" multiselect="false" 
+                        size="10" onchange="onSubCategoryChange();" style="min-width:190px;margin-left:10px" id="leftSubCtgryTbl">
+                            <apex:selectOptions value="{!SubCategoryPicklist}"/>
+                        </apex:selectList>
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                
+                
+                <br/><br/>
+                <apex:inputCheckbox value="{!ShowActiveProductsOnly}" id="chkActive" 
+                onchange="onCriteriaChange();"/>
+                <apex:outputLabel value="Active Products" style="font-weight: bold" ></apex:outputLabel> 
+                
+                
+            </apex:pageBlock>
+
+            <apex:pageBlock id="pb" title="Products List" >
+                <apex:pageBlockButtons id="btnsss" location="top">
+                    <apex:selectList value="{!selectedRecordsCountFilterTop}" size="1"  >
+                        <apex:selectOptions value="{!recordsCountFilter}" />
+                        <apex:actionSupport event="onchange" action="{!handleRecordsCountFilterHandlerTop}" reRender="btnsss,pb, msgs"/>
+    
+                    </apex:selectList>
+                    <apex:commandButton value="Select" onclick="GotoSelectedScreen(); return false;" 
+                    style="width: 100px;" rendered="{!IsAddScreen}" reRender="pb"/>
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()"
+                                        reRender="pb" value="<<" action="{!first}" 
+                                        disabled="{!!hasPrevious}" title="First Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value="<" action="{!previous}" 
+                                        disabled="{!!hasPrevious}" title="Previous Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value=">" action="{!next}" 
+                                        disabled="{!!hasNext}" title="Next Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value=">>" action="{!last}" 
+                                        disabled="{!!hasNext}" title="Last Page" style="width: 37px;"/>
+                    
+                    <apex:outputText >{!(pageNumber * size)+1-size}-{!IF((pageNumber * size)>noOfRecords, noOfRecords,(pageNumber * size))} of {!noOfRecords}</apex:outputText>
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value="Refresh" action="{!refresh}" 
+                                        title="Refresh Page" style="width: 100px;"/>
+                    <!--<apex:outputPanel style="color:#4AA02C;font-weight:bold">
+                        <apex:actionStatus id="fetchStatus1" startText="Fetching..." stopText=""/>
+                    </apex:outputPanel>-->
+                    <apex:actionStatus id="fetchStatus1" startStyle="position: relative; left: 5px; top: 5px;" 
+                                        stopStyle="position: relative; right: 5px; top: 5px;">
+                        <apex:facet name="start">
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:pageBlockButtons>
+                <apex:pageBlockButtons id="btnssss" location="bottom">
+                    <apex:selectList value="{!selectedRecordsCountFilter}" size="1"  >
+                        <apex:selectOptions value="{!recordsCountFilter}" />
+                        <apex:actionSupport event="onchange" action="{!handleRecordsCountFilterHandler}" reRender="btnsss,btnssss,pb, msgs"/>
+    
+                    </apex:selectList>
+                    <apex:commandButton value="Select" onclick="GotoSelectedScreen(); return false;" 
+                    style="width: 100px;" rendered="{!IsAddScreen}" reRender="pb"/>
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()"
+                                        reRender="pb" value="<<" action="{!first}" 
+                                        disabled="{!!hasPrevious}" title="First Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value="<" action="{!previous}" 
+                                        disabled="{!!hasPrevious}" title="Previous Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value=">" action="{!next}" 
+                                        disabled="{!!hasNext}" title="Next Page" style="width: 37px;"/>
+                    
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value=">>" action="{!last}" 
+                                        disabled="{!!hasNext}" title="Last Page" style="width: 37px;"/>
+                    
+                    <apex:outputText >{!(pageNumber * size)+1-size}-{!IF((pageNumber * size)>noOfRecords, noOfRecords,(pageNumber * size))} of {!noOfRecords}</apex:outputText>
+                    <apex:commandButton status="fetchStatus1" oncomplete="handleSelectBoxStyle()" 
+                                        reRender="pb" value="Refresh" action="{!refresh}" 
+                                        title="Refresh Page" style="width: 100px;"/>
+                    <!--<apex:outputPanel style="color:#4AA02C;font-weight:bold">
+                        <apex:actionStatus id="fetchStatus1" startText="Fetching..." stopText=""/>
+                    </apex:outputPanel>-->
+                    <apex:actionStatus id="fetchStatus1" startStyle="position: relative; left: 5px; top: 5px;" 
+                                        stopStyle="position: relative; right: 5px; top: 5px;">
+                        <apex:facet name="start">
+                            <img src="/img/loading.gif" />                    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:pageBlockButtons>
+
+                <apex:pageBlockTable id="productsTbl" value="{!Products}" var="p">
+                    
+                    <!--<apex:column headerValue="Product Id" value="{!p.prod.Id}" width="100" style="display:none"/>-->
+                    <apex:column rendered="{!IsAddScreen}">
+                        <apex:inputCheckbox value="{!p.isSelected}" styleClass="productselect"/>
+                    </apex:column>
+                    <!--<apex:column headerValue="Product Name" width="100">
+                        <apex:outputlink value="/{!p.prod.Id}" target="_blank">{!p.prod.Name}</apex:outputlink>
+                    </apex:column>-->
+                    <apex:column headerValue="Inventory">
+                        <apex:outputLink value="/apex/InventoryInformationPage?id={!p.prod.Id}" 
+                        target="_blank" title="Open inventory information for this product.">
+                        <i class="fa fa-external-link" aria-hidden="true"></i></apex:outputLink>
+                    </apex:column>
+                    <apex:column headerValue="Product Name" width="100">
+                        <apex:facet name="header">                                
+                            <apex:commandLink action="{!checkSort}" value="Product Name" 
+                            reRender="pb">
+                                <apex:param name="sort" value="Product Name"/>
+                                <apex:outputPanel rendered="{!ProductNameSortUp}" 
+                                style="font-size: 13px; color: black">&#9650;</apex:outputPanel>
+                                <apex:outputPanel rendered="{!ProductNameSortDown}" 
+                                style="font-size: 13px; color: blue">&#9660;</apex:outputPanel>
+                            </apex:commandLink>
+                        </apex:facet>
+                        <apex:outputlink value="/{!p.prod.Id}" >{!p.prod.Name}</apex:outputlink>
+                    </apex:column>
+                    <apex:column headerValue="Product Image" value="{!p.prod.Image__c}" width="200"/>
+                    <!-- <apex:column headerValue="Product Code" value="{!p.prod.ProductCode}" width="100"/> -->
+                    <apex:column headerValue="Product Code" width="100">
+                        <apex:facet name="header">                                
+                            <apex:commandLink action="{!checkSort}" value="Product Code" 
+                            reRender="pb">
+                                <apex:param name="sort" value="Product Code"/>
+                                <apex:outputPanel rendered="{!ProductCodeSortUp}"
+                                style="font-size: 13px; color: black">&#9650;</apex:outputPanel>
+                                <apex:outputPanel rendered="{!ProductCodeSortDown}"
+                                style="font-size: 13px; color: blue">&#9660;</apex:outputPanel>
+                            </apex:commandLink>
+                        </apex:facet>
+                        {!p.prod.ProductCode}
+                    </apex:column>
+                    <apex:column headerValue="Product Description" value="{!p.prod.Description}" style="min-width:230px"/>
+                    <!-- <apex:column headerValue="Product Description" value="{!p.prod.Description}" style="min-width:230px"/> -->
+                    <apex:column headerValue="Size" width="40">
+                        <apex:facet name="header">                                
+                            <apex:commandLink action="{!checkSort}" value="Size" 
+                            reRender="pb">
+                                <apex:param name="sort" value="Size"/>
+                                <apex:outputPanel rendered="{!SizeSortUp}"
+                                style="font-size: 13px; color: black">&#9650;</apex:outputPanel>
+                                <apex:outputPanel rendered="{!SizeSortDown}"
+                                style="font-size: 13px; color: blue">&#9660;</apex:outputPanel>
+                            </apex:commandLink>
+                        </apex:facet>
+                        {!p.prod.Size__c}
+                    </apex:column>
+                    <!-- If Editable -->
+                    <apex:column headerValue="Family" 
+                    style="min-width:200px;" rendered="{!$ObjectType.Product2.Fields.Category__c.Updateable}">
+                        <apex:inputField value="{!p.prod.Category__c}" id="catgryTbl" 
+                        onclick="handleSelectBoxStyle()" onchange="AddProductCategoryScript('{!p.prod.id}');"/>  
+                    </apex:column>
+                    
+                    <apex:column headerValue="Category" 
+                    style="min-width:200px" rendered="{!$ObjectType.Product2.Fields.Sub_Category__c.Updateable}">
+                        <apex:inputField value="{!p.prod.Sub_Category__c}" id="subCatgryTbl" 
+                        onclick="handleSelectBoxStyle()" onchange="AddProductCategoryScript('{!p.prod.id}');"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Sub Category" 
+                    style="min-width:200px" >
+                        <apex:inputField value="{!p.prod.Complementary_Category__c}" id="compCatgryTbl"
+                        onchange="AddProductCategoryScript('{!p.prod.id}');"/>
+                    </apex:column>
+                    
+                    <!-- If Not Editable -->
+                    <apex:column headerValue="Family" 
+                    style="min-width:200px;" rendered="{!!$ObjectType.Product2.Fields.Category__c.Updateable}">
+                        <apex:OutputField value="{!p.prod.Category__c}" />  
+                    </apex:column>
+                    
+                    <apex:column headerValue="Category" 
+                    style="min-width:200px" rendered="{!!$ObjectType.Product2.Fields.Sub_Category__c.Updateable}">
+                        <apex:OutputField value="{!p.prod.Sub_Category__c}" />
+                    </apex:column>
+                    
+                    <apex:column headerValue="Sub Category" 
+                    style="min-width:200px" rendered="{!!$ObjectType.Product2.Fields.Complementary_Category__c.Updateable}">
+                        <apex:OutputField value="{!p.prod.Complementary_Category__c}" />
+                    </apex:column>
+                    <apex:column headerValue="Hardware Finish" value="{!p.prod.Hardware_Finish__c}" width="100"/>
+                    <apex:column headerValue="Glass" value="{!p.prod.Glass__c}" width="100"/>
+                    <apex:column headerValue="Glass Thickness" value="{!p.prod.Glass_Thickness__c}" width="100"/>
+                    <apex:column headerValue="Available QT">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.prod.id][0]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Allocated QT">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.prod.id][1]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="In Stock">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.prod.id][2]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="On Purchase Order">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.prod.id][3]}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                
+                
+                <apex:outputLabel rendered="{!Prods.size < 1}" value="No Records Found."></apex:outputLabel>
+            </apex:pageBlock>
+            
+        </apex:panelGrid>
+        <apex:outputPanel id="TempBlock"></apex:outputPanel>
+
+        <apex:actionFunction action="{!searchByName}" name="onCriteriaChange" 
+        reRender="mainForm" 
+        oncomplete="({!prods.size} == 1 && {!IsAddScreen}) ? 
+         IfSingleProduct() : ''"/>
+        <apex:actionFunction action="{!searchByFamily}" name="onFamilyChange" 
+        reRender="mainForm" 
+        oncomplete="({!prods.size} == 1 && {!IsAddScreen}) ? 
+        IfSingleProduct() : ''" status="categoryclick"/>
+        <apex:actionFunction action="{!searchByCategory}" name="onCategoryChange" reRender="mainForm" 
+        oncomplete="({!prods.size} == 1 && {!IsAddScreen}) ? 
+        IfSingleProduct() : ''" status="categoryclick"/>
+        <apex:actionFunction action="{!searchBySubCategory}" name="onSubCategoryChange" 
+        reRender="mainForm" 
+        oncomplete="({!prods.size} == 1 && {!IsAddScreen}) ? 
+        IfSingleProduct() : ''" status="categoryclick"/>
+        <apex:actionFunction name="IfSingleProduct" action="{!IfSingleProduct}"/>
+        <apex:actionFunction name="selectMethod" action="{!gotoCustomMultiLine}"></apex:actionFunction>
+        <apex:actionFunction action="{!AddProductCategoryServer}" name="AddProductCategoryAction" 
+        oncomplete="handleSelectBoxStyle()" reRender="TempBlock">
+            <apex:param value="" name="CategoryProductId"/>
+        </apex:actionFunction>
+        
+    </apex:form>
+    
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script>
+    
+        function AddProductCategoryScript(productId){
+
+            AddProductCategoryAction(productId);
+
+            return false;
+
+        }
+    </script>
+    <script>
+        
+        function GotoSelectedScreen(){
+
+            var checked = $('.productselect:checkbox:checked');
+
+            if(checked.length > 0){
+
+                selectMethod();
+            }else{
+                alert("No products have been selected yet.");
+                return false;
+            }
+
+ return false;
+        }
+    
+    </script>
+    <script>
+    
+    $(function(){
+        $('[id$=searchText]').keypress(function(event){
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if(keycode == '13'){
+                event.preventDefault(true);
+                $('[id$=searchClick]').click();
+            }
+        });
+    });
+    </script>
+    <script>
+    
+    function handleSelectBoxStyle(){
+        
+        var leftPortion = $('[id$=pnlGrid]')[0].rows[0].cells[0];
+        leftPortion.style.maxWidth = "270px";
+        
+        var rightPortion = $('[id$=pnlGrid]')[0].rows[0].cells[1];
+        rightPortion.style.minWidth = "1000px";
+        
+        //For First Family Item Issue
+        $('.pbSubheader.brandTertiaryBgr.first.tertiaryPalette').each(function(){
+            $(this).css('margin-top', '15px');
+        });
+        //debugger;
+        var leftFamilyTbl = $('[id$=leftFamilyTbl]')[0];
+        var leftCtgryTbl = $('[id$=leftCtgryTbl]')[0];
+        var leftSubCtgryTbl = $('[id$=leftSubCtgryTbl]')[0];
+        
+        leftFamilyTbl.size = 10;
+        //leftFamilyTbl.style = "min-width:190px;mmargin-left:10px";
+        
+        leftCtgryTbl.size = 10;
+        //leftCtgryTbl.style = "min-width:190px;margin-left:10px";
+        
+        leftSubCtgryTbl.size = 10;
+        //leftSubCtgryTbl.style = "min-width:190px;margin-left:10px";
+    }
+    
+    $(window).on('load', function() {
+        //debugger;
+        handleSelectBoxStyle();        
+    });
+    
+    $("body").on('DOMSubtreeModified', "#bodyCell", function() {
+        
+        //handleSelectBoxStyle();
+        
+        var IdColumn  = $('[id$=productsTbl] thead tr')[0];
+        if(typeof IdColumn != "undefined")
+            IdColumn.firstElementChild.hidden = true;
+        
+    });
+    
+    </script>
+    <script src="https://kit.fontawesome.com/692d93cc8e.js" crossorigin="anonymous"></script>
+</apex:page>

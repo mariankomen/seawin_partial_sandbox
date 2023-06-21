@@ -1,0 +1,365 @@
+<apex:page docType="html-5.0" standardcontroller="Opportunity" extensions="OpportunitySalesProcessPathExtension" 
+               showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" 
+               applyBodyTag="false" id="OpportunitySalesProcessPath">
+               <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"/>
+               <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"/>
+               <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"/>
+
+               <apex:includeScript value="http://code.jquery.com/jquery-1.7.1.js"/>
+               <apex:includeScript value="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"/>
+               <apex:stylesheet value="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.17/themes/base/jquery-ui.css"/>
+
+        <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+            <head>
+                <meta charset="utf-8" />
+                <meta http-equiv="x-ua-compatible" content="ie=edge" />
+                <title>Opportunity Sales Process Path</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <apex:slds />
+                <style>
+                    .text-decoration-none{
+                    text-decoration: none !important;
+                    }
+                    .hideThis{
+                    display: none;
+                    }
+                    .loader-background {
+                    position:fixed;
+                    width:100%;
+                    left:0;right:0;top:0;bottom:0;
+                    /*background-color: rgba(255,255,255,0.7);*/
+                    z-index:9998;
+                    }
+                    
+                    .triangle{
+                        width: 16px;
+                        height: 21px;
+                        border: none;
+                        background: none;
+                    }
+                    option {
+                        background-color: #fff;
+                        color: #000;
+                        font-size: 14px;
+                    } 
+                    select {
+                        border: none;
+                        outline: none;
+                        scroll-behavior: smooth;
+                    }
+                    select:hover{
+                        cursor: pointer;
+                    } 
+                    
+                </style>
+
+                
+
+                
+            </head>
+            <body>
+                <apex:form >
+                <apex:actionFunction name="updateSS" action="{!updateSubStage}" rerender="" oncomplete="window.top.location.reload();" status="status">
+                    <apex:param name="newStage" value=""/>
+                </apex:actionFunction>   
+                
+                    <div class="slds-scope">
+                        <div class="slds-grid">
+                            <div class="slds-tabs--path" role="application">
+                                <ul id="myList" class="slds-tabs--path__nav" role="tablist" style="{!renderList}">
+                                    <apex:repeat value="{!StageValuesList}" var="key" rendered="{!renderList}">
+                                        <li class="slds-tabs--path__item {!IF((Opp.StageName == 'Closed Won' || Opp.StageName == 'Not Qualified') && key == 'Closed Lost', 'hideThis','')}
+                                                   {!IF((Opp.StageName == 'Closed Lost' || Opp.StageName == 'Not Qualified') && key == 'Closed Won', 'hideThis','')}
+                                                   {!IF((Opp.StageName == 'Closed Won' || Opp.StageName == 'Closed Lost') && key == 'Not Qualified', 'hideThis','')}
+                                                   {!IF(Opp.StageName == key && Opp.StageName != 'Closed Lost' && 
+                                                   Opp.StageName != 'Closed Won' && Opp.StageName != 'Not Qualified',
+                                                   'slds-is-current ',
+                                                   IF(Opp.StageName == key && (Opp.StageName == 'Closed Lost' || Opp.StageName == 'Not Qualified'),'slds-is-lost ',
+                                                   IF(Opp.StageName == 'Closed Won' && Opp.StageName == key,'slds-is-complete slds-is-won','')))}
+                                                   {!IF(StagePositionMap[key] < StagePositionMap[Opp.StageName] && 
+                                                   Opp.StageName != 'Closed Lost' && Opp.StageName != 'Not Qualified',
+                                                   'slds-is-complete ','')}
+                                                   {!IF(StagePositionMap[key] > StagePositionMap[Opp.StageName] || 
+                                                   (StagePositionMap[key] < StagePositionMap[Opp.StageName] && 
+                                                   (Opp.StageName == 'Closed Lost' || Opp.StageName == 'Not Qualified')),'slds-is-incomplete','')}" role="presentation">
+                                            <a class="slds-tabs--path__link text-decoration-none" id="tabs-path-1" 
+                                               aria-controls="content-path-1" 
+                                               aria-selected="false" tabindex="-1" role="tab" href="javascript:void(0);" 
+                                               aria-live="assertive" onclick="changeStage('{!key}');">
+                                                <span class="slds-tabs--path__stage">
+                                                    <svg aria-hidden="true" class="slds-icon slds-icon--x-small">
+                                                        <use xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#check"></use>
+                                                    </svg>
+                                                    <span class="slds-assistive-text">Stage Complete</span>
+                                                </span>
+                                                <span class="slds-tabs--path__title " >
+                                                    {!key} 
+
+                                                    <!-- Render substage picklist only for current stage -->
+                                                    <apex:variable value="{!dependendPicklistValues[key]}"  var="myMap"/>
+
+                                                    <apex:outputPanel rendered="{!IF(currentStage == key && myMap.size > 0, true, false)}">
+                                                        <span class='context-menu-one' >
+                                                            <select id="example3" class='triangle' onclick='substageClick(event)' onchange="substageHandler(event)">
+                                                                <option value="">--None--</option>
+                                                                <apex:repeat value="{!dependendPicklistValues[key]}" var="stage">
+                                                                    
+                                                                <apex:outputPanel rendered="{!currentSubStage != null && stage == currentSubStage }">
+                                                                    <option value="{!stage}" selected='selected'>{!stage}</option>
+                                                                </apex:outputPanel>
+                                                                <apex:outputPanel rendered="{!currentSubStage != stage}">
+                                                                    <option value="{!stage}">{!stage}</option>
+                                                                </apex:outputPanel>
+
+                                                                </apex:repeat>
+                                                            </select>
+                                                        </span>
+                                                    </apex:outputPanel>
+                                                    
+                                                    
+                                                    
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </apex:repeat>
+                                </ul>
+                                <apex:outputPanel id="ClearanceGroup" rendered="{!hasClearanceStage 
+                                                                            && renderList && Opp.StageName == 'Pre-Order'}">
+                                <div class="slds-form-element" style="padding: 0 0 0 20px;">
+                                    <div class="slds-form-element__row">
+                                       <div class="slds-form-element">
+                                          <label class="slds-checkbox">
+                                                <apex:inputcheckbox id="clearancecheckbox" styleclass="slds-input" 
+                                                                    value="{!Opp.Financial_Clearance__c}" 
+                                                                    onchange="CheckboxChanged();"
+                                                                    disabled="{!!$User.Check_Financial_Clearance__c}" />
+                                                   <span class="slds-checkbox--faux"></span>
+                                                   <span class="slds-form-element__label">Financial Clearance</span>
+                                          </label>
+                                       </div>
+                                    </div>
+                                    <div class="slds-form-element__row">
+                                       <div class="slds-form-element">
+                                          <label class="slds-checkbox">
+                                                <apex:inputcheckbox id="approvalcheckbox" styleclass="slds-input" 
+                                                                    value="{!Opp.Approval_Package__c}" 
+                                                                    onchange="CheckboxChanged();" 
+                                                                    disabled="{!!$User.Check_Approval_Package__c}"/>
+                                                   <span class="slds-checkbox--faux"></span>
+                                                   <span class="slds-form-element__label">Submittal Package</span>
+                                          </label>
+                                       </div>
+                                    </div>
+                                    <div class="slds-form-element__row">
+                                       <div class="slds-form-element">
+                                          <label class="slds-checkbox">
+                                                <apex:inputcheckbox id="signedcheckbox" styleclass="slds-input" 
+                                                                    value="{!Opp.Signed_Sales_Order__c}" 
+                                                                    onchange="CheckboxChanged();"
+                                                                    disabled="{!!$User.Check_Signed_Sales_Order__c}"/>
+                                                   <span class="slds-checkbox--faux"></span>
+                                                   <span class="slds-form-element__label">Signed Order</span>
+                                          </label>
+                                       </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                                <div style="{!IF(!renderList, '', 'display: none;')}" class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert">
+                                    <span class="slds-assistive-text">error</span>
+                                    <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="Description of icon when needed">
+                                        <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                            <use xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+                                        </svg>
+                                    </span>
+                                    <h2>The Sales Process Path cannot be shown. Please select a Stage relevant to the Sales Process({!IF(Opp.Recordtypeid != null,Opp.Recordtype.name,'')}).
+                                        <!-- <a href="javascript:void(0);">More Information</a> -->
+                                    </h2>
+                                    <div class="slds-notify__close">
+                                        <button class="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse" title="Close">
+                                            <svg class="slds-button__icon" aria-hidden="true">
+                                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <apex:actionStatus id="status">
+                                <apex:facet name="start">
+                                    <div class="loader-background">
+                                    </div>
+                                    <div style="position: fixed; top: 47%; left: 50%; z-index:9999;">
+                                        <img src="/img/loading.gif" width="23" height="23"/>
+                                    </div>
+                                </apex:facet>
+                            </apex:actionStatus>
+                        </div>
+                    </div>
+                    <apex:actionfunction name="midFunction" action="{!changeStage}" rerender="redirectPanel" status="status"
+                                         oncomplete="ShowAlert({!OmittedExceptionOccurred}); return false;">
+                        <apex:param name="stageNameIs" value=""></apex:param>
+                    </apex:actionfunction>
+                    <apex:actionfunction name="ReAssign" action="{!ReAssign}" rerender="redirectPanel">
+                    </apex:actionfunction>
+                    <apex:actionFunction name="updateTakeOff" action="{!setOpportunityTeamTakeOff}" rerender="redirectPanel" ></apex:actionFunction>
+                    <apex:actionFunction name="updateEstimator" action="{!setOpportunityTeamEstimator}" rerender="false" oncomplete="window.top.location.reload();"></apex:actionFunction>
+                    <apex:actionFunction name="updateEngineer" action="{!setOpportunityTeamEngineer}" rerender="false" oncomplete="window.top.location.reload();"></apex:actionFunction>
+                    <script>
+                    function ShowAlert(boool){
+                        
+                        if(boool){
+                            alert("Stage cannot be changed, because the billing has been done.");
+                            ReAssign();
+                        }
+                    }
+
+                    
+
+
+                    function substageClick(e){
+                        e.stopPropagation();
+                    }
+                    const negative_stages = ['Closed Lost', 'Not Qualified', 'Sleep'];
+                    function changeStage(val){
+                        let billing_balance = +"{!total_bill_balances}"
+                        console.log('billing_balance: ',billing_balance)
+                        console.log('val: ',val)
+                        var sentForApproval = "{!Opportunity.Sent_for_Approval__c}";
+
+                        console.log("{!Opportunity.stagename}")
+                        console.log("{!Opportunity.Type}")
+                            if(val != "Needs Analysis" && "{!Opportunity.Type}" == 'Template'){
+                                alert('This is a template type Opportunity. Change type to Estimate or other to continue further.')
+                            }else if((val == "Pre-Order" || val == 'Closed Won') && 
+                               ("{!Opp.RecordType.Name}" == "Seawin USA Hospitality" || 
+                               "{!Opp.RecordType.Name}" == "Seawin China Hospitality" ||
+                               "{!Opp.RecordType.Name}" == "Seawin China OEM") &&
+                              "{!Opp.Approval_Status__c}" != "Approved"){
+                                
+                                alert("Cannot change stage, because the Opportunity is not Approved.");
+                            }else if(val == "Closed Won" && sentForApproval == "true"){
+                                alert("Locked Opportunity, Approval pending.");
+                            }else{
+                                if("{!Opportunity.stagename}" == "Closed Won" && "{!Opportunity.TotalSalesOrderInOpp__c}" != "0.0" && "{!Opportunity.TotalSalesOrderInOpp__c}" != ""){
+                                    alert("Opportunity is Locked, because the Opportunity Stage is Closed Won and Opportunity has Sales Order(s).");
+                                }else if(negative_stages.includes(val) && billing_balance > 0){
+                                    if(val == 'Closed Lost'){
+                                        console.log(1)
+                                        if("{!opp.Loss_Reason__c}" == ""){
+                                            alert("Loss Reason is required. Please first save the opportunity with Loss Reason and then change stage.");
+                                        }else if(billing_balance > 0){
+                                            alert("Can not change stage, associated billing has a balance.");
+                                        }else{
+                                            midFunction(val);
+                                        }
+                                    }else{
+                                        alert("Can not change stage, associated billing has a balance.");
+                                    }
+                                    
+                                    
+                                }else if(val == 'Closed Lost'){
+                                        console.log(2)
+                                        if("{!opp.Loss_Reason__c}" == ""){
+                                            alert("Loss Reason is required. Please first save the opportunity with Loss Reason and then change stage.");
+                                        }else if(billing_balance > 0){
+                                            alert("Can not change stage, associated billing has a balance.");
+                                        }else{
+                                            midFunction(val);
+                                        }
+                                    
+                                }else{
+                                  midFunction(val);
+                                }
+                            }
+
+
+
+                    }
+                    
+                    function substageHandler(e){
+                        e.stopPropagation();
+                        let noneValue = '--None--'
+                        let newSubStage = e.target.value == noneValue ? '' : e.target.value
+                        updateSS(newSubStage);
+                    }
+                    
+                    </script>
+<div style="display: none;">
+    <apex:commandButton action="{!setOpportunityTeamEstimator}" html-data-id="estimator" value="SetTakeOff" id="estim" oncomplete="window.top.location.reload();"/>
+    <apex:commandButton action="{!setOpportunityTeamTakeOff}" value="test" html-data-id="takeoff"  id="takeoff" oncomplete="window.top.location.reload();"/>
+    <apex:commandButton action="{!setOpportunityTeamEngineer}" value="test" html-data-id="engineer"  id="engi" oncomplete="window.top.location.reload();"/>
+</div>
+
+                    <!-- Setting Team Take-off, Estimator, Engineer -->
+                    <script>
+                        let isUserHasCheckedTakeOff = '{!isTeamTakeOff}' == 'true' ? true : false
+                        let isUserHasCheckedEstimator = '{!isTeamEstimator}' == 'true' ? true : false
+                        let isUserHasCheckedEngineer = '{!isTeamEngineer}' == 'true' ? true : false
+
+                        let opportunityHasTakeOff = '{!opportunityHasTeamTakeOff}' == 'true' ? true : false
+                        let opportunityHasEstimator = '{!opportunityHasTeamEstimator}' == 'true' ? true : false
+                        let opportunityHasEngineer = '{!opportunityHasTeamEngineer}' == 'true' ? true : false
+
+                        let currentStage = '{!currentStage}'
+                        let currentSubStage = '{!currentSubStage}'
+
+                        let logUserProfileName = '{!logginedUserProfile}'
+                        console.log(currentStage)
+                        console.log('----- isUserHasCheckedTakeOff:  ',isUserHasCheckedTakeOff)
+                        console.log('----- isUserHasCheckedEstimator:  ',isUserHasCheckedEstimator)
+                        console.log('----- isUserHasCheckedEngineer:  ',isUserHasCheckedEngineer)
+
+                        console.log('+++++ opportunityHasTakeOff: ',opportunityHasTakeOff)
+                        console.log('+++++ opportunityHasEstimator: ',opportunityHasEstimator)
+                        console.log('+++++ opportunityHasEngineer: ',opportunityHasEngineer)
+                        //updateTakeOff();
+
+                        
+                        if(isUserHasCheckedTakeOff && !opportunityHasTakeOff 
+                        && (currentStage == 'Take-off' || currentSubStage == 'Take-Off') 
+                        && (logUserProfileName == 'Estimator USA' || logUserProfileName == 'Estimator USA (Partner)')){
+                            let isTakeoff = window.confirm('Are you Team Take-Off?');
+                            if(isTakeoff){
+                                setTimeout(() => {
+                                    document.querySelector("[data-id=takeoff]").click()
+                                }, 1000)
+                                console.log('----')
+                            }
+                        }
+
+                        if(isUserHasCheckedEstimator && !opportunityHasEstimator && (currentStage == 'Estimate' || currentSubStage == 'Re-Quote ')){
+                            let isEstimator = window.confirm('Are you Team Estimator?');
+                            if(isEstimator){
+                                setTimeout(() => {
+                                    document.querySelector("[data-id=estimator]").click()
+                                },1000)
+
+                            }
+                        }
+
+                        if(isUserHasCheckedEngineer && !opportunityHasEngineer && currentSubStage == 'Need Submittals'){
+                            let isEngineer = window.confirm('Are you Team Engineer?');
+                            if(isEngineer){
+                                setTimeout(() => {
+                                    document.querySelector("[data-id=engineer]").click()
+                                },1000)
+
+                            }
+                        }
+
+                                
+                        
+                    </script>
+                    <apex:outputPanel id="redirectPanel" >
+                        <apex:outputText rendered="{!shouldRedirect}">
+                            <script type="text/javascript">
+                            window.top.location = '{!redirectUrl}';
+                            </script>
+                        </apex:outputText>
+                    </apex:outputPanel>
+                    <apex:actionfunction name="CheckboxChanged" action="{!CheckUncheck}" oncomplete="window.top.location.reload();">
+                </apex:actionfunction>
+                </apex:form>
+            </body>
+        </html>
+    </apex:page>

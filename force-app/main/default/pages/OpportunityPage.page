@@ -1,0 +1,802 @@
+<apex:page standardcontroller="Opportunity" extensions="OpportunityPageExtension" sidebar="false" action="{!ChangedMessage}"
+           id="opportunitypage">
+    
+    <!-- <apex:pageMessage rendered="{!!ISBLANK(notificationMessage)}" summary="{!SUBSTITUTE(JSENCODE(notificationMessage), '\\n', '<br/>')}" severity="Warning" strength="3" escape="false" /> -->
+    <apex:pageMessage rendered="{!!ISBLANK(notificationMessage)}" summary="{!notificationMessage}" severity="Warning" strength="3" escape="true" />
+    
+    <!-- Resizing the iframe -->
+    <apex:outputPanel rendered="{!Opportunity.StageName == 'Pre-Order'}">
+        <style>
+            [id="0661I000003qZa2"] {height: 110px;} /* the same for both sandbox and production */
+        </style>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!Opportunity.Sent_for_Approval__c || 
+                                Opportunity.Account.Status__c == 'Rejected' ||
+                                Opportunity.Account.Status__c == 'In Active' || 
+                                NULLVALUE(Opportunity.TotalBills__c,0) > 0 ||
+                                (Opportunity.StageName == 'Closed Won' && 
+                                NULLVALUE(Opportunity.TotalSalesOrderInOpp__c,0) > 0)}">
+        <style>
+            [id="06611000002AYZk"] {height: 42px;} /* works in sandbox */
+            [id="0661I000004L4bb"] {height: 60px;} /* works in production */
+        </style>
+    </apex:outputPanel>
+    <!-- Resizing -->
+    <apex:outputPanel rendered="{!attachments.size < 1}">
+        <style>
+            .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+            margin: 7px 6px 7px;
+            border: 1px solid #e0e3e5;
+            /* padding: 5px 2px 4px 5px; */
+            }
+        </style>
+    </apex:outputPanel>
+    <style>
+        .bEditBlock .pbHeader>table, .apexp .bPageBlock.apexDefaultPageBlock .pbHeader>table, #ep.bLayoutBlock .pbHeader>table {
+        border-bottom: none !important;
+        }
+        body .bEditBlock .pbHeader, body .bLayoutBlock .pbHeader, body .apexp .bPageBlock.apexDefaultPageBlock .pbHeader {
+        border-bottom: none !important;
+        }
+        .displayLink {
+        display:block;
+        }
+    </style>
+    <apex:form id="OpportunityChangeForm">
+        <apex:outputPanel rendered="{!OpportunityHasChanged}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="warning" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                                Sales Order was created. Your changes will not reflect this Sales Order. Make your changes on Sales Order directly if you want changes to take place.
+                                
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="OpportunityChangeForm" style="float: right;"
+                                        action="{!hideOpportunityChangeMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    <!-- <apex:form id="ContactChangeForm">
+        <apex:outputPanel rendered="{!ContactHasChanged && contactNewHasValue}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                                Lead Source has changed. The new information came from the contact: <b>{!SourceContact}</b>
+                                
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="ContactChangeForm" style="float: right;"
+                                        action="{!hideContactChangeMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form> -->
+    
+    <apex:form id="infoform">
+        <apex:outputPanel rendered="{!AccountHasChanged}">
+            <div class="message infoM2" role="alert">
+                <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;">
+                    <tbody><tr valign="top">
+                        <td>
+                            <img alt="info" class="msgIcon" src="/s.gif" title="info"/>
+                        </td>
+                        <td class="messageCell">
+                            <div id="j_id0:j_id4:info:j_id6:j_id8" class="messageText">
+                                Price Level, GL Account Variable 1 and Manufacture Representative have changed. The new information came from the account: <b>{!SourceAccount}</b>
+
+                            </div>
+                        </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <apex:commandButton value="Dismiss" rerender="infoform" style="float: right;" 
+                                        action="{!hideAccountChangeMessage}"/>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </apex:form>
+    
+    
+    <apex:detail relatedList="true" inlineEdit="true" oncomplete="location.reload();" id="maindetailform"/>
+    
+    
+    
+    
+    
+    
+    
+    <apex:form >
+        
+        <!--<apex:pageBlock title="Oli & Kit Products">
+<apex:pageBlockButtons location="top">
+<apex:commandButton action="{!newAttachment}" value="Add Product" />
+</apex:pageBlockButtons>
+
+
+
+<apex:pageblocksection showheader="true" collapsible="true" columns="1">
+
+<apex:pageBlockTable value="{!oliKit}" var="oli">
+<apex:column value="{!oli.Name}"/>
+<apex:column value="{!oli.ProductCode}"/>
+<apex:column value="{!oli.Product2.Type__c}"/>
+
+<apex:column breakBefore="true" colspan="3" rendered="{!oli.Product2.Type__c == 'Kit'}">
+<apex:pageblocksection title="Kit Products" showheader="true" collapsible="true" columns="1">
+<apex:pageBlockTable value="{!productPartList}" var="prodPart">
+<apex:column value="{!prodPart.Id}" rendered="{!prodPart.AcctSeed__Product__c == oli.Product2Id}"/>
+<apex:column value="{!prodPart.Name}" rendered="{!prodPart.AcctSeed__Product__c == oli.Product2Id}"/>
+</apex:pageBlockTable>
+</apex:pageblocksection>
+</apex:column>
+</apex:pageBlockTable>
+
+</apex:pageblocksection>
+
+
+
+
+
+</apex:pageBlock>-->
+        <script>
+        
+        </script>
+    </apex:form>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <apex:relatedList list="CombinedAttachments" rendered="{!!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}"/>
+    
+    <apex:form id="innerexecutedform">
+        <apex:pageBlock title="Executed Documents" rendered="{!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}">
+            
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton id="TransferToAttachments" onclick="return TransferToAttachments();" reRender="" value="Transfer to Attachments SLAVIK" />
+            </apex:pageBlockButtons>
+            
+            <apex:actionFunction action="{!getCheckedExecutedDocs}" name="TransferExecutedToAttachments" reRender="" >
+                <apex:param value="" name="attachmentIDs"/>
+            </apex:actionFunction>
+            
+            <apex:pageBlockTable id="attachmenttable" value="{!executedDocs}" var="attach" rendered="{!executedDocs.size > 0}">
+                <apex:column HeaderValue="Action" width="129">
+                    <input type="checkbox" id="attachments_" value="{!attach.id}" class="chkExecutedDocs" />
+                    
+                    &nbsp;|&nbsp;
+                    <apex:commandLink value="Edit" style="color:#015ba7;" action="{!editAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="editid"/> 
+                    </apex:commandLink> 
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="View" style="color:#015ba7;" action="{!viewAttachment}" target="_blank" >
+                        <apex:param value="{!attach.id}" name="viewid"/> 
+                    </apex:commandLink>
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Del" onclick="return confirm('Are you sure?')" 
+                                      style="color:#015ba7;" action="{!deleteAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="deleteid"/> 
+                    </apex:commandLink>
+                </apex:column>
+                <apex:column headerValue="Title">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Title" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="title"/>
+                            <apex:outputPanel rendered="{!TitleSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!TitleSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputText value="{!attach.name}"></apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Created Date">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created Date" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="created"/>
+                            <apex:outputPanel rendered="{!CreatedSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!CreatedSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Last Modified">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Last Modified" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="last"/>
+                            <apex:outputPanel rendered="{!LastSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!LastSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.LastModifiedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Created By">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created By" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="by"/>
+                            <apex:outputPanel rendered="{!BySortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!BySortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedbyId}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!executedDocs.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>
+        <script>
+        function TransferToAttachments(){
+            
+            var idsArray = [];
+            $('input.chkExecutedDocs:checkbox:checked').each(function () {
+                idsArray.push($(this).val());
+            });
+            if(idsArray.length > 0){
+                TransferExecutedToAttachments("'"+idsArray+"'");
+            }
+            else{
+                alert ("Please select at least one attachment to transfer");
+            }
+            return false;
+        }
+        </script>
+    </apex:form>
+    
+    
+    
+    <apex:form id="innerattachmentsform">
+        <apex:pageBlock title="Attachments" rendered="{!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!newAttachment}" onclick="return CheckSO()" value="New Attachment" />
+                <apex:commandButton action="{!newAttachmentTest}" onclick="return CheckSO()" value="New Attachment with Renaming" />
+                <apex:commandButton id="TransferToDoc" onclick="return TransferToExeDoc();" reRender="" value="Transfer to Executed Documents" />
+            </apex:pageBlockButtons>
+            
+            <apex:actionFunction action="{!getCheckedAttachments}" name="passToController" reRender="" >
+                <apex:param value="" name="attachmentIDs"/>
+            </apex:actionFunction>
+            
+            
+            
+            <apex:pageBlockTable id="attachmenttable" value="{!attachmentWithoutExecutedDocs}" var="attach" rendered="{!attachmentWithoutExecutedDocs.size > 0}">
+                <apex:column HeaderValue="Action" width="129">
+                    <input type="checkbox" id="attachments_" value="{!attach.id}" class="chkAttachment" />
+                    
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Edit" style="color:#015ba7;" action="{!editAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="editid"/> 
+                    </apex:commandLink> 
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="View" style="color:#015ba7;" action="{!viewAttachment}" target="_blank" >
+                        <apex:param value="{!attach.id}" name="viewid"/> 
+                    </apex:commandLink>
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Del" onclick="return confirm('Are you sure?')" 
+                                      style="color:#015ba7;" action="{!deleteAttachment}" target="_parent">
+                        <apex:param value="{!attach.id}" name="deleteid"/> 
+                    </apex:commandLink>
+                </apex:column>
+                <apex:column headerValue="Title">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Title" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="title"/>
+                            <apex:outputPanel rendered="{!TitleSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!TitleSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputText value="{!attach.name}"></apex:outputText>
+                </apex:column>
+                <apex:column headerValue="Created Date">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created Date" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="created"/>
+                            <apex:outputPanel rendered="{!CreatedSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!CreatedSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Last Modified">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Last Modified" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="last"/>
+                            <apex:outputPanel rendered="{!LastSortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!LastSortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.LastModifiedDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Created By">
+                    <apex:facet name="header">                                
+                        <apex:commandLink action="{!checkSort}" value="Created By" reRender="attachmenttable" styleClass="displayLink">
+                            <apex:param name="sort" value="by"/>
+                            <apex:outputPanel rendered="{!BySortUp}">&#9650;</apex:outputPanel>
+                            <apex:outputPanel rendered="{!BySortDown}">&#9660;</apex:outputPanel>
+                        </apex:commandLink>
+                    </apex:facet>
+                    <apex:outputField value="{!attach.CreatedbyId}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!attachmentWithoutExecutedDocs.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>
+        <script>
+        function TransferToExeDoc(){
+            
+            var idsArray = [];
+            $('input.chkAttachment:checkbox:checked').each(function () {
+                idsArray.push($(this).val());
+            });
+            if(idsArray.length > 0){
+                passToController("'"+idsArray+"'");
+            }
+            else{
+                alert ("Please select at least one attachment to transfer");
+            }
+            return false;
+        }
+        function CheckSO(){
+            
+        }
+        </script>
+    </apex:form>
+    
+    
+    
+    <apex:relatedList list="Cases__r"/>
+    <apex:form id="innerhistoryform">
+        <apex:pageBlock title="Activity History">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!logCall}" value="Log a Call"/>
+                <apex:commandButton action="{!mailMerge}" value="Mail Merge"/>
+                <apex:commandButton action="{!sendAnEmail}" value="Send an Email"/>
+                <apex:commandButton action="{!viewAll}" value="View All"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable id="activitytable" value="{!activities}" var="activity" rendered="{!activities.size > 0}">
+                <apex:column HeaderValue="Action" width="55"> 
+                    <apex:commandLink value="Edit" style="color:#015ba7;" action="{!editActivity}" target="_parent">
+                        <apex:param value="{!activity.id}" name="editActivityId"/> 
+                    </apex:commandLink> 
+                    &nbsp;|&nbsp; 
+                    <apex:commandLink value="Del" onclick="return confirm('Are you sure?')" 
+                                      style="color:#015ba7;" action="{!deleteActivity}" target="_parent">
+                        <apex:param value="{!activity.id}" name="deleteActivityid"/> 
+                    </apex:commandLink>
+                    
+                </apex:column>
+                <apex:column headerValue="Subject">
+                    <apex:commandLink value="{!activity.subject}" action="{!gotoActivity}" target="_parent">
+                        <apex:param value="{!activity.id}" name="gotoActivityId"/> 
+                    </apex:commandLink> 
+                </apex:column>
+                <apex:column headerValue="Comments" width="500">
+                    <apex:outputField value="{!activity.Description}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Name">
+                    <apex:outputField value="{!activity.WhoId}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Task">
+                    <apex:outputField value="{!activity.isTask}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Due Date">
+                    <apex:outputField value="{!activity.ActivityDate}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Location">
+                    <apex:outputField value="{!activity.Location}"></apex:outputField>
+                </apex:column>
+                <apex:column headerValue="Assigned To">
+                    <apex:outputField value="{!activity.OwnerId}"></apex:outputField>
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputLabel value="No records to display" rendered="{!activities.size < 1}"></apex:outputLabel>
+        </apex:pageBlock>
+        <apex:outputPanel id="dummyPanel"></apex:outputPanel>
+        <apex:actionFunction name="ResetFields" action="{!ResetFields}" reRender="dummyPanel"/>
+    </apex:form>
+    <apex:relatedList list="OpportunityHistories" rendered="{!Opportunity.RecordType.Name=='Seawin USA Hospitality'
+                                                            || Opportunity.RecordType.Name=='Seawin China Hospitality'
+                                                            || Opportunity.RecordType.Name=='Seawin China OEM'}"/>
+    <apex:relatedList list="Histories" />
+    <apex:relatedList list="ProcessSteps" ></apex:relatedList>
+    <apex:outputPanel rendered="{!AccountHasChanged || ContactHasChanged || OpportunityHasChanged}">
+        <script>
+        setTimeout(function(){ ResetFields(); }, 3000);
+        </script>
+    </apex:outputPanel>
+    
+    
+    <apex:includeScript value="{!$Resource.jQueryV331}"/>
+    
+    <script src="/soap/ajax/50.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/50.0/apex.js" type="text/javascript"></script>
+    
+    <script> 
+    
+    var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+    
+    $(document).ready(function() {
+        
+        //Code for OLI name line break if it's name exceeds 20 characters.
+        //Also check if br occurs in the middle of the word, then don't break complete word, instead put br at the end of this word
+        {
+            var oppId = '{!$CurrentPage.parameters.id}';
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            
+            var query = "Select Id, name FROM Product2 WHERE Id in (" +
+                "Select Product2Id FROM OpportunityLineItem WHERE opportunityid = " + "'" + oppId + "')";
+            var result = sforce.connection.query(query);
+            var records = result.getArray("records");
+            //Note: No need to understand the code given below. Thank you
+            //Regards: Ajmal Shah
+            for(var i = 0; i < records.length; i++){
+                var prodName = records[i].Name;
+                var modifiedProdName = '';
+                var startIndex = 0, endIndex = 0;
+                for (const a of document.querySelectorAll("a")) {
+                    if (a.textContent.includes(prodName)) {
+                        var prodNameControl = a;
+                        var dummy1 = "", dummy2 = "";
+                        var desiredNoOfRows = Math.ceil(prodName.length/20);
+                        $(a).css({'width': '100%', 'display': 'inline-block'});
+                        if(desiredNoOfRows > 1){
+                            for(var j = 1; j <= desiredNoOfRows; j++){
+                                endIndex = endIndex + 20;
+                                dummy1 = dummy1 + prodName.substring(startIndex, endIndex);
+                                dummy2 = prodName.replace(dummy1, "");
+                                var indexOf1stOccuringSpaceAfter = dummy2.search(" ");
+                                if(indexOf1stOccuringSpaceAfter == -1)
+                                    indexOf1stOccuringSpaceAfter =  dummy2.length;
+                                modifiedProdName = modifiedProdName + prodName.substring(startIndex, endIndex + indexOf1stOccuringSpaceAfter + 1);
+                                modifiedProdName = modifiedProdName + '<br/>';
+                                dummy1 = dummy1 + prodName.substring(endIndex, endIndex + indexOf1stOccuringSpaceAfter + 1);
+                                endIndex = endIndex + indexOf1stOccuringSpaceAfter + 1;
+                                startIndex = startIndex + 20 + indexOf1stOccuringSpaceAfter + 1;
+                            }
+                            a.innerHTML = modifiedProdName;
+                            
+                        }
+                    }
+                }
+            }
+            
+            
+        }
+        
+        
+        /*Once a page is submitted for approval, the approval button disappears,
+      So we are checking if these buttons exist to avoid browser error*/
+        
+        var GLVar1 = '{!LEFT(Opportunity.GL_Account_Variable_1__c,15)}';
+        
+        var Sent = {!Opportunity.Sent_for_Approval__c};
+        var Rejected = '{!Opportunity.Account.Status__c}' == 'Rejected' ? true : false;
+        var InActive = '{!Opportunity.Account.Status__c}' == 'In Active' ? true : false;
+        var Billed = {!NULLVALUE(Opportunity.TotalBills__c,0)} > 0 ? true : false;
+        var Closed = '{!Opportunity.Account.Status__c}' != 'Rejected' && '{!Opportunity.StageName}' == 'Closed Won' 
+        && {!Opportunity.TotalSalesOrderInOpp__c} > 0;
+        
+        var msg = '';
+        // If Opportunity in Approval
+        if(Sent){
+            msg = 'Locked Opportunity, pending Approval.';
+        }
+        
+        // If Account is rejected
+        else if(Rejected){
+            msg = 'Opportunity is Locked. The Account is Rejected.';
+        }
+
+        // If Account is rejected
+        else if(InActive){
+            msg = 'Opportunity is Locked. The Account is In Active.';
+        }
+        
+        // If Stage is Closed Won and there is SO
+            else if(Closed){
+                msg = 'Opportunity is Locked, because the Stage is Closed Won and it has Sales Order(s).';
+            }
+        
+        // If there is billing
+                else if(Billed){
+                    msg = 'Sales Price or Quantity cannot be changed and Products can not be deleted,'; 
+                    msg += ' as Billing has already been created.';
+                }
+        
+        // var GLAccHref = "https://seawin--partial.my.salesforce.com/"+GLVar1;
+        var baseURL = "{!$User.ContactId}" == "" ? "{!baseUrl}" : "/sales";
+        GLAccHref = baseURL + "/" + GLVar1;
+        var GLHref = $('a[href^="'+GLAccHref+'"]');
+        
+        //Replace Record type default href value with our custom one
+        $('a[href*="/setup/ui/recordtypeselect.jsp?"]').each(function(){
+            
+            var url = comUrl + '/apex/OpportunityRecordTypePage?ent=Opportunity&OppID={!Opportunity.Id}&GLVariable1='+GLHref[0].text;
+            url += '&retURL={!Opportunity.Id}&save_new_url=/006/e?retURL=/{!Opportunity.Id}&nooverride=1';        
+            $(this).attr("href", url); 
+        });
+        
+        $('a[href*="/apex/OpportunityRecordTypePage?"]').click(function(e){
+            
+            //alert('Record type change link clicked...');
+            var url = comUrl + '/apex/OpportunityRecordTypePage?ent=Opportunity&OppID={!Opportunity.Id}&GLVariable1='+GLHref[0].text;
+            url += '&retURL={!Opportunity.Id}&save_new_url=/006/e?retURL=/{!Opportunity.Id}&nooverride=1'; 
+            if(msg != ''){
+                alert('Record Type cannot be changed. ' + msg);
+                return false;
+            }else{
+                windows.location.replace(url);
+            }
+        });
+        
+        //Below is commented b/c Greg wants to be able to change SalesRep regardless if Opp is locked or not
+        //$('a[href*="/apex/OpportunitySalesRepPage?"]').click(function(e){ 
+        //if(msg != ''){
+        //alert('Sales Rep/Team cannot be changed. ' + msg);
+        // return false;
+        //}else{
+        // return true;
+        //}
+        //});
+        
+        $('a[href*="/apex/OpportunityOwnerPage?"]').click(function(e){ 
+            if(msg != ''){
+                alert('Owner cannot be changed. ' + msg);
+                return false;
+            }else{
+                return true;
+            }
+        });
+        /*
+        //Replace Record type default href value with our custom one
+        $('a[href*="my.salesforce.com/setup/ui/recordtypeselect.jsp?"]').each(function(){
+              
+            var url = '/apex/OpportunityRecordTypePage?ent=Opportunity&OppID={!Opportunity.Id}&GLVariable1='+GLHref[0].text;
+            url += '&retURL={!Opportunity.Id}&save_new_url=/006/e?retURL=/{!Opportunity.Id}&nooverride=1';        
+            $(this).attr("href", url); 
+        });
+        */
+        
+        
+        if('{!Opportunity.TotalSalesOrderInOpp__c}' != '0') {
+            
+            //Override default click event of button labelled as "Submit for Approval"
+            $("input[type=button][name='submit']")[0].onclick = null;
+            $("input[type=button][name='submit']")[1].onclick = null;
+            $("input[type=button][name='piSubmit']")[0].onclick = null;
+            
+            //Override default click event of button labelled as "New" on Contact Roles
+            //$("input[type=button][name='newRole']")[0].onclick = null;
+            
+            //Remove default href values from all edit buttons in the Contact Roles related list
+            // $('a[href*="/p/opp/ContactRoleEditUi/e"]').each(function(){ 
+            //     $(this).attr("href", "##"); 
+            // });
+            
+            //Remove default href values from all delete buttons in the Contact Roles related list
+            // $('#opportunitypage_maindetailform_{!LEFT(Opportunity.id,15)}_RelatedContactRoleList_body a[href*="/setup/own/deleteredirect.jsp?"]').each(function(){ 
+            //     $(this).attr("href", "##"); 
+            // });
+            
+            //Remove default click event of button labelled as "New Task"
+            //$("input[type=button][name='task']")[0].onclick = null;
+            
+            //Remove default click event of button labelled as "New Event"
+            //$("input[type=button][name='event']")[0].onclick = null;
+            
+            
+            //Remove default href values from all Edit, Delete & Activity Object Link buttons in the Open Activities related list
+            //$('#j_id0_j_id26_{!LEFT(Opportunity.id,15)}_RelatedActivityList a[href*="retURL=%2Fapex%2FOpportunityPage%3Fid%3D"]')
+            //.each(function(){ 
+            //  $(this).attr("href", "##"); 
+            //});
+        }
+    });
+    
+    
+    
+    if('{!Opportunity.TotalSalesOrderInOpp__c}' != '0') {
+        
+        //Show alert for both "Submit for Approval" buttons
+        $("input[type=button][name='submit'],input[type=button][name='piSubmit']").click(function(event ){
+            alert ("Won Opportunity with Sales Order cannot be submitted for approval.");
+        });
+        
+        //Show alert for buttons labelled as "New", "Edit" in the Contact Roles
+        // $("input[type=button][name='newRole'], a[href*='/p/opp/ContactRoleEditUi/e']")
+        // .click(function(event){
+        //     alert ("Won Opportunity with Sales Order cannot be edited.");
+        // });
+        
+        //Show alert for button labelled as "Del" in the Contact Roles
+        $('#opportunitypage_maindetailform_{!LEFT(Opportunity.id,15)}_RelatedContactRoleList_body a[href*="/setup/own/deleteredirect.jsp?"]').click(function(){
+            alert ("Won Opportunity with Sales Order cannot be edited.");
+        });
+        
+        //Show alert for buttons labelled as "New Task" & " New Event"
+        //$("input[type=button][name='task'],input[type=button][name='event']").click(function(event ){
+        //  alert ("Won Opportunity with Sales Order cannot be edited.");
+        //});
+        
+        
+        //Show alert for button labelled as "Edit" in the Open Activities
+        // $('#j_id0_j_id26_{!LEFT(Opportunity.id,15)}_RelatedActivityList a[href*="retURL=%2Fapex%2FOpportunityPage%3Fid%3D"]')
+        //.click(function(){
+        // alert ("Won Opportunity with Sales Order cannot be edited.");
+        //});
+        
+    }
+    
+    </script>
+    
+    <script>
+    
+    $('td').filter(function(){
+        return $(this).text() == 'Allow Duplicate Opportunity';
+    }).parent().css("display", "none");
+    
+    </script>
+    
+    <script>
+
+    var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+
+    $('a[href*="/{!LEFT(Opportunity.Id, 15)}/a?retURL"]').click(function(e){
+
+        window.location.replace(comUrl + '/apex/OpportunityOwnerPage?OppId={!Opportunity.Id}&retURL={!Opportunity.Id}');
+        
+        e.preventDefault();
+
+    });
+    
+    </script>
+    <script> 
+    $('#CloneMenu a.menuButtonMenuLink').click(function(e){
+        /*
+                    var OriginalCloneURI = e.target.href.split(".com/")[1];
+                    window.location.replace( 
+                        "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&retURL={!Opportunity.Id}&continue=/"+
+                        OriginalCloneURI);
+                    */
+        // var whole_url = new URL(e.target.href);
+        
+        // var products = 'no';
+        // if(whole_url.searchParams.has("cloneli")) products = 'yes';
+        
+        // var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+        
+        // window.location.replace(comUrl +  
+        //                         "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&createproducts="+'zasdasda'+
+        //                         "&retURL={!Opportunity.Id}&continue="+
+        //                         "/apex/CloneOpportunityPage?id={!Opportunity.id}");
+        
+        // e.preventDefault();
+    });
+
+    
+        $('#CloneMenu a.menuButtonMenuLink').each(function(){
+            var productss = 'no';
+            let target_url = this.href + ''
+            console.log('volodymyt 154: ',target_url)
+            if(target_url.includes("cloneli")){
+                productss = 'yes';
+            } 
+            console.log('volodya pr: ',products)
+            console.log('volod this; ',this)
+            var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+            // products = 'yes'
+            this.href = comUrl +  
+                                    "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&createproducts="+productss+
+                                    "&retURL={!Opportunity.Id}&continue="+
+                                    "/apex/CloneOpportunityPage?id={!Opportunity.id}"
+        })
+    
+
+    </script>
+    <script>
+        console.log(4)
+
+    if(document.getElementById('CloneButton')){
+        document.getElementById('CloneButton').click()
+
+        //Communirt override
+        $('#CloneMenu > a').each(function () {
+            var products = 'no';
+            let target_url = this.href + ''
+            console.log(target_url)
+            if(target_url.includes("cloneli")){
+                products = 'yes';
+            } 
+            console.log(products)
+            var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+            // products = 'yes'
+            this.href = comUrl +  
+                                    "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&createproducts="+products+
+                                    "&retURL={!Opportunity.Id}&continue="+
+                                    "/apex/CloneOpportunityPage?id={!Opportunity.id}"
+        });
+
+        setTimeout(() => {
+            document.getElementById('CloneButton').click()
+
+        }, 300)
+    }
+    
+
+    //Homepageoverride not community
+    setTimeout(() => {
+        $('#CloneSelect > option').each(function () {
+            console.log(this.value)
+
+            if(this.value+'' !== '#'){
+                var products = 'no';
+                let target_url = this.value + ''
+                if(target_url.includes("cloneli")){
+                    products = 'yes';
+                } 
+                var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+
+                this.value = comUrl +  
+                                        "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&createproducts="+products+
+                                        "&retURL={!Opportunity.Id}&continue="+
+                                        "/apex/CloneOpportunityPage?id={!Opportunity.id}"
+            }
+            
+        })
+    },1000)
+    
+
+
+
+
+
+
+    $("input[type=button][name='clone']")[0].onclick = null;
+    $("input[type=button][name='clone']").click(function(e){
+        
+        var comUrl = "{!$User.ContactId}" != "" ? "/sales" : "";
+        
+        window.location.replace(comUrl + 
+                                "/apex/OpportunitySalesRepPage?oppId={!Opportunity.Id}&createproducts=no&retURL={!Opportunity.Id}&continue="+
+                                "/apex/CloneOpportunityPage?id={!Opportunity.id}");
+        e.preventDefault();
+    });
+    console.log(44)
+    console.log($("select[name='CloneSelect']").options)
+    console.log(45)
+    </script>
+    
+    <script>
+        $("#opportunitypage_maindetailform_{!LEFT(Opportunity.id,15)}_RelatedLineItemList_body").find("a[href^='/apex/InventoryInformationPage']").parent('td').css('text-align', 'right')
+    
+    </script>
+    
+</apex:page>

@@ -1,0 +1,132 @@
+<apex:page controller="CreateLabelsController" title="Create Labels">
+
+    <apex:form id="main_form_block">
+        <apex:sectionHeader title="Create Labels"  />
+        <apex:pageMessages ></apex:pageMessages>
+        <apex:pageBlock id="pageBlockOne">
+            <apex:pageBlockButtons id="buttons">
+                <apex:commandButton id="save" value="Create Labels" action="{!createLabelsAction}" reRender="main_form_block"/>
+                <apex:commandButton id="back" value="Back" action="/{!recordId}"/>
+                <!-- <apex:commandButton id="tt" value="test" action="{!test}" reRender="pageBlockOne"/> -->
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockTable id="OuterPBT" value="{!wrappedLines}" var="w">
+                <apex:column >
+                    <apex:facet name="header"> <apex:inputCheckbox id="masterchecked">
+                        <apex:actionSupport event="onclick" onsubmit="checkAll(this)" reRender="rerenderColumn"/>
+                        </apex:inputCheckbox>
+                    </apex:facet> 
+                    <apex:inputCheckbox value="{!w.selected}" styleClass="childcheckboxes" id="checkdone">
+                        <apex:actionSupport event="onclick" onsubmit="MasterCheck()" reRender="rerenderColumn"/>
+                    </apex:inputCheckbox>
+                </apex:column>
+                <apex:column headervalue="Product">
+                    <apex:outputText value="{!w.productName}"></apex:outputText>
+                </apex:column> 
+                <apex:column headervalue="Product Code">
+                    <apex:outputText value="{!w.productCode}"></apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Item Description">
+                    <apex:outputText value="{!w.itemDescription}"></apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Size">
+                    <apex:outputText value="{!w.itemSize}"></apex:outputText>
+                </apex:column>
+               <apex:column headervalue="Quantity">
+                    <apex:outputText value="{!w.quantity}"></apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Total">
+                    <apex:outputText value="{0,number, Currency}">
+                        <apex:param value="{!w.total}"/>
+                    </apex:outputText>
+                </apex:column>
+
+                <apex:column headervalue="Template">
+                    <apex:selectList id="Template" label="Template" value="{!w.selectedTemplate}" onchange="CheckTheCheckBox(this)" size="1">
+                        <apex:selectOptions value="{!templates}"/>
+                    </apex:selectList>
+                </apex:column>
+
+                <apex:column headerValue="Copies Count">
+                    <apex:inputText value="{!w.copiesCount}" />
+                </apex:column>
+        </apex:pageBlockTable>
+        </apex:pageBlock>
+
+        
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script> -->
+        <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+        
+        <script>
+            console.log('default')
+            function CheckTheCheckBox(chkbox){
+                // debugger;
+                if(chkbox.selectedIndex != 0){
+                    var currentRow = $(chkbox).closest("tr");
+                    currentRow.find(".childcheckboxes").prop("checked", true);
+                }else{
+                    var currentRow = $(chkbox).closest("tr");
+                    currentRow.find(".childcheckboxes").prop("checked", false);   
+                }
+            }
+            
+            function checkAll(cb)
+            {
+                // get all the child checkboxes
+                var c = document.getElementsByClassName("childcheckboxes");
+                var clen = c.length;
+                
+                var allchecked = 0;
+                
+                // check or uncheck all based on the master checkbox
+                for(var i = 0; i < clen; i++){
+                    
+                    c[i].checked = cb.checked;
+                    
+                    if(cb.checked){
+                        allchecked++;
+                    } 
+                    
+                }
+                
+                if(allchecked == 0){
+                    
+                    refreshPageAction();
+                }
+            }
+            
+            function MasterCheck(){
+                
+                // get all the child checkboxes
+                var c = document.getElementsByClassName("childcheckboxes");
+                var clen = c.length;
+                
+                var allchecked = 0;
+                // check or uncheck the master checkbox based on the child checkboxes
+                for(var i = 0; i < clen; i++){
+                    if(c[i].checked){
+                        allchecked++;
+                    }
+                }
+                
+                // check the master checkbox, if all checked
+                var mchk = document.getElementById('{!$Component.OuterForm.OuterPB.OuterPBT.masterchecked}');
+                
+                if(clen == allchecked){
+                    mchk.checked = true;
+                }else{
+                    mchk.checked = false;
+                }
+                
+                
+                if(allchecked == 0){
+                    
+                    refreshPageAction();
+                }
+            }
+        </script>
+        
+    </apex:form>
+
+
+</apex:page>

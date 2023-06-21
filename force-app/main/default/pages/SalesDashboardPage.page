@@ -1,0 +1,3392 @@
+<apex:page controller="SalesDashboardController">
+    
+    <style>
+        .listButtons li:not(.lastItem) {
+        display: none;
+        }
+        html, body, #collection_performance {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        }
+        .gauge-value{
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 20px;
+        }
+        img {
+        border-radius: 50%;
+        }
+        table.tableClass {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 60%;
+        cursor: pointer;
+        }
+        
+        .tableClass td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        
+        .tableClass tr:nth-child(even) {
+        background-color: #dddddd;
+        }
+        
+        .highcharts-background{
+        cursor: pointer;
+        }
+        
+        .blankspace{
+        width: 1234px; height: 400px; background: white;
+        }
+        .message .messageText {
+        font-size: 12px;
+        }
+        .title-dashboard{
+        font-size: 2em;
+        font-weight: bold;
+        }
+        .listViewportWrapper .listViewport .topNav h2.title {
+        font-size: 1.5em;
+        }
+        .center {
+        text-align: center;
+        }
+        .monthClass {
+        background-color:#60cc63 !important;
+        }
+        .yearClass {
+        background-color:#91e0d9 !important;
+        }
+        .totalClass{
+        
+        background-color:#c1caca !important;
+        }
+        .emptySpace{
+        background-color: white;
+        width: 100%; 
+        height: 500px; 
+        }
+        .whiteSpace{
+        background-color: white;
+        width: 50%; 
+        height: 500px; 
+        }
+        .dtatable{
+        background-color: white;
+        width: 100%; 
+        height: 333px; 
+        }
+        .dashboard-title{
+        text-align: center;
+        }
+        .transparentBg{
+        
+        background-color: transparent !important;
+        
+        }
+        
+        .float-left-half{
+        width: 50%;
+        height: 535px;
+        float: left; 
+        position: relative; 
+        z-index: 10;
+        }
+        .float-right-half{
+        width: 50%;
+        height: 535px;
+        float: right; 
+        position: relative; 
+        z-index: 10;
+        }
+        .float-full{
+        width: 100%;
+        height: 535px;
+        float: left;
+        }
+        .float-left-70{ 
+        width: 70%;
+        height: 535px;
+        float: left; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .float-right-70{    
+        width: 70%;
+        height: 535px;
+        float: right; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .float-left-30{ 
+        width: 30%;
+        height: 535px;
+        float: left; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .float-right-30{    
+        width: 30%;
+        height: 535px;
+        float: right; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .float-left-65{ 
+        width: 65%;
+        height: 535px;
+        float: left; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .float-right-35{    
+        width: 35%;
+        height: 535px;
+        float: right; 
+        position: relative; 
+        z-index: 10
+        
+        }
+        .width-33{    
+        width: 33%;
+        height: 535px;
+        position: relative; 
+        display: inline-block;
+        z-index: 10
+        
+        }
+        .spinnerBg{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background-color: transparent;
+        opacity: 0.1;
+        z-index: 999999;
+        }
+        .spinner{
+        width: 100%;
+        height: 100%;
+        background-image: url("/img/loading32.gif");
+        background-size: 56px;
+        background-repeat: no-repeat;
+        background-position: center;
+        z-index: 9999999;
+        opacity: 1;
+        }
+        .spinner_adjusted{
+        width: 100%;
+        height: 40%;
+        background-image: url("/img/loading32.gif");
+        background-size: 56px;
+        background-repeat: no-repeat;
+        background-position: center;
+        z-index: 9999999;
+        opacity: 1;
+        }
+        
+    </style>
+    
+    
+    <apex:outputPanel >
+        <apex:includeScript value="{!
+                                   URLFOR($Resource.DashboardsScriptAndStyle,'jquery.min.js')}"/>
+        <apex:includeScript value="{!
+                                   URLFOR($Resource.DashboardsScriptAndStyle,'highcharts.js')}"/>
+        <apex:includeScript value="{!
+                                   URLFOR($Resource.DashboardsScriptAndStyle,'accessibility.js')}"/>
+        <apex:includeScript value="{!
+                                   URLFOR($Resource.DashboardsScriptAndStyle,'gauge.min.js')}"/>
+    </apex:outputPanel>
+    
+    <apex:pageBlock title="Sales Dashboard">
+        
+        <div class="individualPalette listViewportWrapper float-full">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Quota YTD<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart takes Sum of Total on sales orders for the Current Year to date and the Expected Quota to date based on Expected Monthly Quota and calculates the Total Sales to date this Year and the percentage as compared to the Expected Monthly Quota for the logged in user."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div class="emptySpace" style="text-align: center;">
+                                    <canvas id="quota_ytd" style="cursor: pointer;" 
+                                            onclick="RedirectTo(); return false;"></canvas>
+                                    <div id="spinnercontainer" class="spinnerBg" />
+                                    <div id="spinnerlogo" class="spinner_adjusted" />
+                                    <br/>
+                                    <div id="guagedisplayId" class="gauge-value" style="display: none;">
+                                        <apex:outputPanel >
+                                            <span style="color:Grey">
+                                                <span id="uptodateamountId"></span> (<span id="uptodatepercentageId"></span>%) 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <div style="font-weight: normal; font-size: 12px;">
+                                                <span style="font-weight: bold;">Sales To Date:</span>
+                                                <span id="uptodateamount2Id"></span><br/>
+                                                <span style="font-weight: bold;">Expected Quota to Date:</span>
+                                                <span id="uptodatequotaId"></span>
+                                                <span style="color:red;">*</span><br/><br/>
+                                                <span style="color:red;padding-right:0;">*</span>
+                                                Expected Quota to Date is calculated based on 
+                                                your Monthly Quota. 
+                                            </div>
+                                        </apex:outputPanel>
+                                        <div id="monthlyquotaisnullId" style="display: none;">
+                                            <span style="color: red; font-weight: bold;">Error: </span>
+                                            <span  style="color: red;">
+                                                Monthly Quota has not been assigned.
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-left-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Sales by Lead Source Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data for the last 12 months from sales orders where record type equals Seawin USA Hospitality for all sales reps in the Seawin USA Jurisdiction and grouped by Lead Source."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="Sales_By_Lead_Source_Last_12_Months" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>    
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-right-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Monthly Sales Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data from sales orders that are active for the current year for all users who belong to the logged in user's GL Account Variable. "/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <div style="text-align: center">
+                                <div id="monthlysales" class="emptySpace">
+                                    <div class="spinnerBg" />
+                                    <div class="spinner" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-left-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Sales Forecast Pipeline by Lead Source<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart shows data for the next 12 months involving Sum of Expected Revenue(Amount * Probability%) from Opportunties having record type Seawin USA Hospitality, based on close date, for all Sales rep in the Seawin USA jurisdiction user and grouped by Lead Source"/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="sales_forecast_pipeline_by_lead_source" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-right-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Sales Forecast Pipeline<span 
+                                                                           style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart shows Sum of Expected Revenue(Amount * Probability%) from Opportunties for the Next 12 Months by Close Date based on Forecast Category for the logged in user. "/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <div style="text-align: center">
+                                <div id="forecasts" class="emptySpace">
+                                    <div class="spinnerBg" />
+                                    <div class="spinner" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-full">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Sales Pipeline Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data for all opportunities that are open, summed till each month for each month for each sales reps in the Seawin USA jurisdiction."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="usercollectivepipeline" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="individualPalette listViewportWrapper width-33">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Active Opportunities by Stage<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data to date from opportunities having record type Seawin USA Hospitality, Stage is not equal to Closed Won/Closed Lost/Not Qualified for all Sales reps who are in Seawin USA jurisdiction."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="activeopportunitiesbystage" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="individualPalette listViewportWrapper width-33">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Pre-Order Pipeline Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart will show statistics about loss reasons of Closed Lost opportunities whose stage is Closed Lost and Closed Date is for the last 12 months including the current month, for all Sales reps in the Seawin USA jurisdiction, Opportunity Parent equal to null, record type equals Seawin USA Hospitality, GL Account Variable 1 belongs to Seawin USA."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="preorderpipeline" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="individualPalette listViewportWrapper width-33">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Negotiation Pipeline Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart will show statistics about loss reasons of Closed Lost opportunities whose stage is Closed Lost and Closed Date is for the last 12 months including the current month, for all Sales reps in the Seawin USA jurisdiction, Opportunity Parent equal to null, record type equals Seawin USA Hospitality, GL Account Variable 1 belongs to Seawin USA."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="negotiationpipeline" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="individualPalette listViewportWrapper float-left-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Newly Submitted Opportunities Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data for the last 12 months from opportunities where record type is Seawin USA Hospitality based on Quote Submitted Date for each Sales rep in the Seawin USA jurisdiction."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="newlysubmittedopportunities" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-right-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Newly Submitted Opportunities Last 12 Months by Lead Source<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data for the last 12 months from opportunities where record type is Seawin USA Hospitality based on Quote Submitted Date for each Sales rep in the Seawin USA jurisdiction and grouped by Lead Source. "/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="newlySubmittedOpportunitiesLastTwelveMonthsByLeadSource" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-left-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Lost Opportunities Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart shows data for all opporutnities whose stage is Closed Lost and Closed Date is for the last 12 months including the current month, for all Sales reps in the Seawin USA jurisdiction."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="lostopportunities" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-right-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Lost Opportunities Loss Reason Last 12 Months<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" 
+                                     title="This chart will show statistics about loss reasons of Closed Lost opportunities whose stage is Closed Lost and Closed Date is for the last 12 months including the current month, for all Sales reps in the Seawin USA jurisdiction."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="lossreasons" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-left-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Your Win Rate<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows % of Closed Won Opportunities which had Negotiation stage for Negotiation and which are Closed Won for Over all, w.r.t total Closed Won and Closed Lost Opportunities not having Change Order/Mockup in their name for the logged in user."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="yourwinrate" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="individualPalette listViewportWrapper float-right-half">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Neglected Opportunities<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows data from opportunities that are open on which there has been no activity for the given period of time since the last modified date(changes only by Seawin users)/last activity date and no future tasks exists."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="neglectedopportunities" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        
+        
+        <div class="individualPalette listViewportWrapper float-full">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Tasks Completion<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This chart shows Overdue, Ontime and Missing Due date tasks that are open and assigned to the logged in User. "/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div style="text-align: center">
+                                    <div id="tasks" class="emptySpace">
+                                        <div class="spinnerBg" />
+                                        <div class="spinner" />
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+
+        <apex:outputText value="." style="color:#f7f7f7;"></apex:outputText>
+        <br/>
+        <br/>
+    </apex:pageBlock> 
+    <script>
+    
+    function getMonthNumberFromMonthName(monthString){
+        
+        var month = 1;
+        
+        if(monthString.trim() == 'Jan'){
+            month = 1;
+        } else if(monthString.trim() == 'Feb'){
+            month = 2;
+        } else if(monthString.trim() == 'Mar'){
+            month = 3;
+        } else if(monthString.trim() == 'Apr'){
+            month = 4;
+        } else if(monthString.trim() == 'May'){
+            month = 5;
+        } else if(monthString.trim() == 'Jun'){
+            month = 6;
+        } else if(monthString.trim() == 'Jul'){
+            month = 7;
+        } else if(monthString.trim() == 'Aug'){
+            month = 8;
+        } else if(monthString.trim() == 'Sept'){
+            month = 9;
+        } else if(monthString.trim() == 'Oct'){
+            month = 10;
+        } else if(monthString.trim() == 'Nov'){
+            month = 11;
+        } else if(monthString.trim() == 'Dec'){
+            month = 12;
+        } else if(monthString.trim() == 'Missed'){
+            month = 'Missed';
+        }
+        
+        return month;
+    }
+    
+    </script>
+    <script>
+    
+    /*----------------------- Last 12 Months ------------------------- */
+    
+    var Last12MonthsCategories = new Array();
+    
+    function Last12Months() {
+        var now = new Date();
+        var currentMonth = now.getMonth();
+        var month = now.getMonth();
+        
+        var names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+        
+        for (var i = 0; i < 12; ++i) {
+            var d = new Date();
+            d.setMonth(parseInt(currentMonth) - i);
+            Last12MonthsCategories.push(names[month] + ' \'' + d.getFullYear().toString().substring(2));
+            if (--month === -1) {
+                month = 11;
+            }
+        }
+    }
+    
+    Last12Months();
+    
+    /*----------------------- Last 12 Months Reverse ------------------------- */
+    
+    var Last12MonthsReverseCategories = new Array();
+    var Last12MonthsReverseCategories_Temp = new Array();
+    
+    function Last12Months_Reverse() {
+        var now = new Date();
+        var currentMonth = now.getMonth();
+        var month = now.getMonth();
+        
+        var names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+        
+        for (var i = 0; i < 12; ++i) {
+            var d = new Date();
+            d.setMonth(parseInt(currentMonth) - i);
+            Last12MonthsReverseCategories_Temp.push(names[month] + ' \'' + d.getFullYear().toString().substring(2));
+            if (--month === -1) {
+                month = 11;
+            }
+        }
+        
+        for (var i = 11; i >= 0; i--) {
+            Last12MonthsReverseCategories.push(Last12MonthsReverseCategories_Temp[i]);
+        }
+    }
+    
+    
+    Last12Months_Reverse();
+    
+    /*----------------------- Next 12 Months ------------------------- */
+    
+    var Next12MonthsCategories = new Array();
+    
+    function Next12Months() {
+        var now = new Date();
+        var currentMonth = parseInt(now.getMonth());
+        var month = parseInt(now.getMonth());
+        
+        var names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                     'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+        
+        for (var i = 0; i < 12; ++i) {
+            var d = new Date();
+            d.setMonth(parseInt(currentMonth) + i);
+            if(i == 0) Next12MonthsCategories.push("Missed");
+            Next12MonthsCategories.push(names[month] + ' \'' + d.getFullYear().toString().substring(2));
+            if (++month === 12) {
+                month = 0;
+            }
+        }
+    }
+    
+    Next12Months();
+    
+    
+    </script>
+    <script>
+    /*---------------- Quota YTD ----------------------- */
+    
+    function RedirectTo(){
+        
+        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Quota_YTD&title=Quota YTD&click=chart';
+        url += '&duration=&str=';
+        url += '&dashboard=SD';
+        window.open(url, '_blank');
+        
+    }
+    
+    var opts = {
+        angle: 0, // The span of the gauge arc
+        lineWidth: 0.1, // The line thickness
+        radiusScale: 1, // Relative radius
+        pointer: {
+            length: 0.4, // // Relative to gauge radius
+            strokeWidth: 0.035, // The thickness
+            color: '#000000' // Fill color
+        },
+        limitMax: false,     // If false, max value increases automatically if value > maxValue
+        limitMin: false,     // If true, the min value of the gauge will be fixed
+        colorStart: '#6FADCF',   // Colors
+        colorStop: '#8FC0DA',    // just experiment with them
+        strokeColor: '#E0E0E0',  // to see which ones work best for you
+        generateGradient: true,
+        highDpiSupport: true,     // High resolution support
+        // renderTicks is Optional
+        renderTicks: {
+            divisions: 5,
+            divWidth: 1.1,
+            divLength: 0.7,
+            divColor: '#333333',
+            subDivisions: 5,
+            subLength: 0.5,
+            subWidth: 1.2,
+            subColor: '#666666'
+        },
+        staticLabels: {
+            font: "18px sans-serif",  // Specifies font
+            labels: [0, 50, 100, 150, 200],  // Print labels at these values
+            color: "#000000",  // Optional: Label text color
+            fractionDigits: 0  // Optional: Numerical precision. 0=round off.
+        },
+        staticZones: [
+            {strokeStyle: "#800700", min: 0, max: 50}, // dark red
+            {strokeStyle: "#F03E3E", min: 50, max: 100}, // red
+            {strokeStyle: "#FFF200", min: 100, max: 150}, // yellow
+            {strokeStyle: "#30B32D", min: 150, max: 200}, // green
+            {strokeStyle: "#1C4F00", min: 200, max: 250} // dark green
+        ]
+    };
+    
+    var UptodateQuota = 0.00;
+    var UptoDatePercentage = 0.00;
+    var UptoDateAmount = 0.00; 
+    var UptodateQuotaYTD = 0.00;
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Quota_YTD_Check}',
+        function(result, event){
+            
+            if (event.status) {
+                
+                UptodateQuota = result;
+                
+                CallTheRenderTeamQuotaYTD(UptodateQuota);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Quota YTD Check ...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Quota YTD Check...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    function CallTheRenderTeamQuotaYTD(UptodateQuota){
+        
+        UptodateQuotaYTD = 0.00;
+        
+        if(UptodateQuota == ""){
+            
+            //document.getElementById("monthlyquotaisnullId").style.display = "";
+            UptodateQuota = 0.00
+        }
+        
+        UptodateQuotaYTD = UptodateQuota;
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.SalesDashboardController.Quota_YTD}',
+            function(result, event){
+                
+                if (event.status) {
+                    
+                    UptoDateAmount = result[0].sum;
+                    
+                    UptoDatePercentage = UptodateQuota > 0
+                    ? (UptoDateAmount / UptodateQuota) * 100
+                    : 0;
+                    
+                    UptoDateAmount = UptoDateAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                    
+                    document.getElementById("uptodateamountId").innerHTML = UptoDateAmount;
+                    document.getElementById("uptodateamount2Id").innerHTML = UptoDateAmount;
+                    
+                    UptoDatePercentage = UptoDatePercentage.toFixed(2);
+                    
+                    document.getElementById("uptodatepercentageId").innerHTML = UptoDatePercentage;
+                    
+                    RenderChartGuage(UptoDatePercentage);
+                } else if (event.type === 'exception') {
+                    
+                    console.log('Exception has occured in Quota YTD ...');
+                    console.log(event.message);
+                    console.log(event.where);
+                } else {
+                    console.log('Error occured in Quota YTD...');
+                    console.log(event.message);
+                }
+            }, 
+            {escape: true}
+        );
+    }
+    function RenderChartGuage(UptoDatePercentage){
+        
+        document.getElementById("spinnercontainer").remove();
+        document.getElementById("spinnerlogo").remove();
+        document.getElementById("quota_ytd").style.width = '500px';
+        document.getElementById("quota_ytd").style.marginTop = '5%';
+        
+        var QuotaPercentage = UptoDatePercentage > 250 ? 250 : UptoDatePercentage;
+        var target = document.getElementById('quota_ytd'); // your canvas element
+        var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+        gauge.maxValue = 250; // set max gauge value
+        gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+        gauge.animationSpeed = 32; // set animation speed (32 is default value)
+        gauge.set(QuotaPercentage); // set actual value  
+        
+        document.getElementById("guagedisplayId").style.display = '';
+        
+        if(UptodateQuota == ""){
+            
+            document.getElementById("monthlyquotaisnullId").style.display = "";
+        }
+        
+        UptodateQuotaYTD = UptodateQuotaYTD.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+        
+        document.getElementById("uptodatequotaId").innerHTML = UptodateQuotaYTD;
+    }
+    </script>
+    <script>
+    /* ------------------- Sales by Lead Source Last 12 Months -------------- */
+            var SalesByLeadSourceLastTwelveMonthsData = new Array();
+            
+            var midArray;
+            var mainArray = new Array();
+            var subArray = new Array(); 
+            
+            Visualforce.remoting.timeout = 120000;
+            
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.SalesDashboardController.Sales_By_Lead_Source_Last_12_Months}',
+                function(result, event){
+
+                    if (event.status) {
+                        console.log('result leads: ',JSON.stringify(result))
+                        for (var key in result) {
+                            
+                            mainArray = new Array();  
+                            
+                            result[key].forEach(buildarray);
+                            
+                            function buildarray(item, index) {
+                                
+                                subArray = new Array();
+                                
+                                subArray.push(item.valueindex, item.amount);
+                                mainArray.push(subArray);
+                            }
+                            
+                            midArray = {name:key, data:mainArray, custom:key};
+                            
+                            SalesByLeadSourceLastTwelveMonthsData.push(midArray); 
+                        }
+                        console.log('result leads SalesByLeadSourceLastTwelveMonthsData: ',JSON.stringify(SalesByLeadSourceLastTwelveMonthsData))
+                        RenderChartSalesByLeadSource(SalesByLeadSourceLastTwelveMonthsData);
+                    } else if (event.type === 'exception') {
+                        
+                        console.log('Exception has occured in Sales_By_Lead_Source_Last_12_Months...');
+                        console.log(event.message);
+                        console.log(event.where);
+                    } else {
+                        console.log('Error occured in Sales_By_Lead_Source_Last_12_Months...');
+                        console.log(event.message);
+                    }
+                }, 
+                {escape: true}
+            );
+            function RenderChartSalesByLeadSource(SalesByLeadSourceLastTwelveMonthsData){
+                var salesByLeadSourceLastTwelveMonths = Highcharts.chart('Sales_By_Lead_Source_Last_12_Months', {
+                    credits: {
+                        enabled: false
+                    },
+                    chart: {
+                        type: 'bar',
+                        events: {
+                            click: function(event) {
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_By_Lead_Source_Last_12_Months&title=Sales by Lead Source Last 12 Months - Hospitality&click=chart';
+                                url += '&duration=&str=';
+                                url += '&dashboard=SD';
+                                window.open(url, '_blank');
+                            }
+                        }
+                    },
+                    title: {
+                        text: ''
+                    },
+                    xAxis: {
+                        categories: Last12MonthsCategories,
+                        min: 0,
+                        max: 11,
+                        labels: {
+                            useHTML: true,
+                            formatter: function(){
+                                
+                                var monthYearList = this.value.split('\'');
+                                var year = '20'+monthYearList[1];
+                                var month = getMonthNumberFromMonthName(monthYearList[0]);
+                                return '<a href=\'{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_By_Lead_Source_Last_12_Months&title=Sales by Lead Source Last 12 Months - Hospitality&click=left&dashboard=SD&year='+year+'&month='+month+'\' target=\'blank\'>'+this.value+'</a>';   
+                            }
+                        } 
+                    },
+                    yAxis: {
+                        min: 0,
+                        allowDecimals: false,
+                        title: {
+                            text: 'Amount ($)'
+                        }
+                    },
+                    tooltip: {
+                        shared: false,
+                        formatter: function () {
+                            return '<b style="color: '+this.series.color+'; font-weight:bold">' + 
+                                this.series.userOptions.custom + '</b><br>'+ this.x +'<br>Amount: '+ this.y.toLocaleString('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                });
+                        },
+                        split: true,
+                        positioner: function(labelWidth, labelHeight, point) {
+                            return {
+                                x: point.plotX - point.h/2 + labelWidth/2,
+                                y: point.plotY
+                            };
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        floating: false,
+                        enabled: true
+                    },
+                    plotOptions: {
+                        series: {
+                            stacking: 'normal',
+                            cursor: 'pointer',
+                            enabled: true,
+                            events: {
+                                legendItemClick: function(event) {
+                                    
+                                    var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_By_Lead_Source_Last_12_Months&title=Sales by Lead Source Last 12 Months - Hospitality&click=legend';
+                                    url += '&duration=&str='+event.target.name;
+                                    url += '&dashboard=SD';
+                                    window.open(url, '_blank');
+                                    event.preventDefault();
+                                    
+                                },
+                                click: function(event) { 
+                                    var d = new Date();
+                                    var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                                    
+                                    var CategArray = event.point.category.split(" ");
+                                    var CurrentMonth = parseInt(d.getMonth()) + 1;
+                                    
+                                    var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                                    var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                                    var duration = '';
+                                    
+                                    var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_By_Lead_Source_Last_12_Months&title=Sales by Lead Source Last 12 Months - Hospitality&click=bar';
+                                    url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+event.point.series.userOptions.name;
+                                    url += '&dashboard=SD';
+                                    window.open(url, '_blank');
+                                }
+                            }
+                        }
+                    },
+                    series: SalesByLeadSourceLastTwelveMonthsData
+                });
+                
+                //For redraw the chart to add colors to the legend symbols
+                salesByLeadSourceLastTwelveMonths.addSeries({"data":[]});
+                salesByLeadSourceLastTwelveMonths.series[salesByLeadSourceLastTwelveMonths.series.length - 1].remove();
+                
+            }
+            
+            </script>
+    <script>
+    /*---------------- Monthly Sales Last 12 Months ----------------------- */
+    var MonthlySalesData = new Array();
+    
+    
+    var mainArray = new Array();
+    var midArray;
+    var subArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    function getMapLast12MonthReversed(){
+        let date = new Date();
+        date.setDate(1);
+        let year_month_obj = {};
+        for(let month = 1; month <= 12; month++){
+            let index = 12 - month;
+            let iteration_month = date.getMonth() + 1;
+            let iteration_year = date.getFullYear();
+
+            year_month_obj[index] = {
+                month: iteration_month,
+                year: iteration_year
+            }
+            date.setMonth(date.getMonth() - 1);
+        }
+        let new_map = {}
+        let index = 0
+        for(let i = 11; i>=0; i--){
+            new_map[index] = year_month_obj[i]
+            index++
+        }
+        return new_map;
+    }
+
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Monthly_Sales_Last_12_Months}',
+        function(result, event){
+            
+            if (event.status) {
+                const date_map = getMapLast12MonthReversed()
+                const rendered_data = []
+                const sal_rep_map = {}
+                result.forEach(el => {
+                    if(!sal_rep_map[el.name]){
+                        sal_rep_map[el.name] = [el]
+                    }else{
+                        sal_rep_map[el.name].push(el)
+                    }
+                })
+                for(let char in sal_rep_map){
+                    let res_obj_item = {
+                        name: char,
+                        data: [],
+                        custom: char
+                    }
+                    sal_rep_map[char].forEach(el => {
+                        for(let date_item in date_map){
+                            let item = date_map[date_item]
+                            if(el.month === item.month && el.year === item.year){
+                                console.log('ELEMENT: ',el)
+                                console.log('ITEM: ',item)
+                                console.log(date_item)
+                                console.log('---------')
+                                res_obj_item.data.push([
+                                    +date_item, el.c
+                                ])
+                            }
+                        }
+                    })
+                    res_obj_item.data.sort(function(a, b){
+                        return a[0] - b[0]
+                    })
+                    rendered_data.push(res_obj_item)
+                }
+                RenderMonthlySalesLast12Months(rendered_data);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Monthly Sales Last 12 Months...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Monthly Sales Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderMonthlySalesLast12Months(MonthlySalesData){
+        
+        Highcharts.chart('monthlysales', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'bar',
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Monthly_Sales_Last_12_Months&title=Monthly Sales Last 12 Months&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: Last12MonthsCategories,
+                min: 0,
+                max:11
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                }
+            },
+            tooltip: {
+                shared: false,
+                formatter: function () {
+                    return '<b style="color: '+this.series.color+'; font-weight:bold">' + 
+                        this.series.userOptions.custom + '</b><br>'+ this.x +'<br>Amount: '+ this.y.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        });
+                },
+                split: true,
+                positioner: function(labelWidth, labelHeight, point) {
+                    return {
+                        x: point.plotX - point.h/2 + labelWidth/2,
+                        y: point.plotY
+                    };
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal',
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+                            console.log(event);
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Monthly_Sales_Last_12_Months&title=Monthly Sales Last 12 Months&click=legend';
+                            url += '&duration=&str='+event.target.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) { 
+                            var d = new Date();
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                            var duration = '';
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Monthly_Sales_Last_12_Months&title=Monthly Sales Last 12 Months&click=bar';
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+event.point.series.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: MonthlySalesData
+            
+            });
+        }
+        </script>
+    <script>
+    /* -------------------- Sales Forecast Pipeline By Lead Source -------------------*/
+    var SalesForecastPipelineByLeadSourceData = new Array();
+    
+    var midArray;
+    var mainArray = new Array();
+    var subArray = new Array();
+    var i = 0;
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Sales_Forecast_Pipeline_By_Lead_Source}',
+        function(result, event){
+            
+            if (event.status) {
+                for (var key in result) {
+                    
+                    mainArray = new Array();
+                    subArray = new Array();
+                    i = 0; 
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        if(i == 0){
+                            subArray = new Array();
+                            var checkNum = item.misc + "abc";
+                            var valueIs = 0;
+                            if(checkNum == "abc" || checkNum == "0abc"){
+                                
+                                valueIs = null;
+                            }else{
+                                
+                                valueIs = parseFloat(item.misc);
+                            }
+                            
+                            subArray.push(0, valueIs);
+                            mainArray.push(subArray);
+                        }
+                        
+                        subArray = new Array();
+                        subArray.push(parseInt(item.valueindex) + 1, item.amount);
+                        mainArray.push(subArray);
+                        i++;
+                    }
+                    
+                    midArray = {name:key, data:mainArray, custom:"{!YEAR(TODAY())}"};
+                    SalesForecastPipelineByLeadSourceData.push(midArray); 
+                }
+                console.log('SalesForecastPipelineByLeadSourceData: ',JSON.stringify(SalesForecastPipelineByLeadSourceData))
+                RenderChartSalesForecastLineByLeadSource(SalesForecastPipelineByLeadSourceData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Sales Forecast Pipeline By Leadsource...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Sales Forecast Pipeline By Leadsource...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderChartSalesForecastLineByLeadSource(SalesForecastPipelineByLeadSourceData){
+        var salesForecastPipelineByLeadSource = Highcharts.chart('sales_forecast_pipeline_by_lead_source', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'bar',
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline_By_Lead_Source&title=Sales Forecast Pipeline by Lead Source&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: Next12MonthsCategories,
+                min: 0,
+                max: 12, 
+                labels: {
+                    useHTML: true,
+                    formatter: function(){
+                        var monthYearList = this.value.split('\'');
+                        var year = '20'+monthYearList[1];
+                        var month = getMonthNumberFromMonthName(monthYearList[0]);
+                        var urlString = '';
+                        if(month == 'Missed'){
+                            urlString = 'duration='+month;
+                        } else {
+                            urlString = 'year='+year+'&month='+month;
+                        }
+                        return '<a href=\'{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline_By_Lead_Source&title=Sales Forecast Pipeline by Lead Source&click=left&dashboard=SD&'+urlString+'\' target=\'blank\'>'+this.value+'</a>';    
+                    }
+                } 
+            },
+            yAxis: {
+                min: 0,
+                allowDecimals: false,
+                title: {
+                    text: 'Amount ($)'
+                }
+            },
+            tooltip: {
+                shared: false,
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.series.name 
+                    + '</span><br/><span style="font-weight: bold">' + this.x 
+                    + '</span><br/>Expected Sales: ' + this.y.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                    });
+                },
+                split: true
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false,
+                enabled: true
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal',
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline_By_Lead_Source&title=Sales Forecast Pipeline by Lead Source&click=legend';
+                            url += '&duration=&str='+this.userOptions.name+'&month=&year=';
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                        },
+                        click: function(event) {                        
+                            var numberToMinus = parseInt(event.point.x);
+                            var d = new Date();
+                            d.setMonth(d.getMonth() + numberToMinus);
+                            
+                            var month = d.getMonth();
+                            var year = d.getFullYear();
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline_By_Lead_Source&title=Sales Forecast Pipeline by Lead Source&click=bar';
+                            url += '&duration='+event.point.category+'&str='+this.userOptions.name+'&month='+month+'&year='+year;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: SalesForecastPipelineByLeadSourceData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        salesForecastPipelineByLeadSource.addSeries({"data":[]});
+        salesForecastPipelineByLeadSource.series[salesForecastPipelineByLeadSource.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    /* -------------------- Sales Forecast Pipeline -------------------- */
+    var ForecastData = new Array();
+    
+    var midArray;
+    var mainArray = new Array();
+    var subArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Sales_Forecast_Pipeline}',
+        function(result, event){
+            
+            if (event.status) {
+                for (var key in result) {
+                    mainArray = new Array();
+                    subArray = new Array();
+                    var i = 0;
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        if(i == 0){
+                            subArray = new Array();
+                            var checkNum = item.misc + "abc";
+                            var valueIs = 0;
+                            if(checkNum == "abc" || checkNum == "0abc"){
+                                
+                                valueIs = null;
+                            }else{
+                                
+                                valueIs = parseFloat(item.misc);
+                            }
+                            
+                            subArray.push(0, valueIs);
+                            mainArray.push(subArray);
+                        }
+                        
+                        subArray = new Array();
+                        subArray.push(parseInt(item.valueindex + 1), item.amount);
+                        mainArray.push(subArray);
+                        i++;
+                    }
+                    
+                    midArray = {name:key, data:mainArray, custom:"{!YEAR(TODAY())}"};
+                    ForecastData.push(midArray);
+                }
+                
+                RenderSalesForecastPipeline(ForecastData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Sales Forecast Pipeline...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Sales Forecast Pipeline...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    function RenderSalesForecastPipeline(ForecastData){
+        Highcharts.chart('forecasts', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'bar',
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline&title=Sales Forecast Pipeline&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: Next12MonthsCategories,
+                min:0,
+                max:12
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                }
+            },
+            tooltip: {
+                shared: false,
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.series.name 
+                    + '</span><br/><span style="font-weight: bold">' + this.x 
+                    + '</span><br/>Expected Sales: ' + this.y.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                    });
+                },
+                split: true
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false,
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal',
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline&title=Sales Forecast Pipeline&click=legend';
+                            url += '&duration=&str='+this.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) {                        
+                            var numberToMinus = parseInt(event.point.x);
+                            var d = new Date();
+                            d.setMonth(d.getMonth() + numberToMinus);
+                            
+                            var month = d.getMonth();
+                            var year = d.getFullYear();
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Forecast_Pipeline&title=Sales Forecast Pipeline&click=bar';
+                            url += '&duration=&str='+event.point.category+'&month='+month+'&year='+year;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: ForecastData
+        });
+    }
+    </script>
+    
+    <script>
+    /* --------------------- Pipeline Last 12 Months ---------------------- */
+    var UserTotalPipelineData = new Array();
+    
+    var DataArray = new Array();
+    function getMapLast12Month(){
+            let date = new Date();
+            date.setDate(1);
+            let year_month_obj = {};
+            for(let month = 1; month <= 12; month++){
+                let index = 12 - month;
+                let iteration_month = date.getMonth() + 1;
+                let iteration_year = date.getFullYear();
+
+                year_month_obj[index] = {
+                    month: iteration_month,
+                    year: iteration_year
+                }
+                //month_year_map[month] = year_month_obj;
+                date.setMonth(date.getMonth() - 1);
+            }
+
+            return year_month_obj;
+        }
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Pipeline_Last_12_Months}',
+        function(result, event){
+            
+            if (event.status) {
+                const month_year_map = getMapLast12Month();
+
+                const dashboard_arr = []
+                const month_amount = []
+                result.forEach(el => {
+                    for(let char in month_year_map){
+                        if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
+                            month_amount.push([char, el.amount])
+                        }
+                    }
+                })
+                let setted_month = []
+                month_amount.forEach(el => {
+                    setted_month.push(el[0])
+                })
+
+                for(let i = 0; i<12; i++){
+                    if(!setted_month.includes(i.toString())){
+                        month_amount.push([i.toString(), 0])
+                    }
+                }
+                month_amount.sort((a, b) => b[0] - a[0]).reverse()
+                dashboard_arr.push({
+                    name: 'companydata',
+                    data: month_amount
+                })
+                RenderCompanyTotalPipelineLast12Months(dashboard_arr);
+                
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Sales Pipeline Last 12 Months...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Exception has occured in Sales Pipeline Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderCompanyTotalPipelineLast12Months(UserTotalPipelineData){
+        var UsersTotalPipelineLastTwelveMonths = Highcharts.chart('usercollectivepipeline', {
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            chart: {
+                events: {
+                    click: function(event) {
+                        var chartName = "Sales Pipeline Last 12 Months";
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Pipeline_Last_12_Months&title='+encodeURI(chartName)+'&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            subtitle: {
+                text: ''
+            },
+            
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                },
+                allowDecimals: false
+            },
+            
+            xAxis: {
+                min: 0,
+                categories: Last12MonthsReverseCategories,
+                max:11
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                        this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        });
+                }
+            },
+            
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                enabled: false
+            },
+            
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+                        },
+                        click: function(event) {
+                            var d = new Date();
+                            
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var YearIndex = (CategArray[1]).replace("'", "");
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            
+                            // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                            let full_year = '20'
+                                // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                            var year = full_year + YearIndex
+                            var duration = '';
+                            
+                            var chartName = "Sales Pipeline Last 12 Months";
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Sales_Pipeline_Last_12_Months&title='+encodeURI(chartName)+'&click=point';
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
+                                event.point.series.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        },
+                        afterAnimate: function () {
+                            this.chart.redraw();
+                        }
+                    }
+                }
+            },
+            
+            series: UserTotalPipelineData
+            
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        UsersTotalPipelineLastTwelveMonths.addSeries({"data":[]});
+        UsersTotalPipelineLastTwelveMonths.series[UsersTotalPipelineLastTwelveMonths.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    /* --------------------- Newly Submitted Opportunities ---------------------- */
+    var NewlySubmittedOpportunitiesDataCountPerMonth = new Array();
+    var NewlySubmittedOpportunitiesData = new Array();
+    var NewlySubmittedOpportunitiesCategories = new Array();
+    
+    function NewlySubmittedOpportunities() {
+        
+        for (var i = 11; i >= 0; i--) {
+            
+            if(typeof NewlySubmittedOpportunitiesDataCountPerMonth[11-i] === 'undefined') {
+                NewlySubmittedOpportunitiesDataCountPerMonth[11-i] = 0;
+            }
+            NewlySubmittedOpportunitiesCategories.push(Last12MonthsCategories[i]+ 
+                                                       ' ('+NewlySubmittedOpportunitiesDataCountPerMonth[11-i]+')');
+        }
+    }
+    
+    var mainArray = new Array(); 
+    var DataArray = new Array();
+    var subArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Newly_Submitted_Opportunities}',
+        function(result, event){
+            
+            if (event.status) {
+                for (var key in result) {
+                    
+                    DataArray = new Array();
+                    
+                    mainArray = new Array(); 
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        subArray = new Array();
+                        var amount = item.amount;
+                        if(amount != ""){
+                            amount = parseInt(amount);
+                            subArray.push(item.valueindex, item.amount);
+                            DataArray.push(subArray);
+                            if(typeof NewlySubmittedOpportunitiesDataCountPerMonth[item.valueindex] === 'undefined') {
+                                NewlySubmittedOpportunitiesDataCountPerMonth[item.valueindex] = amount;
+                            }
+                            else{
+                                NewlySubmittedOpportunitiesDataCountPerMonth[item.valueindex] += amount;
+                            }
+                        }
+                    }
+                    
+                    MainArray = {name:"newlySubmittedData", data:DataArray};
+                    NewlySubmittedOpportunitiesData.push(MainArray);
+                }
+                
+                
+
+                NewlySubmittedOpportunities();
+                let setted_month = []
+                NewlySubmittedOpportunitiesData[0].data.forEach(el => setted_month.push(el[0]))
+
+                for(let i = 0; i<12; i++){
+                    if(!setted_month.includes(i)){
+                        NewlySubmittedOpportunitiesData[0].data.push([i, 0])
+                    }
+                }
+                NewlySubmittedOpportunitiesData[0].data.sort((a, b) => b[0] - a[0]).reverse()
+                RenderNewlySubmittedOpportunitiesLast12Months(NewlySubmittedOpportunitiesData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Newly Submitted Opportunities Last 12 Months...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Newly Submitted Opportunities Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderNewlySubmittedOpportunitiesLast12Months(NewlySubmittedOpportunitiesData){
+        var NewlySubmittedOpportunitiesLastTwelveMonths = Highcharts.chart('newlysubmittedopportunities', {
+            
+            credits: {
+                enabled: false
+            },
+            chart: {
+                
+                type: 'line',
+                
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Newly_Submitted_Opportunities_Last_12_Months&title=Newly Submitted Opportunities Last 12 Months&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: NewlySubmittedOpportunitiesCategories,
+                min: 0,
+                max: 11
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '# of Opportunities'
+                }
+            },
+            tooltip: {
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.x 
+                    + '</span><br/># of Opportunities: ' + this.y;
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'center',
+                verticalAlign: 'bottom',
+                enabled: false
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    events: {
+                        click: function(event) {
+                            
+                            var d = new Date();
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                            var duration = '';
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Newly_Submitted_Opportunities_Last_12_Months&title=Newly Submitted Opportunities Last 12 Months&click=month-point';
+                            url += '&duration=&month='+month+'&year='+year+'&str=';
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: NewlySubmittedOpportunitiesData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        NewlySubmittedOpportunitiesLastTwelveMonths.addSeries({"data":[]});
+        NewlySubmittedOpportunitiesLastTwelveMonths.series[NewlySubmittedOpportunitiesLastTwelveMonths.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    /* --------------------- Newly Submitted Opportunities Last 12 Months By Lead Source ---------------------- */
+    var NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth = new Array();
+    var NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData = new Array();
+    var NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceCategories = new Array();
+    var NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceCategories_Temp = new Array();
+    
+    function NewlySubmittedOpportunitiesLeadSource() {
+        
+        for (var i = 11; i >= 0; i--) {
+            
+            if(typeof NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[11-i] === 'undefined') {
+                NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[11-i] = 0;
+            }
+            NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceCategories.push(
+                Last12MonthsCategories[i]+ 
+                ' ('+NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[11-i]+')');
+        }
+    }
+    
+    var midArray;
+    var mainArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Newly_Submitted_Opportunities_Last_12_Months_By_Lead_Source}',
+        function(result, event){
+            
+            if (event.status) {
+                for (var key in result) {
+                    
+                    mainArray = new Array(); 
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        subArray = new Array();
+                        var amount = item.amount;
+                        if(amount != ""){
+                            amount = parseInt(amount);
+                            subArray.push(item.valueindex, item.amount);
+                            mainArray.push(subArray);
+                            if(typeof NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[item.valueindex] === 'undefined') {
+                                NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[item.valueindex] = amount;
+                            }
+                            else{
+                                NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceDataCountPerMonth[item.valueindex] += amount;
+                            }
+                        }
+                    }
+                    
+                    midArray = {name:key, data:mainArray, custom:key};
+                    NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData.push(midArray);
+                }
+
+
+                NewlySubmittedOpportunitiesLeadSource();
+                //console.log('NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData: '+JSON.stringify(NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData))
+
+                NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData.forEach(el => {
+                    let setted_month = []
+                    el.data.forEach(el => setted_month.push(el[0]))
+
+                    for(let i = 0; i<12; i++){
+                        if(!setted_month.includes(i)){
+                            el.data.push([i, 0])
+                        }
+                    }
+                    el.data.sort((a, b) => b[0] - a[0]).reverse()
+                })
+
+                RenderNewlySubmittedOpportunitiesLeadSource(NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Newly Submitted Opportunities by Lead Source...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Newly Submitted Opportunities by Lead Source...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    function RenderNewlySubmittedOpportunitiesLeadSource(NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData){
+        
+        var NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSource = Highcharts.chart('newlySubmittedOpportunitiesLastTwelveMonthsByLeadSource', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Newly_Submitted_Opportunities_Last_12_Months_By_Lead_Source&title=Newly Submitted Opportunities Last 12 Months by Lead Source&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceCategories,
+                min: 0,
+                max: 11
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '# of Opportunities'
+                }
+            },
+            tooltip: {
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.x 
+                    + '</span><br/><span style="font-weight: bold">' + this.series.name 
+                    + '</span><br/># of Opportunities: ' + this.y;
+                }
+            },
+            legend: {
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
+                enabled: false
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+                        },
+                        click: function(event) {
+                            
+                            var d = new Date();
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                            var duration = '';
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Newly_Submitted_Opportunities_Last_12_Months_By_Lead_Source&title=Newly Submitted Opportunities Last 12 Months By Lead Source&click=point';
+                            url += '&duration=&month='+month+'&year='+year+'&str='+this.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSourceData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSource.addSeries({"data":[]});
+        NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSource.series[NewlySubmittedOpportunitiesLastTwelveMonthsByLeadSource.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    /* --------------------- Lost Opportunities ---------------------- */
+    var LostOpptysDataCountPerMonth = new Array();
+    var LostOpptysData = new Array();
+    var LostOpptysCategories = new Array();
+    
+    function LostOpportunities() {
+        
+        for (var i = 11; i >= 0; i--) {
+            if(typeof LostOpptysDataCountPerMonth[11-i] === 'undefined') {
+                LostOpptysDataCountPerMonth[11-i] = 0;
+            }
+            LostOpptysCategories.push(Last12MonthsCategories[i]+ 
+                                      ' ('+LostOpptysDataCountPerMonth[11-i]+')');
+        }
+    }
+    
+    var dataArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Lost_Opportunities}',
+        function(result, event){
+
+            if (event.status) {
+                for (var key in result) {
+                    
+                    mainArray = new Array();  
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        var subArray = new Array();
+                        var amount = item.amount;
+                        if(amount != ""){
+                            amount = parseInt(amount);
+                            subArray.push(item.valueindex, item.amount);
+                            dataArray.push(subArray);
+                            if(typeof LostOpptysDataCountPerMonth[item.valueindex] === 'undefined') {
+                                LostOpptysDataCountPerMonth[item.valueindex] = amount;
+                            }
+                            else{
+                                LostOpptysDataCountPerMonth[item.valueindex] += amount;
+                            }
+                        }
+                    }
+                }
+                
+                var mainArray = {name:"lostOpportunities", data:dataArray};
+                LostOpptysData.push(mainArray);
+                
+                LostOpportunities();
+                let setted_month = []
+                LostOpptysData[0].data.forEach(el => setted_month.push(el[0]))
+
+                for(let i = 0; i<12; i++){
+                    if(!setted_month.includes(i)){
+                        LostOpptysData[0].data.push([i, 0])
+                    }
+                }
+                LostOpptysData[0].data.sort((a, b) => b[0] - a[0]).reverse()
+                RenderChartLostOpportunities(LostOpptysData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Lost Opportunities Last 12 Months...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Lost Opportunities Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    function RenderChartLostOpportunities(LostOpptysData){
+        
+        var LostOpportunitiesLastTwelveMonths = Highcharts.chart('lostopportunities', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Lost_Opportunities&title=Lost Opportunities Last 12 Months&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: LostOpptysCategories,
+                min:0,
+                max:11
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '# of Opportunities'
+                },
+                allowDecimals: false
+            },
+            tooltip: {
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.x 
+                    + '</span><br/># of Opportunities: ' + this.y;
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'center',
+                verticalAlign: 'bottom',
+                enabled: false
+            },             
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    
+                    events: {
+                        click: function(event) { 
+                            var d = new Date();
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                            var duration = '';
+                            
+                            
+                            var chartName = "Lost Opportunities Last 12 Months";          
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Lost_Opportunities&title='+encodeURI(chartName)+'&click=month-point';                                 
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str=';
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: LostOpptysData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        LostOpportunitiesLastTwelveMonths.addSeries({"data":[]});
+        LostOpportunitiesLastTwelveMonths.series[LostOpportunitiesLastTwelveMonths.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    
+    /* --------------------- Loss Reasons ---------------------- */
+    var LossReasonsDataCountPerMonth = new Array();
+    var LossReasonsData = new Array();
+    var LossReasonsCategories = new Array();
+    
+    function LostOpportunitiesLossReason() {
+        
+        for (var i = 11; i >= 0; i--) {
+            
+            if(typeof LossReasonsDataCountPerMonth[11-i] === 'undefined') {
+                LossReasonsDataCountPerMonth[11-i] = 0;
+            }
+            LossReasonsCategories.push(Last12MonthsCategories[i]+ 
+                                       ' ('+LossReasonsDataCountPerMonth[11-i]+')');
+        }
+    }
+    
+    
+    var midArray; 
+    var mainArray = new Array();
+    var subArray = new Array(); 
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Loss_Reasons}',
+        function(result, event){
+            
+            if (event.status) {
+                for (var key in result) {
+                    
+                    mainArray = new Array();
+                    subArray = new Array();  
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(item, index) {
+                        
+                        var subArray = new Array();        
+                        var amount = item.amount;
+                        if(amount != ""){
+                            amount = parseInt(amount);
+                            subArray.push(item.valueindex, item.amount);
+                            mainArray.push(subArray);
+                            
+                            if(typeof LossReasonsDataCountPerMonth[item.valueindex] === 'undefined') {
+                                LossReasonsDataCountPerMonth[item.valueindex] = amount;
+                            }
+                            else{
+                                LossReasonsDataCountPerMonth[item.valueindex] += amount;
+                            }
+                        }
+                    }
+                    
+                    midArray = {name:key, data:mainArray, custom:"{!YEAR(TODAY())}"};
+                    LossReasonsData.push(midArray);  
+                }
+                
+                LostOpportunitiesLossReason();
+                LossReasonsData.forEach(el => {
+                    let setted_month = []
+                    el.data.forEach(el => setted_month.push(el[0]))
+
+                    for(let i = 0; i<12; i++){
+                        if(!setted_month.includes(i)){
+                            el.data.push([i, 0])
+                        }
+                    }
+                    el.data.sort((a, b) => b[0] - a[0]).reverse()
+                })
+                RenderChartLostOpportunitiesLossReason(LossReasonsData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Lost Opportunities by Loss Reason...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Lost Opportunities by Loss Reason...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderChartLostOpportunitiesLossReason(LossReasonsData){
+        
+        
+        var LostOpportunitiesLossReasonsLastTwelveMonths = Highcharts.chart('lossreasons', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Lost_Opportunities_Loss_Reasons&title=Loss Reason&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: LossReasonsCategories,
+                min:0,
+                max:11
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '# of Opportunities'
+                },
+                allowDecimals: false
+            },
+            tooltip: {
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.x 
+                    + '</span><br/><span style="font-weight: bold">' + this.series.name 
+                    + '</span><br/># of Opportunities: ' + this.y;
+                }
+            },
+            legend: {
+                layout: 'horizontal',
+                align: 'center',
+                horizontalAlign: 'bottom',
+                enabled: true
+            },
+            
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    
+                    events: {
+                        click: function(event) { 
+                            var d = new Date();
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            var year = (month >= 1 && month <= CurrentMonth) ? d.getFullYear(): d.getFullYear() - 1;
+                            var duration = '';
+                            
+                            
+                            var chartName = "Loss Reason";          
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Lost_Opportunities_Loss_Reasons&title='+encodeURI(chartName)+'&click=point';                                 
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+event.point.series.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: LossReasonsData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        LostOpportunitiesLossReasonsLastTwelveMonths.addSeries({"data":[]});
+        LostOpportunitiesLossReasonsLastTwelveMonths.series[LostOpportunitiesLossReasonsLastTwelveMonths.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    /* --------------------- Your WinRate ---------------------- */
+    var YourWinRateData = new Array();
+    var YourWinRateCategories = new Array();
+    
+    var midArray;
+    var mainArray = new Array();
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Your_WinRate}',
+        function(result, event){
+
+            if (event.status) {
+                
+                for (var key in result) {
+                    
+                    mainArray = new Array();
+                    
+                    result[key].forEach(buildarray);
+                    
+                    YourWinRateCategories.push(key);
+                    
+                    function buildarray(item, index) {
+                        
+                        var subArray = new Array();
+                        subArray.push(item.valueindex, item.amount);
+                        mainArray.push(subArray);
+                    }
+                    
+                    midArray = {name:key, data:mainArray, custom:key};
+                    YourWinRateData.push(midArray);
+                }
+                
+                RenderChartYourWinRate(YourWinRateData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Your Win Rate...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Your Win Rate...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    
+    function RenderChartYourWinRate(YourWinRateData){
+        Highcharts.chart('yourwinrate', {
+            credits: {
+                enabled: false
+            },
+            colors:['green'],
+            chart: {
+                type: 'bar',
+                colors:['green'],
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=YourWinRate_SD&title=Your Win Rate&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: YourWinRateCategories,
+                min: 0,
+                max:1
+            },
+            yAxis: {
+                min: 0,
+                allowDecimals: false,
+                title: {
+                    text: 'Win Rate (%)'
+                },
+                allowDecimals: false
+            },
+            tooltip: {
+                shared: false,
+                formatter: function () {
+                    return '<b style="font-weight:bold">' + this.x + '</b><br><span style="color: '+
+                        this.series.color+';">Rate</span>: '+ this.y + '%';
+                },
+                split: true
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false,
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'column',
+                    cursor: 'pointer',
+                    events: {
+                        click: function(event) {
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=YourWinRate_SD&title=Your Win Rate&click=bar';
+                            url += '&duration=&month=&year=&str='+event.point.category;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: YourWinRateData
+        });
+        
+    }
+    </script>
+    <script>
+    /* --------------------- Neglected Opportunities ---------------------- */
+    var NeglectedOpptyData = new Array();
+    var NeglectedOpptyCategories = ['31 - 60 days', '61 - 90 days', '91 - 120 days', 'Over 120 days'];
+    var midArray;
+    let neglecte_obj = {
+                        0: 0,
+                        1: 0,
+                        2: 0,
+                        3: 0
+                    }
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Neglected_Opportunities}',
+        function(result, event){
+            
+            if (event.status) {
+                for(let char in result){
+                    let item = result[char]
+                    if(item.Opportunity_Neglected_Days__c > 30 && item.Opportunity_Neglected_Days__c <61){
+                        neglecte_obj[0]++
+                    }else if(item.Opportunity_Neglected_Days__c > 60 && item.Opportunity_Neglected_Days__c <91){
+                        neglecte_obj[1]++
+                    }else if(item.Opportunity_Neglected_Days__c > 90 && item.Opportunity_Neglected_Days__c <121){
+                        neglecte_obj[2]++
+                    } else if(item.Opportunity_Neglected_Days__c > 120) {
+                        neglecte_obj[3]++
+                    }
+                }
+                let neglected_data = []
+                for(let index = 0; index<NeglectedOpptyCategories.length; index++){
+                    let obj = {
+                        name: NeglectedOpptyCategories[index],
+                        data: [[index, neglecte_obj[index]]],
+                        custom: NeglectedOpptyCategories[index]
+                    }
+                    neglected_data.push(obj)
+                }
+                
+                RenderChartNeglectedOpportunities(neglected_data);
+                // RenderChartNeglectedOpportunities(NeglectedOpptyData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Neglected Opportunities...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Neglected Opportunities...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    function RenderChartNeglectedOpportunities(NeglectedOpptyData){
+        Highcharts.chart('neglectedopportunities', {
+            credits: {
+                enabled: false
+            },
+            colors: ['blue', 'green', 'orange', 'red'],
+            chart: {
+                type: 'bar',
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Neglected_Opportunities&title=Neglected Opportunities&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: NeglectedOpptyCategories,
+                min:0,
+                max:3
+            },
+            yAxis: {
+                min: 0,
+                allowDecimals: false,
+                title: {
+                    text: '# of Opportunities'
+                }
+            },
+            tooltip: {
+                shared: false,
+                formatter: function () {
+                    return '<b style="font-weight:bold">' + this.x + '</b><br><span style="color: '+
+                        this.series.color+';"># of Opportunities</span>: '+ this.y;
+                },
+                split: true
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false,
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'column',
+                    cursor: 'pointer',
+                    minPointLength: 5,
+                    events: {
+                        legendItemClick: function(event) {
+                            var duration = 0;
+                            if(this.userOptions.name == '31 - 60 days'){
+                                duration = 0;
+                            }else if(this.userOptions.name == '61 - 90 days'){
+                                duration = 1;
+                            }else if(this.userOptions.name == '91 - 120 days'){
+                                duration = 2;
+                            }else if(this.userOptions.name == 'Over 120 days'){
+                                duration = 3;
+                            }
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Neglected_Opportunities&title=Neglected Opportunities&click=legend';
+                            url += '&duration='+duration+'&str='+this.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) {                           
+                            var index = event.point.x;
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Neglected_Opportunities&title=Neglected Opportunities&click=bar';
+                            url += '&duration='+index+'&str='+this.userOptions.name;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: NeglectedOpptyData
+        });
+    }
+    </script>
+    <script>
+    /* --------------------- Active Opportunities By Stage ---------------------- */
+    var ActiveOpptyData = new Array();
+    var ActiveOpptyCategories = new Array();
+    
+    var mainArray = new Array();
+    var subArray = new Array();
+    var midArray;
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Active_Opportunities_By_Stage}',
+        function(result, event){
+            if (event.status) {
+                let activity_data = []
+                result.forEach((el,index) => {
+                    ActiveOpptyCategories.push(el.stage)
+                    activity_data.push({
+                        name: el.stage,
+                        data: [[index, el.amount]],
+                        custom: el.stage
+                    })
+                })
+                RenderChartActiveOpportunitiesbyStage(activity_data);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Active Opportunities by Stage...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Active Opportunities by Stage...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    
+    
+    function RenderChartActiveOpportunitiesbyStage(ActiveOpptyData){
+        
+        var activeOpportunitiesByStage = Highcharts.chart('activeopportunitiesbystage', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'bar',
+                events: {
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Active_Opportunities_By_Stage&title=Active Opportunities By Stage&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            title: {
+                text: ''
+            },
+            
+            xAxis: {
+                categories: ActiveOpptyCategories,
+                min:0,
+                max: ActiveOpptyCategories.length - 1,
+                labels: {
+                    useHTML: true,
+                    formatter: function(){
+                        return '<a href=\'{!communityUrl}/apex/ListOfRecordsPage?chart=Active_Opportunities_By_Stage&title=Active Opportunities By Stage&click=left&dashboard=SD&str='+this.value+'\' target=\'blank\'>'+this.value+'</a>';    
+                    }
+                } 
+            },
+            
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                }
+            },
+            tooltip: {
+                shared: false,
+                formatter: function(){
+                    return '<span style="color:'+this.series.color+'; font-weight: bold">'+ this.x 
+                    + '</span><br/><span style="font-weight: bold">' + this.series.name 
+                    + '</span><br/>Amount: ' + this.y.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                    });
+                },
+                split: true
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: false,
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'column',
+                    cursor: 'pointer',
+                    minPointLength: 5,
+                    events: {
+                        legendItemClick: function(event) {
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Active_Opportunities_By_Stage&title=Active Opportunities By Stage&click=legend';
+                            url += '&duration='+this.userOptions.name+'&str=';
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) {                           
+                            var category = event.point.category;
+                            var duration = this.userOptions.name;
+                            
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Active_Opportunities_By_Stage&title=Active Opportunities By Stage&click=bar';
+                            url += '&duration='+duration+'&str='+category;
+                            url += '&dashboard=SD';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            series: ActiveOpptyData
+        });
+        
+        //For redraw the chart to add colors to the legend symbols
+        activeOpportunitiesByStage.addSeries({"data":[]});
+        activeOpportunitiesByStage.series[activeOpportunitiesByStage.series.length - 1].remove();
+    }
+    </script>
+    <script>
+    
+    /* --------------------- Tasks Completion ------------------ */
+    
+    var TasksData = new Array();
+    var midArray;
+    
+    Visualforce.remoting.timeout = 120000;
+    
+    Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Tasks_Completion}',
+        function(result, event){
+            console.log(result);
+            if (event.status) {
+                for (var key in result) {
+                    
+                    result[key].forEach(buildarray);
+                    
+                    function buildarray(items, index) {
+                        
+                        var item = items.Data[0];
+                        
+                        midArray = {name:item.name, y:item.amount};
+                        TasksData.push(midArray);
+                    }
+                }
+                
+                RenderChartTasksCompletion(TasksData);
+            } else if (event.type === 'exception') {
+                
+                console.log('Exception has occured in Tasks Completion...');
+                console.log(event.message);
+                console.log(event.where);
+            } else {
+                console.log('Error occured in Tasks Completion...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+    function RenderChartTasksCompletion(TasksData){
+        
+        Highcharts.chart('tasks', {
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: '',
+                style: {
+                    fontWeight: 'bold',
+                    fontSize: '11px'
+                }
+            },
+            legend: {
+                align: 'center',
+                verticalAlign: 'bottom',
+                x: 0,
+                y: 0
+            },
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: 0,
+                plotShadow: false,
+                events: {
+                    load: function() {
+                        var chart = this,
+                            points = chart.series[0].points,
+                            len = points.length,
+                            total = 0,
+                            i = 0;
+                        
+                        for (; i < len; i++) {
+                            total += points[i].y;
+                        }
+                        
+                        chart.setTitle({
+                            text: 'Total: ' + total,
+                            align: 'center',
+                            verticalAlign: 'middle',
+                            y: -10,
+                            style: {
+                                fontWeight: 'bold'
+                            },
+                        });
+                    },
+                    click: function(event) {
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Tasks_Completion&title=&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SD';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y}</b>'
+            },
+            plotOptions: {
+                pie: {
+                    dataLabels: {
+                        format: '<b>{point.name}</b>:<br>{point.percentage:.1f} %',
+                        style: {
+                            color: 'black'
+                        }
+                    },
+                    startAngle: -90,
+                    endAngle: 360,
+                    center: ['50%', '50%'],
+                    size: 250,
+                    showInLegend: true,
+                    cursor: 'pointer',
+                    point:{
+                        events: {
+                            legendItemClick: function(event) {
+                                var duration = '';
+                                if(this.name == 'Over Due'){
+                                    duration = 'ODT';
+                                }else if(this.name == 'On Time'){
+                                    duration = 'OTT';
+                                }else if(this.name == 'No Due Date'){
+                                    duration = 'NDT';
+                                }
+                                
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Tasks_Completion&title='+this.name+'&click=legend';
+                                url += '&duration='+duration+'&str=';
+                                url += '&dashboard=SD';
+                                window.open(url, '_blank');
+                                event.preventDefault();
+                                
+                            },
+                            click: function(event) {                           
+                                
+                                var duration = '';
+                                if(event.point.name == 'Over Due'){
+                                    duration = 'ODT';
+                                }else if(event.point.name == 'On Time'){
+                                    duration = 'OTT';
+                                }else if(event.point.name == 'No Due Date'){
+                                    duration = 'NDT';
+                                }
+                                
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Tasks_Completion&title='+event.point.name+'&click=bar';
+                                url += '&duration='+duration+'&str=';
+                                url += '&dashboard=SD';
+                                window.open(url, '_blank');
+                            }
+                        }
+                    }
+                }
+            },
+            series: [{
+                type: 'pie',
+                name: '# of Tasks',
+                innerSize: '50%',
+                data: TasksData
+            }]
+        });
+    }
+    </script>
+
+
+<script>
+    /* ---------------------- Pre-Order Pipeline Last 12 Months ---------------------- */
+    var CompanyTotalPipelineData = new Array();
+
+    //Calculate map of last 12 year-month
+    function getMapLast12Month(){
+        let date = new Date();
+        date.setDate(1);
+        let year_month_obj = {};
+        for(let month = 1; month <= 12; month++){
+            let index = 12 - month;
+            let iteration_month = date.getMonth() + 1;
+            let iteration_year = date.getFullYear();
+
+            year_month_obj[index] = {
+                month: iteration_month,
+                year: iteration_year
+            }
+            //month_year_map[month] = year_month_obj;
+            date.setMonth(date.getMonth() - 1);
+        }
+
+        return year_month_obj;
+    }
+    
+    var dataArray = new Array();
+
+    Visualforce.remoting.timeout = 120000;
+
+    Visualforce.remoting.Manager.invokeAction(
+    '{!$RemoteAction.SalesDashboardController.Company_Total_Pre_Order_Pipeline_Last_12_Months_Sales}',
+        function(result, event){
+
+            if (event.status) {
+                const month_year_map = getMapLast12Month();
+
+                const dashboard_arr = []
+                const month_amount = []
+                result.forEach(el => {
+                    for(let char in month_year_map){
+                        if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
+                            month_amount.push([char, el.amount])
+                        }
+                    }
+                })
+                let setted_month = []
+                month_amount.forEach(el => {
+                    setted_month.push(el[0])
+                })
+
+                for(let i = 0; i<12; i++){
+                    if(!setted_month.includes(i.toString())){
+                        month_amount.push([i.toString(), 0])
+                    }
+                }
+                month_amount.sort((a, b) => b[0] - a[0]).reverse()
+                dashboard_arr.push({
+                    name: 'companydata',
+                    data: month_amount
+                })
+                RenderCompanyTotalPreorderPipelineLast12Months(dashboard_arr);
+            } else if (event.type === 'exception') {
+                
+                    console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                    console.log(event.message);
+                    console.log(event.where);
+            } else {
+                console.log('Error occured in Pre-Order Pipeline Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+
+    function RenderCompanyTotalPreorderPipelineLast12Months(CompanyTotalPipelineData){
+    
+        Highcharts.chart('preorderpipeline', {
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            chart: {
+                events: {
+                    click: function(event) {
+                        var chartName = "Pre-Order Pipeline Last 12 Months";
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SMD_USA';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            subtitle: {
+                text: ''
+            },
+            
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                },
+                allowDecimals: false
+            },
+            
+            xAxis: {
+                min: 0,
+                categories: Last12MonthsReverseCategories,
+                max:11
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                        this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        });
+                }
+            },
+            
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                enabled: false
+            },
+            
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+
+                            var chartName = "Company Total Pipeline Last 12 Months";
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend';
+                        url += '&duration=&str='+event.target.userOptions.name+'&year=';
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) {
+                            var d = new Date();
+
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var YearIndex = (CategArray[1]).replace("'", "");
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            let full_year = '20'
+                            // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                            var year = full_year + YearIndex
+                            console.log('YearIndex: ',YearIndex)
+                            console.log('full_year: ',full_year)
+                            console.log('year: ',year)
+                            var duration = '';
+
+                            var chartName = "Pre-Order Pipeline Last 12 Months";
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point';
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
+                                event.point.series.userOptions.name;
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            
+            series: CompanyTotalPipelineData
+            
+        });
+    }
+</script>
+
+<script>
+    /* ---------------------- Negotiation Pipeline Last 12 Months ---------------------- */
+    var CompanyTotalPipelineData = new Array();
+
+    //Calculate map of last 12 year-month
+    function getMapLast12Month(){
+        let date = new Date();
+        date.setDate(1);
+        let year_month_obj = {};
+        for(let month = 1; month <= 12; month++){
+            let index = 12 - month;
+            let iteration_month = date.getMonth() + 1;
+            let iteration_year = date.getFullYear();
+
+            year_month_obj[index] = {
+                month: iteration_month,
+                year: iteration_year
+            }
+            //month_year_map[month] = year_month_obj;
+            date.setMonth(date.getMonth() - 1);
+        }
+
+        return year_month_obj;
+    }
+    
+    var dataArray = new Array();
+
+    Visualforce.remoting.timeout = 120000;
+
+    Visualforce.remoting.Manager.invokeAction(
+    '{!$RemoteAction.SalesDashboardController.Company_Total_Negotiation_Pipeline_Last_12_Months}',
+        function(result, event){
+
+            if (event.status) {
+                const month_year_map = getMapLast12Month();
+
+                const dashboard_arr = []
+                const month_amount = []
+                result.forEach(el => {
+                    for(let char in month_year_map){
+                        if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
+                            month_amount.push([char, el.amount])
+                        }
+                    }
+                })
+                let setted_month = []
+                month_amount.forEach(el => {
+                    setted_month.push(el[0])
+                })
+
+                for(let i = 0; i<12; i++){
+                    if(!setted_month.includes(i.toString())){
+                        month_amount.push([i.toString(), 0])
+                    }
+                }
+                month_amount.sort((a, b) => b[0] - a[0]).reverse()
+                dashboard_arr.push({
+                    name: 'companydata',
+                    data: month_amount
+                })
+                RenderCompanyTotalNegotiationPipelineLast12Months(dashboard_arr);
+            } else if (event.type === 'exception') {
+                
+                    console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                    console.log(event.message);
+                    console.log(event.where);
+            } else {
+                console.log('Error occured in Negotiation Pipeline Last 12 Months...');
+                console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+
+    function RenderCompanyTotalNegotiationPipelineLast12Months(CompanyTotalPipelineData){
+    
+        Highcharts.chart('negotiationpipeline', {
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            chart: {
+                events: {
+                    click: function(event) {
+                        var chartName = "Negotiation Pipeline Last 12 Months";
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart';
+                        url += '&duration=&str=';
+                        url += '&dashboard=SMD_USA';
+                        window.open(url, '_blank');
+                    }
+                }
+            },
+            subtitle: {
+                text: ''
+            },
+            
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Amount ($)'
+                },
+                allowDecimals: false
+            },
+            
+            xAxis: {
+                min: 0,
+                categories: Last12MonthsReverseCategories,
+                max:11
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                        this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        });
+                }
+            },
+            
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                enabled: false
+            },
+            
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                    marker: {
+                        enabled: true
+                    },
+                    stickyTracking: false,
+                    cursor: 'pointer',
+                    events: {
+                        legendItemClick: function(event) {
+
+                            var chartName = "Negotiation Pipeline Last 12 Months";
+                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend';
+                        url += '&duration=&str='+event.target.userOptions.name+'&year=';
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+                            event.preventDefault();
+                            
+                        },
+                        click: function(event) {
+                            var d = new Date();
+
+                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                            
+                            var CategArray = event.point.category.split(" ");
+                            var CurrentMonth = parseInt(d.getMonth()) + 1;
+                            
+                            var YearIndex = (CategArray[1]).replace("'", "");
+                            
+                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                            let full_year = '20'
+                            // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                            var year = full_year + YearIndex
+                            console.log('YearIndex: ',YearIndex)
+                            console.log('full_year: ',full_year)
+                            console.log('year: ',year)
+                            var duration = '';
+
+                            var chartName = "Negotiation Pipeline Last 12 Months";
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point';
+                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
+                                event.point.series.userOptions.name;
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+                        }
+                    }
+                }
+            },
+            
+            series: CompanyTotalPipelineData
+            
+        });
+    }
+</script>
+
+</apex:page>

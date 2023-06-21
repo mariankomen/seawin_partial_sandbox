@@ -1,0 +1,154 @@
+<apex:page controller="SeawinProposalPageController" showHeader="false" sidebar="false" 
+           standardStylesheets="false" renderAs="pdf"
+           applyHtmlTag="false" applyBodyTag="false" > 
+    <html
+          xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <title></title>
+            <style>
+                @page {
+                size: letter;
+                margin-top: 1cm;
+                margin-right: 0cm;
+                margin-left: 0cm;
+                margin-bottom: 0cm;
+                }
+                * {margin:0; padding:0; text-indent:0; 
+                }
+                .s1 { color: black; 
+                font-family: sans-serif; 
+                font-style: normal; 
+                font-weight: normal; 
+                text-decoration: none; 
+                font-size: 10pt; 
+                }
+                
+                h1 { 
+                color: #3A90CE;
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 25px;
+                transform: scale(1, 2);
+                }
+                h2 { 
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 30px;
+                transform: scale(1, 1.9);
+                padding: 5px;
+                color: white !important;
+                }
+                p { 
+                color: #3A90CE; 
+                font-family: sans-serif; 
+                font-style: normal; 
+                text-decoration: none; 
+                }
+                .opportunity-title{
+                font-weight: bold;
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 20px;
+                transform: scale(1, 1.5);
+                padding: 5px 0px 20px 0px;
+                }
+                
+                .center {
+                margin-top: 20px;
+                margin-bottom: 5px;
+                margin-left: auto;
+                margin-right: auto;
+                width: 80%;
+                border: 2px solid #3A90CE;
+                padding: 0px 10px 0px 10px;
+                text-align: center;
+                position: relative;
+                bottom: 20px;
+  
+                }
+                
+                .center-front-page {
+                margin: 5px auto;
+                width: 86%;
+                }
+                .category-label{
+                color: #3A90CE;
+                font-family: sans-serif;
+                font-style: normal;
+                font-weight: bold;
+                word-break: break-word;
+                font-size: 20px;
+                transform: scale(1, 1.5);
+                position: relative;
+                left: 3px;
+                bottom: 5px;
+                
+                
+                }
+                
+                /*------------Header----------------------*/
+                .header-box {
+                    background-color: #3A90CE;
+                	width: 100%;
+                    height: 30px;
+                }
+                .header-box p {
+                	color: white;
+                    text-align: center;
+                    font-family: sans-serif;
+                    font-style: normal;
+                    font-weight: bold;
+                    font-size: 15px;
+                    padding-top: 4px;
+                }
+                
+            </style>
+        </head>
+        <body>
+            <p style="text-indent: 0pt;text-align: left;">
+                <br/>
+            </p>
+            <div class="s1" style="text-indent: 0pt;line-height: 10pt;text-align: center;">
+                <span>
+                    <img width="107" height="56" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_001.png')}"/>
+                </span>
+                <span>
+                    <img width="149" height="56" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_002.png')}"/>
+                </span>
+                <span>
+                    <img width="46" height="55" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_003.png')}"/>
+                </span>
+            </div>
+            <div style="text-align: center; width: 100%;
+                        background-color: #3A90CE; margin-top: 30px; height: 60px;display: table;vertical-align: middle;">
+                <h2 style="text-indent: 0pt; color: white; margin-top: 11px;">PROPOSAL</h2>
+            </div>
+            <p style="text-indent: 0pt;text-align: left;">
+                <br/>
+            </p>
+            <div class="center" style="height: 60px;">
+                <p class="opportunity-title" style="text-indent: 0pt;line-height: 15pt;">{!OpptyName}</p>
+            </div>
+            <p style="text-indent: 0pt;text-align: center; text-align: -webkit-center;">
+                    <img width="815" height="520" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_005.jpg')}"/>
+            </p>
+            <div style="text-align: center;background-color: #3A90CE; height: 199.5px; width: 100%; margin-top: -3px;
+                        padding-top:25px;">
+                <h2>
+                        ABOUT US
+                    </h2>
+                    <p class="center-front-page" style="color: #e1e1e1; margin-bottom: 0px !important;
+                                                        line-height: 23px; margin-top: 10px;" align="justify">
+                        SEAWIN is recognized a leading innovator, product developer and manufacturer in the supply of
+bathroom space finishes and fixtures for hospitality and multi-family housing projects. Multinational
+company with factories located in Foshan China, USA Hospitality Headquarters in Piscataway NJ
+and multiple satellite sales offices strategically located in different parts of the world.
+                    </p>
+            </div>
+        </body>
+    </html>
+</apex:page>

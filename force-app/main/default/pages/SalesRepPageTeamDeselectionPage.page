@@ -1,0 +1,283 @@
+<apex:page controller="SalesRepPageTeamDeselectionExtension" tabStyle="Sales_Rep__c">
+    
+    <apex:stylesheet value="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js" />
+    <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js" />
+    
+    <style>
+        body .bPageBlock .detailList tr td, body 
+        .bPageBlock .detailList tr th, body 
+        table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+        
+        border: none;
+        
+        }
+        
+        .pbSubheader {
+        background-image: url(/img/alohaSkin/opacity75.png);
+        border-width: 0;
+        color: #000;
+        padding: 4px 16px !important;
+        border-top: 1px solid #fff;
+        }
+        
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+        margin: 0;
+        }
+        
+        .requiredLegend {
+        background-color: transparent;
+        }
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader h3 {
+        font-size: 1.2em;
+        color: black;
+        }
+        
+        /* blue required */
+        .brequiredLegend {
+        background-color: transparent;
+        }
+        .brequiredLegend {
+        padding: 0 2px;
+        background-color: transparent;
+        font-weight: normal;
+        color: #000;
+        }
+        
+        .brequiredExampleOuter {
+        margin: 0 .2em 0 .3em;
+        padding: 1px 0;
+        }
+        
+        .brequiredExample {
+        border-left: 3px solid blue;
+        font-size: 80%;
+        vertical-align: 1px;
+        width: 100%;
+        }
+        .bPageBlock .bluerequiredInput {
+        position: relative;
+        height: 100%;
+        }   
+        .bPageBlock .bluerequiredInput .bluerequiredBlock {
+        background-color: blue;
+        position: absolute;
+        left: -4px;
+        width: 3px;
+        top: 1px;
+        bottom: 1px;
+        }
+        textarea {width: 62%;}
+    </style>
+    
+    <apex:sectionHeader title="Sales Rep/Team Edit" subtitle="Reassign New Sales Rep/Team"></apex:sectionHeader>
+    <apex:form id="myForm">
+        <apex:PageBlock id="PageBlock">
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Next Assignment" action="{!save}" 
+                                    reRender="PageBlock" rendered="{!salesRepPageIsFor != 'so'}"/>
+                <apex:commandButton value="Save" action="{!save}" 
+                                    reRender="PageBlock" rendered="{!salesRepPageIsFor == 'so'}"/>
+                <apex:commandButton value="Close" action="{!ReturnToSalesRep}" 
+                                    immediate="true"/>
+            </apex:pageBlockButtons>
+            
+            <!-- ############ ACCOUNT ############ -->
+            <!-- ############ ACCOUNT ############ -->
+            <!-- ############ ACCOUNT ############ -->
+            <apex:pageBlockSection columns="1" collapsible="false" rendered="{!salesRepPageIsFor == 'acc' &&
+                                                                             !AccountsExist}">
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                    </span>
+                    <h3>Accounts<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessage severity="warning" detail="There are no accounts for the deativated Sales Rep/Team. Please click Next Assigment to see if there are other records." 
+                                  strength="2"></apex:pageMessage>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" collapsible="false" 
+                                   rendered="{!salesRepPageIsFor == 'acc' && AccountsExist}">
+                
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                        <span class="requiredLegend brandTertiaryFgr">
+                            <span class="requiredExampleOuter">
+                                <span class="requiredExample">&nbsp;</span>
+                            </span>
+                            <span class="requiredText"> = Required Information.</span>
+                        </span>
+                    </span>
+                    <h3>Accounts<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessages rendered="{!!SameSalesRepError && !DifferentGLError && OnlyShowPageMessage}"></apex:pageMessages>
+                
+                <apex:pageMessage severity="info" detail="Select New Sales Rep/Team for Related Accounts." 
+                                  strength="2"></apex:pageMessage>
+                <apex:inputField label="Sales Rep/Team" 
+                                 value="{!sr.Sales_Rep_Shadow__c}" 
+                                 required="true">
+                    <apex:actionSupport event="onchange" action="{!setOptionValues}" reRender="PageBlock">
+                    </apex:actionSupport>
+                </apex:inputField>
+                <apex:pageBlockSectionItem rendered="{!SameSalesRepError}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="You cannot select the Sales Rep/Team that was just deactivated."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!DifferentGLError}">
+                    <apex:outputLabel style="color: red;" rendered="{!NOT(SameSalesRepError)}">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="Sales Rep / Team and the deactivated Sales Rep / Team GL Variable do not match."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Owner</apex:outputLabel>
+                    <apex:selectList value="{!selected}" size="10" style="width:200px" >
+                        <apex:selectOptions value="{!AllOptionValues}">
+                        </apex:selectOptions>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!OwnerMissing}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" value="Please also select Owner."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection>
+            
+            <!-- ############ OPPORTUNITY ############ -->
+            <!-- ############ OPPORTUNITY ############ -->
+            <!-- ############ OPPORTUNITY ############ -->
+            <apex:pageBlockSection columns="1" collapsible="false" rendered="{!salesRepPageIsFor == 'opp' && 
+                                                                             !OpportunitiesExist}">
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                        <!--<span class="requiredLegend brandTertiaryFgr">
+<span class="requiredExampleOuter">
+<span class="requiredExample">&nbsp;</span>
+</span>
+<span class="requiredText"> = Required Information.</span>
+</span>-->
+                    </span>
+                    <h3>Opportunities<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessage severity="warning" detail="There are no opportunities for the deativated Sales Rep/Team. Please click Next Assigment to see if there are other records." 
+                                  strength="2"></apex:pageMessage>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" collapsible="false" rendered="{!salesRepPageIsFor == 'opp' &&
+                                                                             OpportunitiesExist}">
+                
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                        <span class="requiredLegend brandTertiaryFgr">
+                            <span class="requiredExampleOuter">
+                                <span class="requiredExample">&nbsp;</span>
+                            </span>
+                            <span class="requiredText"> = Required Information.</span>
+                        </span>
+                    </span>
+                    <h3>Opportunities<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessages rendered="{!!SameSalesRepError && !DifferentGLError && OnlyShowPageMessage}"></apex:pageMessages>
+                
+                <apex:pageMessage severity="info" detail="Select New Sales Rep/Team for Related Opportunities." 
+                                  strength="2"></apex:pageMessage>
+                
+                <apex:inputField label="Sales Rep/Team" 
+                                 value="{!sr.Sales_Rep_Shadow__c}" 
+                                 required="true">
+                    <apex:actionSupport event="onchange" action="{!setOptionValues}" reRender="PageBlock">
+                    </apex:actionSupport>
+                </apex:inputField>
+                <apex:pageBlockSectionItem rendered="{!SameSalesRepError}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="You cannot select the Sales Rep/Team that was just deactivated."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!DifferentGLError}">
+                    <apex:outputLabel style="color: red;" rendered="{!NOT(SameSalesRepError)}">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="Sales Rep / Team and the deactivated Sales Rep / Team GL Variable do not match."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Owner</apex:outputLabel>
+                    <apex:selectList value="{!selected}" size="10" style="width:200px" >
+                        <apex:selectOptions value="{!AllOptionValues}">
+                        </apex:selectOptions>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                
+                <apex:pageBlockSectionItem rendered="{!OwnerMissing}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" value="Please also select Owner."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection>
+            
+            <!-- ############ SALES ORDERS ############ -->
+            <!-- ############ SALES ORDERS ############ -->
+            <!-- ############ SALES ORDERS ############ -->
+            <apex:pageBlockSection columns="1" collapsible="false" rendered="{!salesRepPageIsFor == 'so' && 
+                                                                             !SalesOrdersExist}">
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                    </span>
+                    <h3>Sales Orders<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessage severity="warning" detail="There are no sales orders for the deativated Sales Rep/Team." 
+                                  strength="2"></apex:pageMessage>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Sales Orders"
+                                   columns="1" collapsible="false" rendered="{!salesRepPageIsFor == 'so' && SalesOrdersExist}">
+                
+                <apex:facet name="header">
+                    <span class="pbSubExtra">
+                        <span class="requiredLegend brandTertiaryFgr">
+                            <span class="requiredExampleOuter">
+                                <span class="requiredExample">&nbsp;</span>
+                            </span>
+                            <span class="requiredText"> = Required Information.</span>
+                        </span>
+                    </span>
+                    <h3>Sales Orders<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+                <apex:pageMessages rendered="{!!SameSalesRepError && !DifferentGLError && OnlyShowPageMessage}"></apex:pageMessages>
+                
+                <apex:pageMessage severity="info" detail="Select New Sales Rep/Team for Related Sales Orders." 
+                                  strength="2"></apex:pageMessage>
+                
+                <apex:inputField label="Sales Rep/Team" 
+                                 value="{!sr.Sales_Rep_Shadow__c}" 
+                                 required="true">
+                    <apex:actionSupport event="onchange" action="{!setOptionValues}" reRender="PageBlock">
+                    </apex:actionSupport>
+                </apex:inputField>
+                <apex:pageBlockSectionItem rendered="{!SameSalesRepError}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="You cannot select the Sales Rep/Team that was just deactivated."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!DifferentGLError}">
+                    <apex:outputLabel style="color: red;" rendered="{!NOT(SameSalesRepError)}">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" 
+                                     value="Sales Rep / Team and the deactivated Sales Rep / Team GL Variable do not match."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Owner</apex:outputLabel>
+                    <apex:selectList value="{!selected}" size="10" style="width:200px" >
+                        <apex:selectOptions value="{!AllOptionValues}">
+                        </apex:selectOptions>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!OwnerMissing}">
+                    <apex:outputLabel style="color: red;">Error:</apex:outputLabel>
+                    <apex:outputText style="color: red !important;" value="Please also select Owner."></apex:outputText> 
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:PageBlock>
+    </apex:form>
+    
+</apex:page>

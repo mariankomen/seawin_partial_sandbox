@@ -1,0 +1,9 @@
+<apex:page standardController="Product2" standardStylesheets="false" showHeader="false" sidebar="false" >
+  <script>
+      var pageName = 'OverrideProductPage';
+      if(!document.referrer.includes(pageName))
+      {
+          window.top.location = '/sales/'+pageName+'?id={!Product2.Id}&sfdc.override=1';
+      }
+  </script>
+</apex:page>

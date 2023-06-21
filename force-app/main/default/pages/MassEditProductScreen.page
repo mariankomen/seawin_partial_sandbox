@@ -1,0 +1,51 @@
+<apex:page id="customMultiLine" controller="ProductPageExtension" showHeader="true" tabStyle="{!IF(strTabName<>null,strTabName,'Product2')}">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}"/>
+
+    
+
+    <apex:sectionHeader title="Mass Edit Products"  description="Edit Products"/>
+    <apex:pageMessages id="msgs" escape="false"/>
+    <apex:form id="mainFormId">
+
+        <apex:outputPanel >
+            <div>
+                <apex:outputLabel value="Select field for mass update:" /> 
+                <apex:selectList value="{!selectedMassField}" size="1"  >
+                    <apex:selectOptions value="{!ProductFields}" />
+                    <apex:actionSupport event="onchange" action="{!handlePicklistChange}" reRender="mainFormId, msgs"/>
+    
+                </apex:selectList>
+            </div>
+           
+
+
+        </apex:outputPanel>
+        <br/>
+        <br/>
+        <br/>
+        <apex:outputPanel rendered="{!showMassEditField}">
+            <div>
+                <apex:outputLabel value="Enter value for update:" /> 
+                <apex:inputField value="{!massEditProduct[selectedMassField]}"></apex:inputField>
+            </div>
+            <div style="display:flex; align-items: center; justify-content: center;">
+                <apex:commandButton value="Preview" action="{!previewMassEditedRecords}" rerender="mainFormId, msgs"></apex:commandButton>
+                <apex:commandButton value="Update Records" action="{!updateMassEditedRecords}" rendered="{!showUpdateButton}" rerender="mainFormId, msgs"></apex:commandButton>
+            </div>
+        </apex:outputPanel>
+        <br/>
+        <br/>
+        <apex:pageBlock id="pbblck">
+            <apex:pageBlockTable value="{!SelectedProducts}" var="prod">
+                <apex:repeat value="{!defaultFieldList}" var="field">
+                    <apex:column headervalue="{!productFieldApiWithLabel[field]}">
+                        <apex:outputField value="{!prod[field]}"/>
+                    </apex:column>
+                </apex:repeat>
+                
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

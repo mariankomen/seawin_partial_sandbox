@@ -1,0 +1,14 @@
+<apex:page standardController="AcctSeedERP__Sales_Order__c" extensions="SalesOrderDeleteExtension" 
+           tabStyle="{!IF(tabname<>null,tabname,'Opportunity')}" action="{!DeleteProcess}">
+    
+    <apex:sectionHeader title="{!title}" subtitle="Delete Sales Order"></apex:sectionHeader>
+  
+    <apex:form >
+        <apex:pageMessage strength="2"
+                          detail="Sales Order can not be deleted because it has got related Purchase Order(s)."
+                          severity="error" rendered="{!ErrorMsgPO}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+</apex:page>

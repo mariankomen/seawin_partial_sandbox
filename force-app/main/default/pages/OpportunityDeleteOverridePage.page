@@ -1,0 +1,15 @@
+<apex:page standardcontroller="Opportunity" extensions="OpportunityDeleteOverrideExtension" action="{!TryDelete}">
+ 
+    <apex:sectionHeader title="Opportunity" subtitle="Delete Opportunity"></apex:sectionHeader>
+  	
+    <apex:form >
+        <apex:pageMessages escape="false"></apex:pageMessages>
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be deleted."
+                          severity="error" rendered="{!DeleteErrorMsgOpp}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    
+</apex:page>

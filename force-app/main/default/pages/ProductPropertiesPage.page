@@ -1,0 +1,31 @@
+<apex:page controller="CustomSettingsProdPropController">
+
+<style>
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+</style>
+
+    <apex:pageBlock title="Configure available properties for Master Product">
+       
+        <apex:form >
+            <apex:pageMessages ></apex:pageMessages>
+            <div class="main">
+                <c:DashboardSettingsPicklist leftLabel="Available Properties"
+                        leftOption="{!picklist_fields}"
+                        rightLabel="Selected Properties"
+                        rightOption="{!selected_value}"
+                        size="20"
+                        width="300px"/>
+                <div>
+                    <apex:commandButton action="{!saveConfiguration}" value="Save" id="theButton"/>
+                </div>
+            </div>
+        </apex:form>
+
+    </apex:pageBlock>
+    <apex:detail /> 
+</apex:page>

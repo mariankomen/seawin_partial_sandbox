@@ -1,0 +1,21 @@
+<apex:page standardController="AcctSeedERP__Purchase_Order__c" extensions="PurchaseOrderMessageController">
+
+<style>
+    .mainBlock{
+        display: flex;
+        justify-content: center;
+        text-align: center;
+    }
+    .text{
+        color: red;
+        font-size: 22px;
+    }
+</style>
+
+    <apex:outputPanel rendered="{!displayMessage}">
+        <div class="mainBlock">
+            <p class="text">Sales Order has Manufacturer Rep</p>
+        </div>
+    </apex:outputPanel>
+    
+</apex:page>

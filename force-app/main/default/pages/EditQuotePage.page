@@ -1,0 +1,22 @@
+<apex:page standardcontroller="Quote" extensions="EditQuotePageExtension" action="{!pageAction}">
+    
+    <apex:sectionHeader title="Quote" subtitle="Edit Quote"></apex:sectionHeader>
+    
+    <apex:form rendered="{!notApproved}">
+        <apex:pageBlock >
+            <apex:pageMessage severity="error" detail="Cannot edit the Quote, because the Opportunity is not Approved." 
+                              strength="2">
+            </apex:pageMessage>
+            <apex:commandButton action="{!cancel}" value="Back" style="width: 80px; margin-left:18px;" />
+        </apex:pageBlock>
+    </apex:form>
+    
+     <apex:form rendered="{!EditQuoteErrorMsg}">
+        <apex:pageMessage strength="2"
+                          detail="Won Opportunity with Sales Order cannot be edited." severity="error">
+        </apex:pageMessage>
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    
+    
+</apex:page>

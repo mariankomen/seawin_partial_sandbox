@@ -1,0 +1,4 @@
+<apex:page standardController="AcctSeedERP__Sales_Order__c">
+    <apex:outputText style="font-style:italic" value="Sales Order cannot be created here. Please create Sales Order from Account's or Contact's Sales Order List.">
+    </apex:outputText>
+</apex:page>

@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity">
+    <apex:outputText style="font-style:italic" value="Opportunity cannot be created here. Please create Opportunity from Account's Opportunity List.">
+    </apex:outputText>
+</apex:page>

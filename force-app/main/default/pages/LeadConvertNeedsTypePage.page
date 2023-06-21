@@ -1,0 +1,10 @@
+<apex:page standardController="lead" extensions="LeadConvertNeedsTypeExtenstion" action="{!PageAction}">
+    <apex:sectionHeader title="Lead" subtitle="Convert Lead"></apex:sectionHeader>
+    <apex:form rendered="{!showTypeErrorMessage}">
+        <apex:pageMessage strength="2"
+                          detail="Please select a field Type value, so that we can set it for Account Type"
+                          severity="error">
+        </apex:pageMessage>
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+</apex:page>

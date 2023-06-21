@@ -1,0 +1,24 @@
+<apex:page standardController="Sales_Rep__c" extensions="SalesRepPageExtension">
+
+    <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+    <apex:includeScript value="//code.jquery.com/jquery-1.10.2.js"/>
+    <apex:includeScript value="//code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+    
+    <apex:detail inlineEdit="false" relatedList="true"/>
+
+
+    <script>
+
+        $('td').filter(function(){
+            
+            if($(this).text() == 'Visible To'){
+                if($(this).next().text().length > 0){
+                    $(this).next().text('{!selectedUserNames}');
+                }
+            }
+        });
+
+    </script> 
+
+
+</apex:page>

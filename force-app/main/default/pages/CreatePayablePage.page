@@ -1,0 +1,384 @@
+<apex:page id="thePage" standardController="AcctSeedERP__Purchase_Order__c" extensions="CreatePayableExtension">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/bootstrap-tagsinput.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}" />
+    <apex:stylesheet value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/css/bootstrap-tagsinput.css')}" />
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Purchase Order" subtitle="{!AcctSeedERP__Purchase_Order__c.Name}" />
+        <apex:pageBlock id="thePageBlock" title="Create Payable">
+            <apex:pageMessage severity="info" strength="3" summary="All items have been paid." rendered="{!AlreadyPaid}" />
+            <apex:pageMessage severity="info" strength="3" summary="There are no purchase order lines associated with this purchase order" rendered="{!!isLines}" />
+            <apex:pageMessage severity="info" strength="3" summary="You must include a value for the quantity to pay field for each line you want to include on the payable." rendered="{!isLines && !AlreadyPaid}" />
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:actionStatus id="saveStatus" onstart="AcctSeed.ASModule.disableButtons('Processing...')" onstop="AcctSeed.ASModule.format()"/>
+                <apex:commandButton status="saveStatus" value="Create Payable" action="{!createPayable}" reRender="theForm" rendered="{!isLines && !AlreadyPaid}"/>
+                <apex:commandButton value="Back" action="/{!AcctSeedERP__Purchase_Order__c.Id}" immediate="true" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="2">
+                <apex:outputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Vendor__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Issue Date" />
+                    <apex:InputField value="{!temp.AcctSeed__Date__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:outputField value="{!AcctSeedERP__Purchase_Order__c.AcctSeedERP__Ledger__c}" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Due Date" />
+                    <apex:InputField value="{!temp.AcctSeed__Due_Date__c}" />
+                </apex:pageBlockSectionItem>
+                <!--<apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Expense GL Account" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"> 
+                            </div>
+                            
+                            <apex:inputField value="{!paylineTemp.AcctSeed__Expense_GL_Account__c}" />
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>-->
+                <!--<apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Accounting Period" />
+                    <apex:InputField value="{!temp.AcctSeed__Accounting_Period__c}" required="true"/>
+                </apex:pageBlockSectionItem>-->
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockTable id="thePageBlockTable" value="{!polWrapper}" var="pow" cellpadding="6" rendered="{!isLines}">
+                <apex:column value="{!pow.poLine.AcctSeedERP__Product__r.Name}" />
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Ordered">
+                    <apex:outputText id="quantityOrdered" value="{0, number, 0.0000}">
+                        <apex:param value="{!pow.poLine.AcctSeedERP__Quantity__c}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Recieved">
+                    <apex:outputText id="quantityAllocated" value="{0, number, 0.0000}">
+                        <apex:param value="{!pow.poLine.Quantity_Received_Formula__c}" />
+                    </apex:outputText>
+                    <apex:inputHidden id="unitPrice" value="{!pow.poLine.AcctSeedERP__Unit_Price__c}" />
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Unreceived">
+                    <apex:outputText id="quantityShipped" value="{0, number, 0.0000}">
+                        <apex:param value="{!pow.poLine.Quantity_Unreceived_Formula__c}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity Paid">
+                    <apex:outputText id="quantityBilled" value="{0, number, ####0.0000}" style="width:80px">
+                        <apex:param value="{!pow.quantityPaid}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Quantity UnPaid">
+                    <apex:outputText id="quantityunpaid" value="{0, number, ####0.0000}">
+                        <apex:param value="{!pow.poLine.AcctSeedERP__Quantity__c - pow.quantityPaid}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" style="width:120px">
+                    <apex:facet name="header">
+                        <apex:actionRegion >
+                            Quantity to Pay
+                            <br/>Pay Type?:&nbsp;
+                            <apex:selectList id="billAllSelect" value="{!PayType}" size="1" onchange="calculatePayableOnload(true)" styleClass="istype">
+                                <apex:selectOption itemValue="percent" itemLabel="Percent" />
+                                <apex:selectOption itemValue="quantity" itemLabel="Quantity" />
+                                <apex:selectOption itemValue="amount" itemLabel="Amount to Pay" />
+                            </apex:selectList>
+                        </apex:actionRegion>
+                    </apex:facet> 
+                    <apex:actionRegion >
+                        <apex:inputText id="paytype" title="myTitle" styleClass="align-right clearText paytypefilled" value="{!pow.paytypeval}" style="width:80px" 
+                                        required="false" onkeyup="recalculatePay(this.id, this.title,this.value, {!pow.UnPaidAmount}, {!pow.poLine.AcctSeedERP__Unit_Price__c}, {!pow.poLine.AcctSeedERP__Quantity__c}, {!pow.quantityPaid})"
+                                        disabled="{!pow.quantityPaid == pow.poLine.AcctSeedERP__Quantity__c}">
+                        </apex:inputText>
+                    </apex:actionRegion>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Paid Amount">
+                    <apex:outputText id="billedAmount" value="{0, number, Currency}">
+                        <apex:param value="{!pow.PaidAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="UnPaid Amount">
+                    <apex:outputText id="unpaidAmount" value="{0, number, Currency}">
+                        <apex:param value="{!pow.unpaidAmount}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" headerValue="Unit Price">
+                    <apex:outputText id="unit_price_cell" value="{0, number, Currency}">
+                        <apex:param value="{!pow.poLine.AcctSeedERP__Unit_Price__c}" />
+                    </apex:outputText>
+                    <apex:inputHidden id="unitPriceCell" value="{!pow.poLine.AcctSeedERP__Unit_Price__c}"/>
+                </apex:column>
+                <apex:column styleClass="align-right" headerClass="align-right" footerClass="align-right" headerValue="Amount to Pay">
+                    <apex:outputText id="payAmount" value="{0, number, Currency}" styleClass="clearAmount">
+                        <apex:param value="{!pow.PayAmount}" />
+                    </apex:outputText>
+                    <apex:inputHidden value="{!pow.PayAmountHidden}" id="payAmountInput" />
+                    <apex:facet name="footer">  
+                        <apex:outputText id="footerAmount" value="{0, number, Currency}" styleClass="clearAmount">
+                            <apex:param value="{!Amount}" />
+                        </apex:outputText>
+                    </apex:facet>
+                </apex:column>                
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+    var keyvalue = [];
+    function calculatePayableOnload(isOnChange){
+        
+        // selected
+        var SelectedElement = document.getElementsByClassName('istype');
+        var selected = SelectedElement[0].value;
+        
+        var TextInputs = document.getElementsByClassName('paytypefilled');
+        
+        if(isOnChange){
+            var SelectedElementIsDeposit = document.getElementsByClassName('isdeposit');
+            
+            if(SelectedElementIsDeposit.length > 0){
+                var selectedisDeposit = SelectedElementIsDeposit[0].value;
+                if(selectedisDeposit == 'deposit'){
+                    SelectedElement[0].value = 'percent';
+                    selected = 'percent';
+                }
+            }
+            //var selectedisDeposit = SelectedElementIsDeposit[0].value;
+            
+            for(var j = 0; j < TextInputs.length; j++){
+                
+                var tempId = TextInputs[j].id;
+                
+                var splittedTemp = tempId.split(':');
+                var turnTemp = tempId.split(':')[4];
+                
+                var paytypeval = '';
+                var quantityval = '';
+                var quantityunpaid = '';
+                var unPaidAmountTemp = '';
+                for(var o = 0; o < 5; o++){
+                    paytypeval += (o == 4)?turnTemp+':paytype':splittedTemp[o]+':';
+                    quantityval += (o == 4)?turnTemp+':quantityunpaid':splittedTemp[o]+':';
+                    quantityunpaid += (o == 4)?turnTemp+':quantityunpaid':splittedTemp[o]+':';
+                    unPaidAmountTemp += (o == 4)?turnTemp+':unpaidAmount':splittedTemp[o]+':'; 
+                    
+                }
+                
+                // if its quantity then set the full quantity in the paytypeval input
+                var unbilled = parseFloat(document.getElementById(quantityunpaid).innerHTML);
+                if(selected == 'quantity'){
+                    
+                    // get the quantity
+                    var quantity = parseFloat(document.getElementById(quantityval).innerHTML);
+                    
+                    // set the value
+                    document.getElementById(paytypeval).value = (unbilled > 0) ? quantity : '';
+                    
+                }else if(selected == 'percent'){
+                    
+                    // check what the user has selected in the isdeposit select
+                    document.getElementById(paytypeval).value = (unbilled > 0) ? 100 : '';
+                    
+                }else if(selected == 'amount'){
+                    //var unbilledamountTempVal = parseFloat(document.getElementById(unPaidAmountTemp).innerHTML.replace('$', '').replace(/,/g, ''));
+                    //document.getElementById(paytypeval).value = (unbilled > 0) ? unbilledamountTempVal : '';
+                    
+                    var unbilledamountTempVal = parseFloat(document.getElementById(unPaidAmountTemp).innerHTML.indexOf('(') != -1 ?
+                                      -document.getElementById(unPaidAmountTemp).innerHTML.replace(/[()]/g, '').replace('$', '').replace(/,/g, '') : 
+                                      document.getElementById(unPaidAmountTemp).innerHTML.replace('$', '').replace(/,/g, ''));
+                    document.getElementById(paytypeval).value = (unbilled > 0) ? unbilledamountTempVal : '';
+                }
+            }
+        }
+        var FooterAmountIdStr = '';
+        // calculate the bill amount and footer amount for the already populated percentages
+        
+        for(var i = 0; i < TextInputs.length; i++){
+            
+            // calcuate the ids of footer amount and bill amount so we can update their amounts based on paytype
+            var id = TextInputs[i].id;
+            
+            var splitted = id.split(':');
+            var turn = id.split(':')[4];
+            
+            var PayAmountIdStr = '';
+            var PayAmountInputStr = '';
+            var unitpricefield = '';
+            var unPaidAmount = '';
+            
+            for(var k = 0; k < 5; k++){
+                PayAmountIdStr += (k == 4)?turn+':payAmount':splitted[k]+':';
+                PayAmountInputStr += (k == 4)?turn+':payAmountInput':splitted[k]+':';
+                unPaidAmount += (k == 4)?turn+':unpaidAmount':splitted[k]+':';
+                unitpricefield += (k == 4)?turn+':unit_price_cell':splitted[k]+':';
+            }
+            if(i == 0){
+                for(var x = 0; x < 5; x++){
+                    
+                    FooterAmountIdStr += (x == 4)?'footerAmount':splitted[x]+':';
+                }
+            }
+            
+            // entered
+            var entered = (TextInputs[i].value == undefined) || (TextInputs[i].value == '') || 
+                (TextInputs[i].value == null) ? 0 : parseFloat(TextInputs[i].value);
+            
+            var UnPaidAmountStepOne = document.getElementById(unPaidAmount).innerHTML.indexOf('(') != -1 ?
+                                      -document.getElementById(unPaidAmount).innerHTML.replace(/[()]/g, '').replace('$', '').replace(/,/g, '') : 
+                                      document.getElementById(unPaidAmount).innerHTML.replace('$', '').replace(/,/g, '');
+            
+            var UnitPriceStepOne = document.getElementById(unitpricefield).innerHTML.replace('$', '').replace(/,/g, '');
+            
+            // actual
+            var actual = parseFloat(UnPaidAmountStepOne);
+            
+            // unitprice
+            var unitprice = parseFloat(UnitPriceStepOne);
+
+            // actual
+            //var actual = parseFloat(document.getElementById(unPaidAmount).innerHTML.replace('$', '').replace(/,/g, ''));
+            
+            // unitprice
+            //var unitprice = parseFloat(document.getElementById(unitpricefield).innerHTML.replace('$', '').replace(/,/g, ''));
+            
+            // set the title for text field to be used with reCalculateBill
+            TextInputs[i].attributes.getNamedItem('title').value = selected;
+            
+            var amount = 0;
+            if(selected == 'percent'){
+                amount = actual * (entered/100);
+            }else if(selected == 'amount'){
+                amount = actual;
+            }else if(selected == 'quantity'){
+                amount = entered * unitprice;
+            }
+            
+            // amount = amount.toFixed(2);
+            amount = trueRound(amount, 2);
+            
+            // Bill amount
+            
+            document.getElementById(PayAmountIdStr).innerHTML = (amount == '') ? "$0.00" : 
+            amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            document.getElementById(PayAmountInputStr).value = (amount == '') ? "0.00" : amount;
+            
+            // add it to the key value pair
+            
+            var ElementIndex = id.split(':')[4];
+            keyvalue[ElementIndex] = amount;
+            
+        }
+        
+        // grand total
+        var grandtotal = 0;
+        for(var i = 0; i < keyvalue.length; i++){
+            if(keyvalue[i] != undefined){
+                grandtotal += parseFloat(keyvalue[i]);
+            }
+        }
+        
+        var gt = trueRound(grandtotal, 2);
+        document.getElementById(FooterAmountIdStr).innerHTML = 
+            (grandtotal == 0) ? "$0.00" : gt.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    }
+    
+    window.onload = function(){
+        
+        var SelectedElementIsDeposit = document.getElementsByClassName('isdeposit');
+        if(SelectedElementIsDeposit.length > 0){
+            SelectedElementIsDeposit[0].value = 'all';
+        }
+        var SelectedElement = document.getElementsByClassName('istype');
+        var val = SelectedElement[0].value;
+        
+        // clear each user entered amount/percent/quantity
+        var TextInputs = document.getElementsByClassName('clearText');
+        for(var i = 0; i < TextInputs.length; i++){
+            //TextInputs[i].value = '';
+            TextInputs[i].attributes.getNamedItem('title').value = val;
+        }
+        
+        calculatePayableOnload(false);
+    }
+    
+    function recalculatePay(id,selected, entered, actual, unitprice, quantityOrdered, quantityunpaid){
+
+        if(selected == 'myTitle'){
+            var SelectedElement = document.getElementsByClassName('istype');
+                selected = SelectedElement[0].value;
+            }
+        
+        var splitted = id.split(':');
+        var turn = id.split(':')[4];
+        
+        var PayAmountIdStr = '';
+        var PayAmountInputStr = '';
+        for(var k = 0; k < 5; k++){
+            PayAmountIdStr += (k == 4)?turn+':payAmount':splitted[k]+':';
+            PayAmountInputStr += (k == 4)?turn+':payAmountInput':splitted[k]+':';
+        }
+        
+        var FooterAmountIdStr = '';
+        for(var x = 0; x < 5; x++){
+            
+            FooterAmountIdStr += (x == 4)?'footerAmount':splitted[x]+':';
+        }
+        
+        var amount = 0;
+        if(selected == 'percent'){
+            if(entered > 100){
+                alert('Incorrect percentage.');
+                document.getElementById(id).value = '';
+            }else{
+                amount = actual * (entered/100);
+            }
+        }else if(selected == 'amount'){
+            if(getLength(entered) == getLength(actual) && entered > actual){
+                alert('The amount cannot be more than ' + actual.toFixed(2));
+                document.getElementById(id).value = '';
+            }else{
+                amount = (entered == undefined || entered == '' || entered == null) ? 0 : parseFloat(entered);
+            }
+        }else if(selected == 'quantity'){
+            if(entered > (quantityOrdered - quantityunpaid)){
+                alert('The quantity cannot be more than ' + (quantityOrdered - quantityunpaid).toFixed(4));
+                document.getElementById(id).value = '';
+            }else{
+                amount = entered * unitprice;
+            }
+        }
+        
+        // amount = amount.toFixed(2);
+        amount = trueRound(amount, 2);
+        
+        // Bill amount
+        document.getElementById(PayAmountIdStr).innerHTML = (amount == '') ? "$0.00" : 
+        amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });;
+        document.getElementById(PayAmountInputStr).value = (amount == '') ? "0.00" : amount;
+        
+        // add it to the key value pair
+        
+        var ElementIndex = id.split(':')[4];
+        keyvalue[ElementIndex] = amount;
+        
+        // grand total
+        var grandtotal = 0;
+        for(var i = 0; i < keyvalue.length; i++){
+            if(keyvalue[i] != undefined){
+                grandtotal += parseFloat(keyvalue[i]);
+            }
+        }
+        
+        var gtotal = trueRound(grandtotal, 2);
+        document.getElementById(FooterAmountIdStr).innerHTML = 
+            (grandtotal == 0) ? "$0.00" : gtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' });;
+    }
+    
+    function trueRound(value, digits){
+        return parseFloat((Math.round((value*Math.pow(10,digits)).toFixed(digits-1))/Math.pow(10,digits)).toFixed(digits));
+    }
+    
+    function getLength(number) {
+        return number.toString().length;
+    }
+    
+    </script>
+</apex:page>

@@ -1,0 +1,56 @@
+<apex:page controller="EditAllOptionalProductExtension" tabStyle="Opportunity">
+    
+    <!--><apex:stylesheet value="{!$Resource.Bootstrap}"/>-->
+     <apex:sectionHeader title="Opportunity" subtitle="Edit all Optional Products"></apex:sectionHeader>
+  
+    <apex:form >
+        <br/>
+        
+        <apex:pageBlock >
+            <div class="container">
+                
+                <div class="row">
+                    <apex:pageBlockButtons style="ttext-align: center;">
+                        <apex:outPutPanel >
+                            <apex:commandButton id="saveClick" value="Save" action="{!saveOptionalProd}"/>
+                            <apex:commandButton value="Cancel" action="{!gotoParent}"/>
+                        </apex:outPutPanel>
+                    </apex:pageBlockButtons>
+                </div>
+                
+                <apex:outputPanel rendered="true">                
+                    <apex:pageBlockTable value="{!optProdOppList}" var="ol">    
+                        <apex:column headerValue="Product">
+                            <apex:outputField value="{!ol.Product__c}"/>         
+                        </apex:column>
+                        
+                        <apex:column headerValue="Quantity">      
+                            <div style="position: relative;height: 100%">
+                                <div style="background-color:#c00;position:absolute;left:-4px;width:3px;top: 1px;bottom: 1px;"></div>
+                                <apex:inputText value="{!ol.Quantity__c}" id="quantity"   required="true"/> 
+                                 <br/>
+                            </div>
+                            <apex:message for="quantity" style="color:red" title="hello"  />
+                        </apex:column>
+                        
+                        <apex:column headerValue="Sales Price">
+                            <apex:inputField value="{!ol.UnitPrice__c}"/>
+                        </apex:column>    
+                        
+                        <apex:column headerValue="Size">
+                            <apex:inputField value="{!ol.Size__c}"/>
+                        </apex:column>
+                        
+                        <apex:column headerValue="Item Description">
+                            <apex:inputField value="{!ol.Item_Description__c}" required="true"/>
+                        </apex:column>
+                        
+                    </apex:pageBlockTable> 
+                </apex:outputPanel>
+                
+            </div>
+            
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>

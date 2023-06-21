@@ -1,0 +1,25 @@
+<apex:page controller="DashboardSettingsController">
+    <apex:form >
+        <apex:pageBlock title="Dashboard Settings for {!usr.Name}">
+            <c:DashboardSettingsPicklist leftLabel="Available Dashboards"
+                leftOption="{!availableDashboards}"
+                rightLabel="Selected Dashboards"
+                rightOption="{!selectedDashboards}"
+                size="20"
+                width="300px"/>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!save}"/>
+                <apex:commandButton value="Close" onclick="GoBack(); return false;" reRender="pageblock"></apex:commandButton>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+    <apex:outputText >{!message}</apex:outputText>
+    <script>
+    
+        function GoBack() {
+
+            window.close();
+        }
+
+    </script>
+</apex:page>

@@ -1,0 +1,45 @@
+<apex:page controller="DashboardController">
+
+    <apex:repeat var="dashboardName" value="{!dashboardList}" 
+    rendered="{!dashboardList.size > 0}">
+        
+        <apex:include pageName="SalesSupportDashboardPage" 
+        rendered="{!IF(dashboardName == 'Sales Support Dashboard', true, false)}"/>
+        
+        <apex:include pageName="SpecifiedDashboardPage" 
+        rendered="{!IF(dashboardName == 'Specified Dashboard', true, false)}"/>
+
+        <apex:include pageName="AccountingDashboardPage" 
+        rendered="{!IF(dashboardName == 'Accounting Dashboard', true, false)}"/>
+
+        <apex:include pageName="SalesDashboardPage" 
+        rendered="{!IF(dashboardName == 'Sales Dashboard', true, false)}"/>
+
+        <apex:include pageName="BillingAgingDashboardUSAPage" 
+        rendered="{!IF(dashboardName == 'Billing Aging Manager Dashboard USA', true, false)}"/>
+        
+        <apex:include pageName="HospitalityDashboardUSAPage" 
+        rendered="{!IF(dashboardName == 'Hospitality Manager Dashboard USA', true, false)}"/>
+
+        <!-- <apex:include pageName="OnlineDropShipmentDashboardUSAPage" 
+        rendered="{!IF(dashboardName == 'Online/Drop Shipment Manager Dashboard USA', true, false)}"/> -->
+
+        <!-- <apex:include pageName="WholesaleDistributionDashboardUSAPage" 
+        rendered="{!IF(dashboardName == 'Wholesale Manager Dashboard USA', true, false)}"/> -->
+
+        <apex:include pageName="BillingAgingDashboardChinaPage" 
+        rendered="{!IF(dashboardName == 'Billing Aging Manager Dashboard China', true, false)}"/>
+
+        <apex:include pageName="HospitalityDashboardChinaPage" 
+        rendered="{!IF(dashboardName == 'Hospitality Manager Dashboard China', true, false)}"/>
+
+        <apex:include pageName="OEMDashboardChinaPage" 
+        rendered="{!IF(dashboardName == 'OEM Dashboard China', true, false)}"/>
+
+    </apex:repeat>
+    <apex:pageMessage severity="info" escape="false" 
+    detail="You have not been assigned any dashboard(s) by the system administrator." 
+                              strength="2" 
+                              rendered="{!dashboardList.size == 0}"></apex:pageMessage>
+
+</apex:page>

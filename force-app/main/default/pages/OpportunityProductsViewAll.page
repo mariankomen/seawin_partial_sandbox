@@ -1,0 +1,62 @@
+<apex:page controller="OpportunityViewAll" tabStyle="OpportunityLineItem">
+
+    <style>
+        .descriptionBlock {
+            max-width: 175px;
+            min-height: 75px;
+            text-overflow: ellipsis;
+        }
+        .descriptionBlock > span {
+            white-space: normal !important;
+        }
+
+        .input_class{
+            border:none;
+            background: transparent;
+            outline: none;
+            resize: none;
+        }
+    </style>
+
+    <apex:form id="theForm">
+        <apex:outputPanel >
+            <apex:sectionHeader title="{!viewingObjectLabel}" subtitle="{!subTitle}" />
+            <apex:outputText value="View products for this {!viewingObjectLabel}." />
+        </apex:outputPanel>
+        
+        <br/>
+        <br/>
+        <apex:pageMessages ></apex:pageMessages>
+
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                    <apex:commandButton value="Back" action="{!back}" immediate="true" />
+                </apex:pageBlockButtons>
+
+            <apex:pageBlockTable id="thePageBlockTable" value="{!wrapperLines}" var="line"  styleClass="main_table">
+                <apex:column headerValue="Product Name">
+                    <apex:outputText value="{!line.productName}"/>
+                </apex:column>
+                <apex:column headerValue="Product Image">
+                    <img src="{!line.productImageUrl}" height="-1px" width="164px"/>
+                </apex:column>
+                <apex:column headerValue="Quantity">
+                    <apex:outputText value="{!line.quantity}"/>
+                </apex:column>
+                <apex:column headerValue="Sales Price">
+                    <apex:outputText value="${!line.salesPrice}"/>
+                </apex:column>
+                <apex:column headerValue="Size">
+                    <apex:outputText value="{!line.size}"/>
+                </apex:column>
+                <apex:column headerValue="Item Description" width="30%;">
+                    <div class='descriptionBlock'>
+                        <!-- <apex:outputText value="{!line.description}"/> -->
+                        <!-- <apex:outputText escape="false" value="{!line.description}" ></apex:outputText> -->
+                        <apex:inputTextarea value="{!line.description}" styleClass="input_class" id="AllSum" readonly="true" cols="60" rows="15"/>
+                    </div>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

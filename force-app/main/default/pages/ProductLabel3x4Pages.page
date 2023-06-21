@@ -1,0 +1,726 @@
+<apex:page controller="ProductLabel3x4Controller" showHeader="false" sidebar="false" renderAs="pdf"
+applyBodyTag="false" applyHtmlTag="false">
+
+    <html>
+        <head>
+            <style>
+                @page { 
+                
+                size: 4in 3in; <!--width height-->
+                margin-left: 0.1cm;
+                margin-right: 0.1cm;
+                margin-top: 0.1cm;
+                margin-bottom: 0.1cm;
+                font-size: 13px;
+
+                }
+                
+                .print:last-child {
+                    page-break-after: auto;
+                }
+
+                body{
+                    font-size: 13px;
+                    /* font-family: Arial Unicode MS; */
+                }
+                .border_class{
+                    border:1px solid #000;
+                    border-right: none;
+                }
+                .border_last{
+                    border-right: 1px solid #000;
+                }
+                .w-50{
+                    width:49.3%;
+                }
+                .pl-5{
+                    padding-left:5px;
+                }
+                .bold_cls{
+                    font-weight: bold;
+                }
+                .border-b{
+                    border-bottom: 1px solid #000;
+                }
+                .border-top-none{
+                    border-top: none;
+                }
+                .autoclass{
+                    page-break-after: always;
+                }
+                .breakclass{
+                    page-break-after: auto;
+                }
+                .pt5{
+                    padding-top: 2px;
+                }
+                .seawin_url {
+                    font-size: 11px;
+                    margin-top:-2px;
+                    color: #1094e9;
+                    margin-right: 25px;
+                }
+            </style>
+        </head>
+
+       
+        <body>
+            <apex:variable var="rowNum" value="{!0}" /> 
+            <apex:repeat value="{!linesForRendering}" var="line" id="maindiv">
+                <!-- <apex:repeat value="{!line.iterations}" var="iter" id="theRepeatRender"> -->
+                    <!-- Label 4x3 Hardware -->
+                    <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Hardware' ,true,false)}">
+                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 1,
+                        IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 38, 
+                        IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 35 )))}px;">
+                            
+                            <div >
+                                <div class=" w-50" style="display:inline-block;">
+                                    <div >
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            DATE: 
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.today_date}
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            LINE #:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%; display:inline-block;">
+                                            14
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            SERIES:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.series}
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <div class="w-50" style="text-align:right; display:inline-block; vertical-align:top; margin-left:-3.5px; height: 100%;">
+                                    <div>
+                                        <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; margin-top: -5px;"/>
+                                        <p class="seawin_url">www.seawinglobal.com</p>
+                                        <!-- <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; padding-top:12px; padding-bottom: 13px;"/> -->
+                                    </div>
+                                </div>
+                                <div style="width: 100%;  margin-top: -15px;" class="pt5">
+                                    <div >
+                                        <div class="pl-5 bold_cls" style="width: 100%; display:inline-block;margin-top: 5px;">
+                                            {!line.productName}
+                                            <!-- skfasdjhfajlksd asjkldhf akjsdhf aljksdh falkjsd fjaks dfjahs djkfalsd -->
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="{!if(rowNum == linesForRendering.size ,'print, autoclass','print, breakclass')}">
+                                <div class="pl-5 " style="width: 540px; display:inline-block; font-weight: bold;">
+                                    ‎
+                                </div>
+                                <!-- <div class="pl-5  pt5 bold_cls" style="width: 540px;  display:inline-block;">
+                                    DESCRIPTION:
+                                </div> -->
+                                <apex:repeat value="{!line.productDescription}" var="descriptionLine" >
+                                    <div class="pl-5 " style="width: 540px;  display:inline-block;">
+                                        {!descriptionLine}
+                                    </div>
+                                </apex:repeat>
+            
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        SIZE:
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        {!line.size}‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        HARDWARE:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.hardware}
+                                    </div>
+                                </div>
+            
+                                
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%;">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        DIRECTION:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.direction}
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%;  display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        ITEM:
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) <= 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                        <!-- ASWKSHCNALEISYDJSHAK -->
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO #:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_number}
+                                    </div>
+                                </div>
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " >
+                                        <!-- ‎ -->
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) > 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO DATE:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_date}
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        UPC:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.upc_code}‎
+                                    </div>
+                                </div>
+            
+            
+                                <div class="pl-5 " style="width: 97.75%;  display:inline-block;  vertical-align: top;"> 
+                                    <div style="width: 49.35%; display:inline-block; ">
+                                        <apex:image value="https://generator.barcodetools.com/barcode.png?gen=0&data={!line.item_product_code}&bcolor=FFFFFF&fcolor=000000&tcolor=000000&fh=14&bred=0&w2n=2.5&xdim=2&w=&h=120&debug=1&btype=7&angle=0&quiet=1&balign=2&talign=0&guarg=1&text=1&tdown=1&stst=1&schk=0&cchk=1&ntxt=1&c128=0"
+                                        alt="barcode-image" style="margin-top: -25px; height:50px; width: 160px; margin-left: -8px; ">
+                                        </apex:image>
+                                    </div>
+                                    <div  class="pt5" style="display: inline-block; width:50.65%; height:100%; margin-left:-4px; margin-right:-8px; vertical-align: top; ">
+                                        
+                                            <div >
+                                                <div style="display: inline-block; width: 49.35%;  padding-left:4px;" class="bold_cls">
+                                                    LOT/SER #:
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style="display: inline-block; width: 50.7%; " class="bold_cls">
+                                                    ‎ 
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    ‎ 
+                                                </div>
+                                            </div>
+                                            
+                                        
+                                    </div>
+                                </div>
+                        </div>
+                        <div style="float: right; font-size: 9px; margin-top: -12px;">
+                            {!line.templateName}
+                        </div>
+                    </apex:outputPanel>
+                    
+
+
+
+                    <!-- Label 4x3 Glass -->
+                    <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Glass' ,true,false)}">
+
+                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 10,
+                            IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 45, 
+                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 43, 45 )))}px;">
+
+                            
+                            <div >
+                                <div class=" w-50" style="display:inline-block;">
+                                    <div >
+                                        
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            DATE: 
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.today_date}
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            LINE #:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%; display:inline-block;">
+                                            15
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            SERIES:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.series}
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <div class="w-50" style="text-align:right; display:inline-block; vertical-align:top; margin-left:-3.5px; height: 100%;">
+                                    <div>
+                                        <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; margin-top: {!IF(line.hasHardwareTemplateBefore, -10, IF(line.hasGenericTemplateBefore, -5, -10))}px;"/>
+                                        <p class="seawin_url">www.seawinglobal.com</p>
+                                        <!-- <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; padding-top:12px; padding-bottom: 13px;"/> -->
+                                    </div>
+                                </div>
+                                <div style="width: 100%;  margin-top: -15px;" class="pt5">
+                                    <div >
+                                        <div class="pl-5 bold_cls" style="width: 100%; display:inline-block; margin-top: {!IF( has3x4HardwareTemplate == true,  10,  5)}px">
+                                            {!line.productName}
+                                            <!-- skfasdjhfajlksd asjkldhf akjsdhf aljksdh falkjsd fjaks dfjahs djkfalsd -->
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="{!if(rowNum == linesForRendering.size ,'print, autoclass','print, breakclass')}">
+                                <div class="pl-5 " style="width: 540px; display:inline-block; font-weight: bold;">
+                                    ‎
+                                </div>
+                                <!-- <div class="pl-5  pt5 bold_cls" style="width: 540px;  display:inline-block;">
+                                    DESCRIPTION:
+                                </div> -->
+                                <apex:repeat value="{!line.productDescription}" var="descriptionLine" >
+                                    <div class="pl-5 " style="width: 540px;  display:inline-block;">
+                                        {!descriptionLine}
+                                    </div>
+                                </apex:repeat>
+            
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        SIZE:
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        {!line.size}‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        THICKNESS:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.thickness}
+                                    </div>
+                                </div>
+            
+                                
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        GLASS:
+                                    </div>
+                                    <div style="display: inline-block; width: 28%;">
+                                        {!line.glass}
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        DIRECTION:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.direction}
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%;  display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        ITEM:
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) <= 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                        <!-- ASWKSHCNALEISYDJSHAK -->
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO #:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_number}
+                                    </div>
+                                </div>
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " >
+                                        <!-- ‎ -->
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) > 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO DATE:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_date}
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        UPC:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.upc_code}‎
+                                    </div>
+                                </div>
+            
+            
+                                <div class="pl-5 " style="width: 97.75%;  display:inline-block;  vertical-align: top;"> 
+                                    <div style="width: 49.35%; display:inline-block; ">
+                                        <apex:image value="https://generator.barcodetools.com/barcode.png?gen=0&data={!line.item_product_code}&bcolor=FFFFFF&fcolor=000000&tcolor=000000&fh=14&bred=0&w2n=2.5&xdim=2&w=&h=120&debug=1&btype=7&angle=0&quiet=1&balign=2&talign=0&guarg=1&text=1&tdown=1&stst=1&schk=0&cchk=1&ntxt=1&c128=0"
+                                        alt="barcode-image" style="margin-top: -25px; height:50px; width: 160px; margin-left: -8px; ">
+                                        </apex:image>
+                                    </div>
+                                    <div  class="pt5" style="display: inline-block; width:50.65%; height:100%; margin-left:-4px; margin-right:-8px; vertical-align: top; ">
+                                        
+                                            <div >
+                                                <div style="display: inline-block; width: 49.35%;  padding-left:4px;" class="bold_cls">
+                                                    LOT/SER #:
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style="display: inline-block; width: 50.7%; " class="bold_cls">
+                                                    ‎ 
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    ‎ 
+                                                </div>
+                                            </div>
+                                            
+                                        
+                                    </div>
+                                </div>
+                        </div>
+                        <div style="float: right; font-size: 9px; margin-top: -12px;">
+                            {!line.templateName}
+                        </div>
+                    </apex:outputPanel>
+    
+
+                    <!-- Label 4x3 Generic -->
+                    <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Generic',true,false)}">
+                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 5,
+                            IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 35, 
+                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 38 )))}px;">
+
+                            <div >
+                               <!-- <div> {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 5,
+                                IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 35, 
+                                IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 25 )))}</div> -->
+                                <div class=" w-50" style="display:inline-block;">
+                                    <div >
+                                        
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            DATE: 
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.today_date}
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            LINE #:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%; display:inline-block;">
+                                            14
+                                        </div>
+                                    </div>
+                                    <div class="pt5">
+                                        <div class="pl-5 bold_cls" style="width: 30%; display:inline-block;">
+                                            SERIES:
+                                        </div>
+                                        <div class="pl-5" style="width: 53%;  display:inline-block;">
+                                            {!line.series}
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <div class="w-50" style="text-align:right; display:inline-block; vertical-align:top; margin-left:-3.5px; height: 100%;">
+                                    <div>
+                                        <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; margin-top: -5px;"/>
+                                        <p class="seawin_url">www.seawinglobal.com</p>
+                                        <!-- <apex:image url="{!URLFOR($Resource.SeawinLogo)}" style="height: 40px; width: 167px; padding-top:12px; padding-bottom: 13px;"/> -->
+                                    </div>
+                                </div>
+                                <div style="width: 100%;  margin-top: -15px;" class="pt5">
+                                    <div >
+                                        <div class="pl-5 bold_cls" style="width: 100%; display:inline-block; margin-top: 5px;">
+                                            {!line.productName}
+                                            <!-- skfasdjhfajlksd asjkldhf akjsdhf aljksdh falkjsd fjaks dfjahs djkfalsd -->
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="{!if(rowNum == linesForRendering.size ,'print, autoclass','print, breakclass')}">
+                                <div class="pl-5 " style="width: 540px; display:inline-block; font-weight: bold;">
+                                    ‎
+                                </div>
+                                <!-- <div class="pl-5  pt5 bold_cls" style="width: 540px;  display:inline-block;">
+                                    DESCRIPTION:
+                                </div> -->
+                                <apex:repeat value="{!line.productDescription}" var="descriptionLine" >
+                                    <div class="pl-5 " style="width: 540px;  display:inline-block;">
+                                        {!descriptionLine}
+                                    </div>
+                                </apex:repeat>
+            
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <!-- <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div> -->
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div>
+            
+                                
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%;">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        ‎
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%;  display:inline-block;">
+                                    <div style="display: inline-block; width: 10.5%; " class="bold_cls">
+                                        ITEM:
+                                    </div>
+                                    <div style="display: inline-block; width: 38%; ">
+                                        
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) <= 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                        <!-- ASWKSHCNALEISYDJSHAK -->
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO #:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_number}
+                                    </div>
+                                </div>
+            
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " >
+                                        <!-- ‎ -->
+                                        <apex:outputPanel rendered="{!IF(Len(line.item_product_code) > 15, true, false)}">
+                                            {!line.item_product_code}‎
+                                        </apex:outputPanel>
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        PO DATE:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.po_date}
+                                    </div>
+                                </div>
+                                <div class="pl-5 pt5" style="width: 97.75%; display:inline-block;">
+                                    <div style="display: inline-block; width: 20.5%; " class="bold_cls">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 28%; ">
+                                        ‎
+                                    </div>
+                                    <div style="display: inline-block; width: 25%; " class="bold_cls">
+                                        UPC:
+                                    </div>
+                                    <div style="display: inline-block; ">
+                                        {!line.upc_code}‎
+                                    </div>
+                                </div>
+            
+            
+                                <div class="pl-5 " style="width: 97.75%;  display:inline-block;  vertical-align: top;"> 
+                                    <div style="width: 49.35%; display:inline-block; ">
+                                        <apex:image value="https://generator.barcodetools.com/barcode.png?gen=0&data={!line.item_product_code}&bcolor=FFFFFF&fcolor=000000&tcolor=000000&fh=14&bred=0&w2n=2.5&xdim=2&w=&h=120&debug=1&btype=7&angle=0&quiet=1&balign=2&talign=0&guarg=1&text=1&tdown=1&stst=1&schk=0&cchk=1&ntxt=1&c128=0"
+                                        alt="barcode-image" style="margin-top: -25px; height:50px; width: 160px; margin-left: -8px; ">
+                                        </apex:image>
+                                    </div>
+                                    <div  class="pt5" style="display: inline-block; width:50.65%; height:100%; margin-left:-4px; margin-right:-8px; vertical-align: top; ">
+                                        
+                                            <div >
+                                                <div style="display: inline-block; width: 49.35%;  padding-left:4px;" class="bold_cls">
+                                                    LOT/SER #:
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style="display: inline-block; width: 50.7%; " class="bold_cls">
+                                                    ‎ 
+                                                </div>
+                                                <div style="display: inline-block; ">
+                                                    ‎ 
+                                                </div>
+                                            </div>
+                                            
+                                        
+                                    </div>
+                                </div>
+                        </div>
+                        <div style="float: right; font-size: 9px; margin-top: -12px;">
+                            {!line.templateName}
+                        </div>
+                    </apex:outputPanel>
+                    <apex:variable var="rowNum" value="{!rowNum+1}"/>
+    
+                <!-- </apex:repeat> -->
+            </apex:repeat>
+            
+
+            
+        </body>
+    </html>
+</apex:page>

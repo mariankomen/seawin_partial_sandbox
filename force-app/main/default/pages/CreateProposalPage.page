@@ -1,0 +1,205 @@
+<apex:page standardcontroller="Quote" extensions="CreateProposalExtension">
+    <apex:sectionHeader title="Quote" subtitle="Create Proposal"/>
+    <apex:form >
+        <apex:pageBlock id="ProposalCreate">
+            <apex:facet name="{!IF(!ProposalHasError && !ErrorEncrypted, 'header','caption')}">
+                <apex:outputPanel rendered="{!hasBlobs && !ProposalHasError && !ErrorEncrypted}">
+                    <div class="ajax-loader" style="margin: 5px 5px 5px 5px;">
+                        <img src="/img/loading.gif" class="img-responsive" />
+                        <span>Please wait. Do not close this window, once complete you'd be taken back to the Quote.</span>
+                    </div> 
+                </apex:outputPanel>
+            </apex:facet>
+            <apex:pageblockbuttons rendered="{!!hasBlobs || ProposalHasError || ErrorEncrypted}" location="both">
+                <apex:commandButton value="Back" action="{!cancel}"></apex:commandButton>
+                <apex:commandButton value="Refresh" action="{!refresh}" rendered="{!!hasBlobs && 
+                                                                                  MissingCase && !ProposalHasError && ErrorEncrypted}">
+                                                                                </apex:commandButton>
+                <apex:commandButton value="Refresh" action="{!refresh}" rendered="{!hasBlobs && ErrorEncrypted}" immediate="true">
+
+                </apex:commandButton>
+                <apex:commandButton value="Create Anyway" action="{!continueAnyway}" rendered="{!!ProposalHasError && 
+                                                                                               !hasBlobs && MissingCase 
+                                                                                               && CreateAnyway && 
+                                                                                               !ProposalHasError && 
+                                                                                               !ErrorEncrypted}">
+                </apex:commandButton>
+            </apex:pageblockbuttons>
+            <apex:pageBlockSection columns="1">
+                <apex:pagemessages escape="false"></apex:pagemessages>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!hasBlobs && !ProposalHasError && !ErrorEncrypted}" columns="1">
+                <apex:pageMessage severity="info" escape="false" detail="The Proposal is being created. The time it would take depends on the 
+                                                                         number of distinct Technical Specs PDFs for Product(s). Once complete the Proposal will be attached to the Quote in the Notes & Attachments list." 
+                                  strength="2"></apex:pageMessage>         
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!ProposalHasError}" columns="1">
+                <apex:pageMessage severity="error" escape="false" detail="Limit exceeded. A maximum of 5 Proposals can be created per day." 
+                                  strength="2" rendered="{!QuotaHasExceeded}"></apex:pageMessage>
+                <apex:pageMessage severity="error" escape="false" detail="An error has occured while creating proposal. Please retry or contact your administrator." 
+                                  strength="2" rendered="{!ErrorHasOccured}"></apex:pageMessage>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!!hasBlobs && MissingCase && !ProposalHasError}" columns="1">
+                    <apex:repeat value="{!MissingIds}" var="pId">
+                        <a href="/{!pId}">{!MissingMap[pId]}</a>
+                    </apex:repeat>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!hasBlobs && ErrorEncrypted}" columns="1">
+                    <apex:repeat value="{!ProblemIds}" var="pId">
+                        <a href="/{!pId}">{!ProblemMap[pId]}</a>
+                    </apex:repeat>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionFunction name="QuotaExceeded" action="{!QuotaExceeded}" rerender="ProposalCreate">
+            <apex:param name="reason" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="PDFErrorCall" action="{!PDFError}" rerender="ProposalCreate">
+            <apex:param name="links" value=""/>
+            <apex:param name="qid" value=""/>
+        </apex:actionFunction>
+    </apex:form>
+    
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+    
+    <apex:outputPanel rendered="{!hasBlobs}">
+        <script>
+        
+        function wrapper(){
+            var str = null;
+            var qId = null;
+        }
+        
+        const b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, {type: contentType});
+        return blob;
+        }
+
+        // first check if any file is protected
+        
+        var PDFinfoFormData = new FormData();
+        PDFinfoFormData.append("user","{!username}");
+        PDFinfoFormData.append("password","{!password}");
+        PDFinfoFormData.append("test","true");
+
+        var linkStr = '';
+        var PDFsProtected = false;
+        <apex:repeat value="{!BlobKeys}" var="key">
+            <apex:repeat value="{!Base64Map[key]}" var="b">
+                var blob = b64toBlob("{!b}", "application/pdf");
+                PDFinfoFormData.append("file", blob);
+        
+                
+                        // get the file info
+                        $.ajax({
+                            async: false,
+                            url : "https://www.hypdf.com/pdfinfo",
+                            type : "POST",
+                            data : PDFinfoFormData,
+                            cache : false,
+                            contentType : false,
+                            processData : false,
+                            error: function(xhr, status, error) {
+
+                            },
+                            success : function(response, status, xhr) {
+                                if(response.Encrypted != "no"){
+                                        PDFsProtected = true;
+                                        linkStr += "{!key};";
+                                    }
+                                }
+                    });
+            </apex:repeat>
+        </apex:repeat>
+        
+        if(PDFsProtected){
+            PDFErrorCall(linkStr, "{!qt.id}");
+        }else{
+            // call merge pdf service
+            
+            var uploadFormData = new FormData();
+            uploadFormData.append("user","{!username}");
+            uploadFormData.append("password","{!password}");
+            uploadFormData.append("test","{!isTest}"); //set to false in production
+            
+            var i = 1;
+            <apex:repeat value="{!blobs64}" var="b">
+                var blob1 = b64toBlob("{!b}", "application/pdf");
+                uploadFormData.append("file_"+i, blob1);
+                i++;
+            </apex:repeat>
+            
+            $.ajax({
+                async: true,
+                url : "{!url}",
+                type : "POST",
+                data : uploadFormData,
+                cache : false,
+                contentType : false,
+                processData : false,
+                xhr:function(){// Seems like the only way to get access to the xhr object
+                    var xhr = new XMLHttpRequest();
+                    xhr.responseType= 'blob'
+                    return xhr;
+                },
+                error: function(xhr, status, error) {
+                    if(error == 'Payment Required'){
+                        QuotaExceeded('payment');
+                    }else{
+                        QuotaExceeded('other');
+                    }
+                },
+                success : function(response, status, xhr) {
+                    
+                    var reader = new FileReader();
+                    reader.readAsDataURL(response); 
+                    reader.onloadend = function() {
+                        base64data = reader.result; 
+                        
+                        var doCall = false;
+                        
+                        if(base64data.indexOf(",") > -1){
+                        
+                            var sendData = new wrapper();
+                            
+                            sendData.str = base64data.split(',')[1];
+                            sendData.qId = "{!qt.id}";
+                            
+                            Visualforce.remoting.Manager.invokeAction(
+                                '{!$RemoteAction.CreateProposalExtension.savePDF}',
+                                sendData,
+                                function(result, event) {
+                                    if(event.type === 'exception') {
+                                        console.log("Error occured in Salesforce."); 
+                                        console.log(event.message); 
+                                    } else if(event.status) { 
+                                        window.location.replace("{!IF($User.ContactId == null, '/', '/sales/')}"+result);
+                                    }
+                                });
+                        }else{
+
+                        }
+                    }
+                }
+            });
+        }
+        </script>
+    </apex:outputPanel>
+</apex:page>

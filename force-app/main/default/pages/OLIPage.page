@@ -1,0 +1,32 @@
+<apex:page standardcontroller="OpportunityLineItem" extensions="OLIDeleteExtension" action="{!PageAction}">
+    <apex:sectionHeader title="Opportunity" subtitle="Delete Opportunity Products"></apex:sectionHeader>
+    
+    <apex:form rendered="{!!hasDeletePermission}">
+        <apex:pageMessage strength="2"
+                              detail="Insufficient Privileges, You are not allowed to make these changes. Please contact your adminstrator."
+                              severity="error">
+        </apex:pageMessage>
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+     
+    <apex:form rendered="{!hasDeletePermission}">
+    	<apex:pageblock rendered="{!showBillingMsg}">
+            <apex:pageMessage strength="2" detail="Opportunity Product cannot be deleted, as billing has already been done."
+                              severity="error">
+            </apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+        </apex:pageblock>
+        
+        <apex:pageblock rendered="{!OpportunityLineItem.Opportunity.TotalSalesOrderInOpp__c != 0 && !showBillingMsg}">
+            <apex:pageMessage strength="2" detail="Won Opportunity with Sales Order cannot be edited." severity="error">
+            </apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+        </apex:pageblock>
+        
+        <apex:pageblock rendered="{!showApprovalMsg}">
+            <apex:pageMessage strength="2" detail="Locked Opportunity, pending Approval." severity="error"></apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+        </apex:pageblock>
+        
+    </apex:form>
+</apex:page>

@@ -1,0 +1,361 @@
+<apex:page id="customMultiLine" controller="ProductPageExtension" showHeader="true" tabStyle="{!IF(strTabName<>null,strTabName,'Product2')}">
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/accounting-common.js')}" />
+    <apex:includeScript value="{!$Resource.ButtonsProcessing}"/>
+    <style>
+        .dateFormat{
+        display: none;
+        }
+        .pbTitle{
+        display: none;
+        }
+        body .pbBody table.list tr.dataRow th, body .pbBody table.list tr.dataRow td {
+        width: 20%;
+        }
+        input[type="text"] {
+        width: 95%;
+        }
+        textarea{
+        width: 180px;
+        }
+        body .pbBody table.list tr.dataRow th, body .pbBody table.list tr.dataRow td {
+        vertical-align: top;
+        }
+        body .pbBody table.list tr.headerRow td, body .pbBody table.list tr.headerRow th {
+        font-weight: normal;
+        font-size: 100%;
+        }
+        a {
+        text-decoration: none;
+        font-weight: bold;
+        color: black;
+        }
+    </style>
+    <apex:sectionHeader title="Add Products"  description="Add products"/>
+    <apex:pageMessages id="msgs"/>
+    <apex:form >
+        <apex:pageBlock id="pbblck">
+            <apex:pageBlockButtons id="myEventListener" style="text-align: center;">
+                <apex:actionStatus id="save_status">
+                    <apex:facet name="stop">
+                        <apex:outPutPanel >
+                            <apex:commandButton id="saveClick" value="Save" 
+                                                action="{!saveOP}" 
+                            rerender="pbblck,msgs"
+                            onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');" />
+                            <apex:commandButton id="saveAndMoreClick" value="Save and More" 
+                                                action="{!saveMoreOP}" 
+                            rerender="pbblck,msgs"
+                            onClick="AcctSeed.ASModule.setCustomStyleOnBtn('Processing...');"/>
+                            <apex:commandButton value="Back" action="{!gotoParentMore}" 
+                                                immediate="true" rerender="msgs"/>
+                            <apex:commandButton id="cancelSubButtonClick" value="Cancel" 
+                                                action="{!gotoParent}" immediate="true" rerender="msgs"/>
+                        </apex:outPutPanel>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:outPutText value="Processing...."/>
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockButtons>
+            <apex:outputPanel rendered="{!section == 'oli'}">
+                <apex:pageBlockTable value="{!Oli}" var="ol">                    
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!ol.Product2Id}"/>             
+                    </apex:column>
+                    
+                    <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[ol.Product2Id]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[ol.Product2Id] != 'NA'}"/>
+                        <apex:outputText value="Not Available" 
+                                         rendered="{!ProductsWithImage[ol.Product2Id] == 'NA'}"></apex:outputText><br/>
+                        <apex:outputLink rendered="{!ol.Allow_Custom_Image__c}" onclick="uploadImage('{!$Page.OpportunityLineItemAlternateImagePage}','{!ol.Product2Id}'); return false;" style="color:blue;margin-top:10px;display:inline-block">Add Custom Image </apex:outputLink>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Quantity">
+                        <apex:inputField id="oliquantity" value="{!ol.Quantity}" required="true"/>
+                    </apex:column>
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputField value="{!ol.UnitPrice}"/>
+                    </apex:column>    
+                    <apex:column headerValue="Size">
+                        <apex:inputField value="{!ol.Size__c}" rendered="{!ol.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!ol.Size__c}" rendered="{!!ol.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Item Description">
+                        <apex:inputField value="{!ol.Item_Description__c}" 
+                                         rendered="{!ol.Allow_Product_Description_Change__c}"/>
+
+                        <apex:outputText value="{!ol.Item_Description__c}" rendered="{!!ol.Allow_Product_Description_Change__c}"></apex:outputText>
+
+
+                    </apex:column>  
+
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!section == 'opo'}">
+                <apex:pageBlockTable value="{!OPO}" var="opi">
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!opi.Product__c}"/>
+                    </apex:column>
+                     
+                     <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[opi.Product__c]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[opi.Product__c] != 'NA'}"/>
+                         <apex:outputText value="Not Available" 
+                                          rendered="{!ProductsWithImage[opi.Product__c] == 'NA'}"></apex:outputText><br/>
+                                          <apex:outputLink rendered="{!opi.Allow_Custom_Image__c}" onclick="uploadImage('{!$Page.OpportunityLineItemAlternateImagePage}','{!opi.Product__c}'); return false;" style="color:blue;margin-top:10px;display:inline-block">Add Custom Image </apex:outputLink>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Quantity">
+                        <apex:inputField id="opoquantity" value="{!opi.Quantity__c}" required="true" />
+                    </apex:column>
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputField value="{!opi.UnitPrice__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Size">
+                        <!-- <apex:inputField value="{!opi.Size__c}"/> -->
+
+                        <apex:inputField value="{!opi.Size__c}" rendered="{!opi.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!opi.Size__c}" rendered="{!!opi.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                    <apex:column headerValue="Item Description">
+                        <apex:inputField value="{!opi.Item_Description__c}" id="itemdescription" required="true" rendered="{!opi.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!opi.Item_Description__c}" rendered="{!!opi.Allow_Product_Description_Change__c}"></apex:outputText>
+
+                        <!-- <apex:outputField value="{!opi.Item_Description__c}" rendered="{!!opi.Allow_Product_Description_Change__c}"/> -->
+                    </apex:column>
+
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!section == 'qli'}">
+                <apex:pageBlockTable value="{!Qli}" var="ql">
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!ql.Product2Id}"/>
+                    </apex:column>
+                     
+                    <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[ql.Product2Id]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[ql.Product2Id] != 'NA'}"/>
+                        <apex:outputText value="Not Available" 
+                                          rendered="{!ProductsWithImage[ql.Product2Id] == 'NA'}"></apex:outputText>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Quantity">
+
+                        <apex:inputField id="qliquantity" value="{!ql.Quantity}" required="true" 
+                        />
+                        
+                    </apex:column>
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputField value="{!ql.UnitPrice}"/>
+                    </apex:column>
+                    <apex:column headerValue="Size">
+                        <apex:inputField value="{!ql.Size__c}" rendered="{!ql.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!ql.Size__c}" rendered="{!!ql.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                    <apex:column headerValue="Item Description">
+                        <!-- <apex:inputField value="{!ql.ITEM_DESCRIPTION__c}" required="true" rendered="{!ql.Allow_Product_Description_Change__c}"/>
+
+                        <apex:outputField value="{!ql.ITEM_DESCRIPTION__c}" 
+                        rendered="{!!ql.Allow_Product_Description_Change__c}"/> -->
+
+                        <apex:inputField value="{!ql.ITEM_DESCRIPTION__c}" rendered="{!ql.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!ql.ITEM_DESCRIPTION__c}" rendered="{!!ql.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!section == 'opq'}">
+                <apex:pageBlockTable value="{!OPq}" var="opqt">
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!opqt.Product__c}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[opqt.Product__c]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[opqt.Product__c] != 'NA'}"/>
+                        <apex:outputText value="Not Available" 
+                                          rendered="{!ProductsWithImage[opqt.Product__c] == 'NA'}"></apex:outputText>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Quantity">
+
+                        <apex:inputField id="opqquantity" value="{!opqt.Quantity__c}" required="true" 
+                        />
+                        
+                    </apex:column>
+                    <!-- Allow_Product_Description_Change__c -->
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputField value="{!opqt.UnitPrice__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Size">
+                        <apex:inputField value="{!opqt.Size__c}" rendered="{!opqt.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!opqt.Size__c}" rendered="{!!opqt.Allow_Product_Description_Change__c}"></apex:outputText>
+
+
+                        <!-- <apex:inputField value="{!opqt.Size__c}"/> -->
+                    </apex:column>
+                    <apex:column headerValue="Item Description">
+                        <!-- <apex:inputField value="{!opqt.Item_Description__c}" required="true"/> -->
+                        <apex:inputField value="{!opqt.Item_Description__c}" rendered="{!opqt.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!opqt.Item_Description__c}" rendered="{!!opqt.Allow_Product_Description_Change__c}"></apex:outputText>
+
+
+                    </apex:column>
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!section == 'sli'}">
+                <apex:pageBlockTable value="{!SLI}" var="sl">
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!sl.AcctSeedERP__Product__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[sl.AcctSeedERP__Product__c]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[sl.AcctSeedERP__Product__c] != 'NA'}"/>
+                        <apex:outputText value="Not Available" 
+                                          rendered="{!ProductsWithImage[sl.AcctSeedERP__Product__c] == 'NA'}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Quantity">
+ 
+                        <apex:inputField id="sliquantity" value="{!sl.AcctSeedERP__Quantity_Ordered__c}" required="true" 
+                        />
+                        
+                    </apex:column>
+                    <apex:column headerValue="Sales Price">
+                        <apex:inputField id="unitpricefield" value="{!sl.AcctSeedERP__Unit_Price__c}"/>
+                        <script>    
+                            val = parseFloat(document.getElementById('{!$Component.unitpricefield}').value);
+                            document.getElementById('{!$Component.unitpricefield}').value = val.toFixed(2);
+                        </script>
+                    </apex:column>    
+                    <apex:column headerValue="Size">
+                        <!-- <apex:inputField value="{!sl.Size__c}"/> -->
+
+                        <apex:inputField value="{!sl.Size__c}" rendered="{!sl.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!sl.Size__c}" rendered="{!!sl.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                    <apex:column headerValue="Item Description">
+                        <!-- <apex:inputField value="{!sl.AcctSeedERP_Description__c}" required="true" rendered="{!sl.Allow_Product_Description_Change__c}"/>
+                        
+                        <apex:outputField value="{!sl.AcctSeedERP_Description__c}" 
+                        rendered="{!!sl.Allow_Product_Description_Change__c}"/> -->
+
+                        <apex:inputField value="{!sl.AcctSeedERP_Description__c}" rendered="{!sl.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!sl.AcctSeedERP_Description__c}" rendered="{!!sl.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!section == 'pli'}">
+                <apex:pageBlockTable value="{!PLI}" var="pl">
+                    <apex:column headerValue="Product">
+                        <apex:outputField value="{!pl.AcctSeedERP__Product__c}"/>
+                    </apex:column>
+                     <apex:column headerValue="Image">
+                        <apex:image value="{!ProductsWithImage[pl.AcctSeedERP__Product__c]}" width="90" height="-1" alt="Not Available"
+                                    rendered="{!ProductsWithImage[pl.AcctSeedERP__Product__c] != 'NA'}"/>
+                         <apex:outputText value="Not Available" 
+                                          rendered="{!ProductsWithImage[pl.AcctSeedERP__Product__c] == 'NA'}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Quantity">
+
+                        <apex:inputField id="pliquantity" value="{!pl.AcctSeedERP__Quantity__c}" required="true" 
+                        />
+                        
+                    </apex:column>
+                    <apex:column headerValue="Purchase Price">
+                        <apex:inputField id="unitpricefield" value="{!pl.AcctSeedERP__Unit_Price__c}"/>
+                        <script>    
+                            val = parseFloat(document.getElementById('{!$Component.unitpricefield}').value);
+                            document.getElementById('{!$Component.unitpricefield}').value = val.toFixed(2);
+                        </script>
+                    </apex:column>    
+                    <apex:column headerValue="Size">
+                        <!-- <apex:inputField value="{!pl.Size__c}"/> -->
+
+                        <apex:inputField value="{!pl.Size__c}" rendered="{!pl.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!pl.Size__c}" rendered="{!!pl.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                    <apex:column headerValue="Item Description">
+                        <!-- <apex:inputField value="{!pl.Description__c}" required="true" rendered="{!pl.Allow_Product_Description_Change__c}"/>
+                        
+                        <apex:outputField value="{!pl.Description__c}" 
+                        rendered="{!!pl.Allow_Product_Description_Change__c}"/> -->
+
+                        <apex:inputField value="{!pl.Description__c}" rendered="{!pl.Allow_Product_Description_Change__c}"/>
+                        <apex:outputText value="{!pl.Description__c}" rendered="{!!pl.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+
+                </apex:pageBlockTable> 
+            </apex:outputPanel>
+        </apex:pageBlock>
+        <apex:actionFunction name="submitTheForm" action="{!saveMoreOP}" status="save_status" rerender="msgs"/>
+        
+        <apex:actionFunction name="altrnateImg" action="{!alternateImages}" reRender="" immediate="true">
+            <apex:param name="prodID" value="" />
+            <apex:param name="docId" value="" />
+        </apex:actionFunction>
+
+    </apex:form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="/soap/ajax/28.0/connection.js" type="text/javascript"></script>
+<script src="/soap/ajax/28.0/apex.js" type="text/javascript"></script> 
+    <script>
+        function uploadImage(page, prodId){
+        var retValues = window.open(page+'?prodId='+prodId,'_blank', 'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=600, height=400');
+    }
+   
+    function HandlePopupResult(prodId, docId) {
+        console.log('prodIdprodIdprodId: ',prodId)
+        console.log('docIddocIddocId: ',docId)
+        
+        altrnateImg(prodId, docId);
+        
+        tempAlert("Upload is successful.",3000);
+    }
+    function tempAlert(msg,duration)
+    {
+     var el = document.createElement("div");
+     el.setAttribute("style","position:absolute;top:25%;left:40%;background-color:white; color: green; font-size: 15px; font-weight: bold;");
+     el.innerHTML = msg;
+     setTimeout(function(){
+      el.parentNode.removeChild(el);
+     },duration);
+     document.body.appendChild(el);
+}
+</script>
+    <script>
+    $(document).ready( function(){
+        
+        var section = "{!section}";
+        var newURLString = window.location.href+"&section="+ section;
+        window.history.pushState(null,"",newURLString);
+    });
+    </script>
+    <script>
+        function submitDirectly(){
+            submitTheForm();        
+        }
+        $(document).ready( function(){
+           /* $(document).keypress(function(e) {
+                if(e.which == 13 && !e.shiftKey) {
+                    submitTheForm();
+                    e.preventDefault();
+                }
+            });*/
+            
+            $(document).keyup(function(e) {
+                if(e.which == 27) {
+                    $("[id$='cancelSubButtonClick']").click();
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</apex:page>

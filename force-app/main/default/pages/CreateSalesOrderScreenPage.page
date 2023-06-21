@@ -1,0 +1,183 @@
+<apex:page standardcontroller="Opportunity" extensions="CreateSalesOrderScreenExtension" action="{!TryCreate}">
+    <style>
+        .empty{
+        display: none !important;
+        }
+        body .bPageBlock .detailList tr td, 
+        body .bPageBlock .detailList tr th, 
+        body table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+        border-color: transparent !important;
+        }
+
+        textarea{
+            width: 250px !important;
+            height: 150px !important;
+        }
+
+    </style>
+    
+    <apex:form rendered="{!hasSalesOrder}">
+        <apex:sectionHeader title="Opportunity" subtitle="Add New Sales Order"></apex:sectionHeader>
+        <apex:pageMessage strength="2"
+                          detail="There is only one Sales Order per Opportunity." severity="error">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+        
+    </apex:form>
+    
+    <apex:form id="form" rendered="{!!hasSalesOrder}">  
+    <apex:sectionHeader title="Opportunity" subtitle="{!oppty.account.name}"/>
+        <apex:pageBlock title="Create Sales Order"  id="t">
+            <apex:pageMessages id="msg" escape="false"></apex:pageMessages>
+            <apex:pageBlockSection title="Sales Order" collapsible="false" rendered="{!showError == false}" columns="2">
+                <apex:outputText value="{!oppty.Account.Name}" label="Customer: "/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="GL Account Variable 1"></apex:outputLabel>
+                    <apex:inputField value="{!oppty.GL_Account_Variable_1__c}"/>
+                </apex:pageBlockSectionItem>
+                
+                <apex:selectList value="{!selectedledger}" multiselect="false" size="1" label="Ledger: ">
+                    <apex:selectOptions value="{!LedgerList}"/>
+                </apex:selectList><p/>
+            </apex:pageBlockSection>
+            <apex:outputPanel id="rerend">
+            <apex:pageBlockSection title="Sales Order Lines" collapsible="false" rendered="{!showError == false}" id="to">
+                <apex:pageBlockTable value="{!linesList}" var="line" id="tobe"> 
+                    <apex:column >
+                        <apex:facet name="header"> <apex:inputCheckbox id="masterchecked">
+                            <apex:actionSupport event="onclick" onsubmit="checkAll(this)" reRender="msg"/>
+                            </apex:inputCheckbox>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!line.selected}" styleClass="childcheckboxes" id="checkedone">
+                            <apex:actionSupport event="onclick" reRender="msg" onsubmit="MasterCheck()"/>
+                        </apex:inputCheckbox>
+                    </apex:column> 
+                    <apex:column headervalue="Product">
+                        <apex:outputText value="{!line.oli.Product2.Name}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Product Code">
+                        <apex:outputText value="{!line.oli.productcode}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Item Description">
+                        <apex:outputText value="{!line.oli.Item_Description__c}" rendered="{!!line.oli.Product2.Allow_Product_Description_Change__c}"></apex:outputText>
+                        <apex:inputField value="{!line.oli.Item_Description__c}" rendered="{!line.oli.Product2.Allow_Product_Description_Change__c}"></apex:inputField>
+                    </apex:column>
+                    <apex:column headervalue="Size">
+                        <apex:outputText value="{!line.oli.Size__c}" rendered="{!!line.oli.Product2.Allow_Product_Description_Change__c}"></apex:outputText>
+                        <apex:inputField value="{!line.oli.Size__c}" rendered="{!line.oli.Product2.Allow_Product_Description_Change__c}"></apex:inputField>
+                    </apex:column>
+                    <apex:column headervalue="Quantity">
+                        <apex:inputText id="quantityfield" value="{!line.oli.Quantity}" html-min="1">
+                            <!-- <apex:actionSupport event="onchange" reRender="msg"/> -->
+                            <apex:actionSupport event="onclick" reRender="msg"/>
+
+                            <apex:actionSupport event="onchange" reRender="msg,quantity_field,pbs,rerend" action="{!handleQuantity}">
+                                    <apex:param name="quan" value="{!line.oli.Product2Id}" assignTo="{!changedQuantityId}"/>
+                            </apex:actionSupport>
+
+                            <!-- <apex:actionSupport event="onchange" reRender="msg,quantity_field,pbs" action="{!handleQuantity}">
+                                    <apex:param name="quan" value="{!line.Id}" assignTo="{!newQuantity}"/>
+                                </apex:actionSupport> -->
+                        </apex:inputText>
+                        <script>
+                            var val = document.getElementById('{!$Component.quantityfield}').value.replace(/,/g,'');
+                            document.getElementById('{!$Component.quantityfield}').value = val;
+                        </script>
+                    </apex:column>
+                    <apex:column headervalue="Sales Price" value="{!line.oli.UnitPrice}" />
+                    <apex:column headervalue="Total Price">
+                        <apex:outputField value="{!line.oli.TotalPrice}"></apex:outputField>
+                    </apex:column>
+                   <apex:column breakBefore="true" colspan="8" rendered="{!NOT(ISNULL(validKeys)) && 
+                    CONTAINS(validKeys, line.oli.product2Id)}" 
+                    id="kitchildren">
+                        <!-- Children Rendering -->
+                        
+
+                        <div style='margin-left:40px;'>
+                        <apex:pageblocksection title="Kit Children ({!line.oli.Product2.Name})" columns="8" id="kitchildrensection">
+                            <apex:pageBlockTable value="{!KitMap[line.oli.product2Id]}" var="part" id="kitchildrentable"> 
+                                <apex:column headervalue="Product">
+                                    <apex:outputText value="{!part.Kit_Children__r.Name}"></apex:outputText>
+                                </apex:column>
+                                <apex:column headervalue="Product Code">
+                                    <apex:outputText value="{!part.Kit_Children__r.productcode}"></apex:outputText>
+                                </apex:column>
+                                <apex:column headervalue="Item Description">
+                                    <apex:outputText value="{!part.Kit_Children__r.Description}" rendered="{!!part.Kit_Children__r.Allow_Product_Description_Change__c}"></apex:outputText>
+                                    <apex:inputField value="{!part.Kit_Children__r.Description}" rendered="{!part.Kit_Children__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                                </apex:column>
+                                <apex:column headervalue="Size">
+                                    <apex:outputText value="{!part.Kit_Children__r.Size__c}" rendered="{!!part.Kit_Children__r.Allow_Product_Description_Change__c}"></apex:outputText>
+                                    <apex:inputField value="{!part.Kit_Children__r.Size__c}" rendered="{!part.Kit_Children__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                                </apex:column>
+                                <apex:column headervalue="Quantity">
+                                    <apex:outputText value="{!part.AcctSeed__Quantity__c}"></apex:outputText>
+                                </apex:column>
+
+
+                            </apex:pageBlockTable>
+                        </apex:pageblockSection>
+                        </div>
+
+                        <apex:pageBlockSection title="" collapsible="false" columns="2"></apex:pageBlockSection>
+                        <!-- Children End -->
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:outputPanel>
+            <apex:pageBlockButtons >                
+                <apex:commandButton value="Create" action="{!create}" rendered="{!showError == false}"/>
+                <apex:commandButton value="Back" action="{!back}" immediate="true"/>
+            </apex:pageBlockButtons>         
+        </apex:pageBlock>
+    </apex:form>
+    <script>
+    function checkAll(cb)
+    {
+        // get all the child checkboxes
+        var c = document.getElementsByClassName("childcheckboxes");
+        var clen = c.length;
+        
+        // check or uncheck all based on the master checkbox
+        for(var i = 0; i < clen; i++){
+            
+            c[i].checked = cb.checked; 
+            
+        }
+    }
+    
+    window.onload = function(){
+        MasterCheck();
+    }
+    
+    function MasterCheck(){
+        
+        // get all the child checkboxes
+        var c = document.getElementsByClassName("childcheckboxes");
+        var clen = c.length;
+        
+        var allchecked = 0;
+        // check or uncheck the master checkbox based on the child checkboxes
+        for(var i = 0; i < clen; i++){
+            if(c[i].checked){
+                allchecked++;
+            }
+        }
+        
+        // check the master checkbox, if all checked
+        var mchk = document.getElementById('{!$Component.form.t.to.tobe.masterchecked}');
+        
+        if(clen == allchecked){
+            mchk.checked = true;
+        }else{
+            mchk.checked = false;
+        }
+    }
+    
+    </script>
+    
+</apex:page>

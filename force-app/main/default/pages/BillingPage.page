@@ -1,0 +1,13 @@
+<apex:page standardcontroller="AcctSeed__Billing__c">
+    
+    <apex:pageMessage id="statusCheck" severity="warning" escape="false" detail="This Billing has assigned SO. Please note this Billing has not been Posted." 
+                      strength="2" 
+                      rendered="{!AcctSeed__Billing__c.AcctSeedERP__Sales_Order__c != null && AcctSeed__Billing__c.AcctSeed__Status__c != 'Posted'}"></apex:pageMessage>
+
+    <apex:pageMessage id="msg" severity="error" escape="false" detail="This Customer Account is on Hold. Contact financial department before you do any changes!!!" 
+                              strength="2" rendered="{!AcctSeed__Billing__c.AcctSeed__Customer__r.Status__c == 'Hold'}"></apex:pageMessage>
+    	<apex:detail relatedList="true" inlineEdit="true" oncomplete="location.reload();"/>
+    
+    
+    
+</apex:page>

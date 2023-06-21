@@ -1,0 +1,466 @@
+<apex:page controller="FinancialDashboardController">
+    <apex:includeLightning />
+    <style>
+        .listButtons li:not(.lastItem) {
+        display: none;
+        }
+        html, body, #collection_performance {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        }
+        .gauge-value{
+        font-size: 20px;
+        font-weight: bold;
+        }
+        .pointChart
+        {
+            cursor: pointer;
+        }
+    </style>
+    <apex:outputPanel >
+        <!--<apex:includeScript value="https://"/>
+        -->
+        <!--
+        <apex:stylesheet value="{!
+          URLFOR($Resource.DashboardsScriptAndStyle,'jquery.mobile-1.4.5/jquery.mobile-1.4.5.css')}"/>-->
+        
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'jquery.min.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'highcharts.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'accessibility.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'gauge.min.js')}"/>
+    </apex:outputPanel>
+    <apex:pageBlock title="USA Hospitality Bookkeeper Dashboard">
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Billing Aging<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This graph shows data from billings whose Status is Posted, Age is not Closed, Type is not Credit Memo and GL Account Variable 1 equal to {!UserGL}."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel rendered="{!SizeOfBillingAgingMap > 0}">
+                                <div id="Billing_Aging" class="emptySpace"></div>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!SizeOfBillingAgingMap < 1}">
+                                <div class="x-grid3-scroller emptySpace">
+                                    <div class="x-grid3-body">
+                                        <div class="x-grid-empty">No records to display.</div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>    
+            
+            // --------------- Billing Aging Data Makeup ---------------------- //
+            var BillingAgingData = new Array();
+            var BillingAgingCategories = ['0-Current', '1-30 Days', '31-60 Days', '61-90 Days', 'Over 90 Days'];
+            var mainArray = new Array();
+            var midArray;
+            
+            var gt = 0.00;
+            <apex:repeat value="{!BillingAgingKeys}" var="key">
+                <apex:repeat value="{!BillingAgingMap[key]}" var="b">
+                        mainArray.push(({!b} == 0)?null:{!b});
+                        gt += {!b};
+                </apex:repeat>
+            </apex:repeat>
+                
+                            
+            midArray = {name:'data', data:mainArray, custom:''};
+            
+            BillingAgingData.push(midArray);
+            
+            Highcharts.chart('Billing_Aging', {
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    className: 'pointChart',
+                    events: {
+                        load: function() {
+                            var grandtotal = gt.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });;
+                            var grandtotal_text = 'Grand Total: '+grandtotal;
+                            var TextLen = grandtotal_text.length;
+                            
+                            var difference = 6.75;
+                            var recWidth = TextLen * difference;
+                            
+                            var startOnX = this.plotWidth - TextLen * difference;
+                            
+                            
+                            
+                            this.renderer.text(grandtotal_text, startOnX + 5, 82)
+                                      .attr({
+                                        zIndex: 5
+                                      })
+                                      .css({
+                                        fontSize: '12px'
+                                      })
+                                      .add();
+                            
+                            this.renderer.rect(startOnX, 65, recWidth, 25, 2) // x,y,width,height,rx/ry
+                              .attr({
+                                'stroke-width': 1,
+                                stroke: 'black',
+                                fill: '#CEF74A',
+                                zIndex: 4
+                              })
+                              .add();
+                        },
+                        click: function(event) {
+                            
+                            var url = '/apex/ListOfRecordsPage?chart=Billing_Aging_FD&title=Billing Aging&click=chart';
+                            url += '&duration=&str=';
+                            url += '&dashboard=FD';
+                            window.open(url, '_blank');
+                            
+                        }
+                    }
+                },
+                title: {
+                    text: ''
+                },
+                subtitle: {
+                    text: ''
+                },
+                legend:{
+                    enabled: false
+                    
+                },
+                xAxis: {
+                    categories: BillingAgingCategories,
+                    min: 0,
+                    max:4
+                    
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Total ($)'
+                    }
+                },
+                tooltip: {
+                    shared: false,
+                    formatter: function () {
+                        return '<b style="color: '+this.series.color+'; font-weight:bold">' + 
+                            this.series.userOptions.custom + '</b><br>'+ this.x +'<br>Amount: '+ this.y.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        borderWidth: 0
+                    },
+                    series: {
+                        minPointLength: 5,
+                        cursor: 'pointer',
+                        events: {
+                            click: function(event) { 
+                                
+                                var url = '/apex/ListOfRecordsPage?chart=Billing_Aging_FD&title=Billing Aging&click=bar';
+                                url += '&duration=&month=&year=&str='+event.point.category;
+                                url += '&dashboard=FD';
+                                window.open(url, '_blank');
+                                
+                            }
+                        }
+                    }
+                },
+                series: BillingAgingData
+            });
+            </script>
+        </div>
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Collection Performance<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This graph shows data from billings whose Status is Posted, Age is not Closed, Type is not Credit Memo and GL Account Variable 1 equal to {!UserGL}."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                                <div style="text-align: center; Background-color: white;">
+                                    <canvas id="collection_performance" style="width: 500px;"></canvas>
+                                    <br/>
+                                    <div class="gauge-value">Average Due Days: {!AverageDueDays} Days</div> 
+                                </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>
+            var AverageDueDays = {!AverageDueDays};
+            var maxValue = (AverageDueDays > 100)?AverageDueDays:100;
+            var opts = {
+                angle: 0, // The span of the gauge arc
+                lineWidth: 0.1, // The line thickness
+                radiusScale: 1, // Relative radius
+                pointer: {
+                    length: 0.4, // // Relative to gauge radius
+                    strokeWidth: 0.035, // The thickness
+                    color: '#000000' // Fill color
+                },
+                limitMax: false,     // If false, max value increases automatically if value > maxValue
+                limitMin: false,     // If true, the min value of the gauge will be fixed
+                colorStart: '#6FADCF',   // Colors
+                colorStop: '#8FC0DA',    // just experiment with them
+                strokeColor: '#E0E0E0',  // to see which ones work best for you
+                generateGradient: true,
+                highDpiSupport: true,     // High resolution support
+                // renderTicks is Optional
+                renderTicks: {
+                    divisions: 5,
+                    divWidth: 1.1,
+                    divLength: 0.7,
+                    divColor: '#333333',
+                    subDivisions: 3,
+                    subLength: 0.5,
+                    subWidth: 1.2,
+                    subColor: '#666666'
+                },
+                staticLabels: {
+                    font: "20px sans-serif",  // Specifies font
+                    labels: [0, 30, 60, 90],  // Print labels at these values
+                    color: "#000000",  // Optional: Label text color
+                    fractionDigits: 0  // Optional: Numerical precision. 0=round off.
+                },
+                staticZones: [
+                    {strokeStyle: "#FFDD00", min: 0, max: 30}, // Red from 100 to 130
+                    {strokeStyle: "#30B32D", min: 30, max: 60}, // Yellow
+                    {strokeStyle: "#F03E3E", min: 60, max: 90}, // Green
+                    {strokeStyle: "#8b0000", min: 90, max: maxValue} // Yellow
+                ]
+            };
+
+            var target = document.getElementById('collection_performance'); // your canvas element
+            var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+            gauge.maxValue = maxValue; // set max gauge value
+            gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+            gauge.animationSpeed = 32; // set animation speed (32 is default value)
+            gauge.set(AverageDueDays); // set actual value  
+            
+            
+            </script>
+        </div>
+        <div class="individualPalette listViewportWrapper">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Top 10 Customers by Balance<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This graph shows data from billings whose Status is Posted and GL Account Variable 1 equal to {!UserGL}."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel rendered="{!TopBillingCustomersData != null && TopBillingCustomersData.size > 0}">
+                                <div style="text-align: center">
+                                    <div id="top_ten_customers"></div>
+                                </div>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!TopBillingCustomersData == null || TopBillingCustomersData.size < 1}">
+                                <div class="x-grid3-scroller" style="width: 1234px; height: 269px; background: white;">
+                                    <div class="x-grid3-body" style="width: 1213px;">
+                                        <div class="x-grid-empty">No records to display.</div>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>
+            
+            var TopBillingCustomersData = new Array();
+            var midArray;
+
+            <apex:repeat value="{!TopBillingCustomersData}" var="ct">
+                <apex:repeat value="{!ct.Data}" var="c">
+                
+                    var HasNoAmount = "{!c.Amount}" == "";
+
+                    midArray = {name:"{!c.Name}", y:HasNoAmount ? 0 : {!c.Amount}};
+            
+                    TopBillingCustomersData.push(midArray);
+                </apex:repeat>
+            </apex:repeat>
+
+            Highcharts.chart('top_ten_customers', {
+                credits: {
+                    enabled: false
+                },
+                title: {
+                    text: '',
+                    style: {
+                        fontWeight: 'bold',
+                        fontSize: '11px'
+                    }
+                },
+                legend: {
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    layout: 'horizontal',
+                    margin: 50
+                },
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: 0,
+                    plotShadow: false,
+                    events: {
+                        load: function() {
+                            var chart = this,
+                                points = chart.series[0].points,
+                                len = points.length,
+                                total = 0;
+                            
+                            for (var i = 0; i < len; i++) {
+                                total += points[i].y;
+                            }
+                            
+                            var txt = 'Total:<br/> ' + total.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                            
+                            var rend = chart.renderer,
+                                pie = chart.series[0],
+                                left = chart.plotLeft + pie.center[0],
+                                top = chart.plotTop + pie.center[1],
+                                text = rend.text(txt, left, top).attr({
+                                    'text-anchor': 'middle',
+                                    'zIndex': 10
+                                }).css({
+                                    fontSize: '10px',
+                                    fontWeight: 'bold',
+                                    color: 'black'
+                                }).add();
+                        }
+                    }
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                            this.key + '</b><br>Amount: '+ this.y.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        dataLabels: {
+                            format: '<b>{point.name}</b>:<br>{point.percentage:.1f} %',
+                            style: {
+                                color: 'black'
+                            }
+                        },
+                        startAngle: -90,
+                        endAngle: 360,
+                        center: ['50%', '50%'],
+                        size: '100%',
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Amount',
+                    innerSize: '50%',
+                    data: TopBillingCustomersData
+                }]
+            });
+            
+            </script>
+        </div>
+        <div id="New_Sales_Orders_Last_30_Days" />
+
+        <div id="Expected_Delivery_7_Days" />
+        <div id="Purchase_Orders_Received_Last_30_Days" />
+        <div id="Pending_Term_Clearance" />
+    </apex:pageBlock>
+    <script>
+    $Lightning.use("c:projectmanagementdashboard", function() {
+        
+        // New_Sales_Orders_Last_30_Days
+        
+        $Lightning.createComponent("lightning:listView",
+                                   { objectApiName: "AcctSeedERP__Sales_Order__c",
+                                    listName:"New_Sales_Orders_Last_30_Days",
+                                    rows:10,
+                                    showSearchBar:"true",
+                                    showActionBar:"false",
+                                    enableInlineEdit:"false",
+                                    showRowLevelActions:"false" },
+                                   "New_Sales_Orders_Last_30_Days",
+                                   function(cmp) {
+                                       // console.log('text');
+                                   }
+                                  );
+        
+        // Expected_Delivery_7_Days
+        
+        $Lightning.createComponent("lightning:listView",
+                                   { objectApiName: "AcctSeedERP__Purchase_Order__c",
+                                    listName:"Expected_Delivery_7_Days",
+                                    rows:10,
+                                    showSearchBar:"true",
+                                    showActionBar:"false",
+                                    enableInlineEdit:"false",
+                                    showRowLevelActions:"false" },
+                                   "Expected_Delivery_7_Days",
+                                   function(cmp) {
+                                       // console.log('text');
+                                   }
+                                  );
+        
+        // Purchase_Orders_Received_Last_30_Days
+        $Lightning.createComponent("lightning:listView",
+                                   { objectApiName: "AcctSeedERP__Purchase_Order__c",
+                                    listName:"Purchase_Orders_Received_Last_30_Days",
+                                    rows:10,
+                                    showSearchBar:"true",
+                                    showActionBar:"false",
+                                    enableInlineEdit:"false",
+                                    showRowLevelActions:"false" },
+                                   "Purchase_Orders_Received_Last_30_Days",
+                                   function(cmp) {
+                                       // console.log('text');
+                                   }
+                                  );
+        
+        //Pending_Term_Clearance
+        $Lightning.createComponent("lightning:listView",
+                                   { objectApiName: "AcctSeedERP__Purchase_Order__c",
+                                    listName:"Pending_Term_Clearance",
+                                    rows:10,
+                                    showSearchBar:"true",
+                                    showActionBar:"false",
+                                    enableInlineEdit:"false",
+                                    showRowLevelActions:"false" },
+                                   "Pending_Term_Clearance",
+                                   function(cmp) {
+                                       // console.log('text');
+                                   }
+                                  );
+    });
+    </script>
+</apex:page>

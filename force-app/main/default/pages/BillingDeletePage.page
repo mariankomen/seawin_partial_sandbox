@@ -1,0 +1,23 @@
+<apex:page standardcontroller="AcctSeed__Billing__c" extensions="BillingDeleteExtension" 
+           tabStyle="{!IF(strTabName<>null,strTabName,'Opportunity')}" action="{!DeleteProcess}">
+    <apex:sectionHeader title="{!title}" subtitle="Delete Billing"></apex:sectionHeader>
+    <apex:form >
+        <apex:pageMessages ></apex:pageMessages>
+        <apex:pageMessage strength="2"
+                          detail="Cannot delete this billing, because the related sales order is closed."
+                          severity="error" rendered="{!ErrorMsgClosedSO}">
+        </apex:pageMessage>
+        
+        <apex:pageMessage strength="2"
+                          detail="You must delete all billing cash receipts before you can delete this billing."
+                          severity="error" rendered="{!ErrorMsgBillingReceipt}">
+        </apex:pageMessage>
+        
+        <apex:pageMessage strength="2"
+                          detail="You cannot delete a posted record. Unpost the record and then delete."
+                          severity="error" rendered="{!ErrorMsgBillingPosted}">
+        </apex:pageMessage>
+        
+        <apex:commandButton value="Back" action="{!back}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+</apex:page>

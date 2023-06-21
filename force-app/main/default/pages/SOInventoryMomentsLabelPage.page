@@ -1,0 +1,164 @@
+<apex:page controller="SOInventoryMomentsLabelController" tabStyle="AcctSeedERP__Sales_Order_Inventory_Movement__c">
+    
+    <style>
+        #fieldtable table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        }
+        
+        #fieldtable td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        
+        #fieldtable tr:nth-child(even) {
+        background-color: #dddddd;
+        } 
+    </style>
+    
+    <apex:form id="OuterForm"> 
+        <apex:sectionHeader title="Sales Order Inventory Movement" />
+        <apex:pageBlock title="Create Label for Sales Order Inventory Movements"  id="OuterPB">
+            <apex:pageMessage severity="error" detail="No Product is seleted" strength="2"
+                              rendered="{!NotSelected}"></apex:pageMessage>
+            
+            <apex:pageMessage severity="error" detail="Inventory has no products." 
+                              strength="2" rendered="{!!AllowCreate}"></apex:pageMessage>
+            
+            <apex:pageMessage severity="info" detail="You must also select a Template for every line you choose to create label." 
+                              strength="2" rendered="{!AllowCreate}">
+            </apex:pageMessage>
+            
+            
+            <apex:pageBlockTable id="OuterPBT" value="{!WrapperList}" var="w" rendered="{!AllowCreate }">
+                <apex:column >
+                    <apex:facet name="header"> <apex:inputCheckbox id="masterchecked">
+                        <apex:actionSupport event="onclick" onsubmit="checkAll(this)" reRender="rerenderColumn"/>
+                        </apex:inputCheckbox>
+                    </apex:facet> 
+                    <apex:inputCheckbox value="{!w.selected}" styleClass="childcheckboxes" id="checkdone">
+                        <apex:actionSupport event="onclick" onsubmit="MasterCheck()" reRender="rerenderColumn"/>
+                    </apex:inputCheckbox>
+                </apex:column>
+                <apex:column headervalue="Product">
+                    <apex:outputField value="{!w.movement.AcctSeedERP__Product__c}"></apex:outputField>
+                </apex:column>              
+                <apex:column headervalue="Product Code">
+                    <apex:outputText value="{!w.movement.AcctSeedERP__Sales_Order_Line__r.ProductCode__c}"></apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Item Description">
+                    <apex:outputField value="{!w.movement.AcctSeedERP__Sales_Order_Line__r.AcctSeedERP_Description__c}"></apex:outputField>
+                </apex:column>
+                <apex:column headervalue="Size">
+                    <apex:outputField value="{!w.movement.AcctSeedERP__Sales_Order_Line__r.Size__c}"></apex:outputField>
+                </apex:column>
+               <apex:column headervalue="Quantity">
+                    <apex:outputField value="{!w.movement.AcctSeedERP__Sales_Order_Line__r.Quantity_Shipped_Formula__c}"></apex:outputField>
+                </apex:column>
+                 
+                <apex:column headervalue="Total">
+                    <apex:outputText value="{0,number, Currency}">
+                        <apex:param value="{!w.movement.AcctSeedERP__Sales_Order_Line__r.Total_Price__c}"/>
+                    </apex:outputText>
+                </apex:column>
+                
+                <apex:column headervalue="Template" styleClass="errorColumn" id="rerenderColumn">
+                    <apex:outputPanel styleClass="requiredInput"  layout="block">                 
+                        <apex:outputPanel styleClass="requiredBlock" layout="block" rendered="{!w.selected}"/>               
+                        <apex:selectList id="Template" label="Template" value="{!w.selectedTemplate}" onchange="CheckTheCheckBox(this)" size="1">
+                            <apex:selectOptions value="{!Templates}"/>
+                        </apex:selectList>
+                        <apex:outputText styleClass="errorMsg" value="Value is required." 
+                                         rendered="{!IF(w.selected && ShowError && w.selectedTemplate == null, true, false)}"
+                                         style="clear: both;display: inline-block;width: 100%;">
+                        </apex:outputText>
+                    </apex:outputPanel> 
+                </apex:column>
+                
+                
+                
+                
+            </apex:pageBlockTable>
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Create Labels" reRender="OuterForm"
+                                    rendered="{!AllowCreate}" action="{!saveLabel}"/>
+                <apex:commandButton value="Back" action="{!BackButton}"/>
+                
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="refreshPageAction" action="{!refreshPage}" reRender="OuterPBT,OuterPBT"/>
+    </apex:form>
+    <apex:includeScript value="{!URLFOR($Resource.AcctSeed__accounting_resources, '/javascript/jquery.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.barcode, 'JsBarcode.all.min.js')}"/>
+    <script>
+    
+    function CheckTheCheckBox(chkbox){
+        debugger;
+        if(chkbox.selectedIndex != 0){
+            var currentRow = $(chkbox).closest("tr");
+            currentRow.find(".childcheckboxes").prop("checked", true);
+        }else{
+            var currentRow = $(chkbox).closest("tr");
+            currentRow.find(".childcheckboxes").prop("checked", false);   
+        }
+    }
+    
+    function checkAll(cb)
+    {
+        // get all the child checkboxes
+        var c = document.getElementsByClassName("childcheckboxes");
+        var clen = c.length;
+        
+        var allchecked = 0;
+        
+        // check or uncheck all based on the master checkbox
+        for(var i = 0; i < clen; i++){
+            
+            c[i].checked = cb.checked;
+            
+            if(cb.checked){
+                allchecked++;
+            } 
+            
+        }
+        
+        if(allchecked == 0){
+            
+            refreshPageAction();
+        }
+    }
+    
+    function MasterCheck(){
+        
+        // get all the child checkboxes
+        var c = document.getElementsByClassName("childcheckboxes");
+        var clen = c.length;
+        
+        var allchecked = 0;
+        // check or uncheck the master checkbox based on the child checkboxes
+        for(var i = 0; i < clen; i++){
+            if(c[i].checked){
+                allchecked++;
+            }
+        }
+        
+        // check the master checkbox, if all checked
+        var mchk = document.getElementById('{!$Component.OuterForm.OuterPB.OuterPBT.masterchecked}');
+        
+        if(clen == allchecked){
+            mchk.checked = true;
+        }else{
+            mchk.checked = false;
+        }
+        
+        
+        if(allchecked == 0){
+            
+            refreshPageAction();
+        }
+    }
+    
+    </script>
+</apex:page>

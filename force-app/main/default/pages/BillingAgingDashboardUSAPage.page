@@ -1,0 +1,506 @@
+<apex:page controller="BillingAgingDashboardUSAController" rendered="{!SysAdminUSA}">
+
+    <style>
+        .listButtons li:not(.lastItem) {
+        display: none;
+        }
+        html, body, #collection_performance {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        }
+        .gauge-value{
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 20px;
+        }
+        img {
+        border-radius: 50%;
+        }
+        table.tableClass {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 60%;
+        cursor: pointer;
+        }
+        
+        .tableClass td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        
+        .tableClass tr:nth-child(even) {
+        background-color: #dddddd;
+        }
+        
+        .highcharts-background{
+        cursor: pointer;
+        }
+        
+        .blankspace{
+        width: 1234px; height: 400px; background: white;
+        }
+        .message .messageText {
+            font-size: 12px;
+        }
+        .title-dashboard{
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .listViewportWrapper .listViewport .topNav h2.title {
+            font-size: 1.5em;
+        }
+        .center {
+          text-align: center;
+        }
+        .monthClass {
+            background-color:#60cc63 !important;
+        }
+        .yearClass {
+            background-color:#91e0d9 !important;
+        }
+        .totalClass{
+        
+        background-color:#c1caca !important;
+        }
+        .emptySpace{
+            background-color: white;
+            width: 100%; 
+            height: 500px; 
+        }
+        .whiteSpace{
+            background-color: white;
+            width: 50%; 
+            height: 500px; 
+        }
+        .dtatable{
+            background-color: white;
+            width: 100%; 
+            height: 333px; 
+        }
+        .dashboard-title{
+            text-align: center;
+        }
+        .transparentBg{
+        
+            background-color: transparent !important;
+        
+        }
+        
+        .float-left-half{
+            width: 50%; 
+            float: left; 
+            position: relative; 
+            z-index: 10;
+        }
+        .float-right-half{
+            width: 50%; 
+            float: right; 
+            position: relative; 
+            z-index: 10;
+        }
+        .float-full{
+            width: 100%; 
+        }
+        .float-left-70{ 
+            width: 70%; 
+            float: left; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .float-right-70{    
+            width: 70%; 
+            float: right; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .float-left-30{ 
+            width: 30%; 
+            float: left; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .float-right-30{    
+            width: 30%; 
+            float: right; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .float-left-65{ 
+            width: 65%; 
+            float: left; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .float-right-35{    
+            width: 35%; 
+            float: right; 
+            position: relative; 
+            z-index: 10
+        
+        }
+        .width-33{    
+            width: 33%; 
+            position: relative; 
+            display: inline-block;
+            z-index: 10
+        
+        }
+        .spinnerBg{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: transparent;
+            opacity: 0.1;
+            z-index: 999999;
+        }
+        .spinner{
+            width: 100%;
+            height: 100%;
+            background-image: url("/img/loading32.gif");
+            background-size: 56px;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 9999999;
+            opacity: 1;
+        }
+        .spinner_adjusted{
+            width: 100%;
+            height: 30%;
+            background-image: url("/img/loading32.gif");
+            background-size: 56px;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 9999999;
+            opacity: 1;
+        }
+        
+    </style>
+
+
+    <apex:outputPanel >
+        
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'jquery.min.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'highcharts.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'accessibility.js')}"/>
+        <apex:includeScript value="{!
+         URLFOR($Resource.DashboardsScriptAndStyle,'gauge.min.js')}"/>
+    </apex:outputPanel>
+    
+    <apex:pageBlock >
+
+        <div class="dashboard-title">
+            <apex:outputText value="Billing Aging Dashboard USA" styleClass="title-dashboard"></apex:outputText>
+        </div>
+
+        <br/>
+        <br/>
+
+        <div class="individualPalette listViewportWrapper float-left-70">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Billing Aging<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This graph shows data from billings whose Status is Posted, Age is not Closed, Type is not Credit Memo and GL Account Variable 1 belongs to Seawin USA."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div id="Billing_Aging" class="emptySpace">
+                                    <div class="spinnerBg" />
+                                    <div class="spinner" />
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="individualPalette listViewportWrapper float-right-30">
+            <div class="listViewport Custom29Block">
+                <form>
+                    <div class="topNav primaryPalette">
+                        <div class="controls">
+                            <h2 class="title">Collection Performance<span style="position: relative;left: 10px; bottom: 5px;">
+                                <img src="/s.gif" alt="Help" class="helpIcon" title="This graph shows data from billings whose Status is Posted, Age is not Closed, Type is not Credit Memo and GL Account Variable 1 belongs to Seawin USA."/></span></h2>
+                            <div class="filterLinks"></div>
+                            <span class="divisionLabel"></span>
+                            <div class="topNavTab"></div>
+                            <div class="clearingBox"></div>
+                            <apex:outputPanel >
+                                <div class="center emptySpace">
+                                    <canvas id="Collection_Performance" onclick="ShowCollectionPerformance(); return false;"
+                                            style="width: 350px;cursor:pointer;">
+                                    </canvas>
+                                    <div id="spinnercontainer" class="spinnerBg" />
+                                    <div id="spinnerlogo" class="spinner_adjusted" />
+                                    <br/>
+                                    <div id="guagevalueId" class="gauge-value"></div> 
+                                </div>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <br/>
+        <br/>
+        <apex:outputText value="." style="color:#f7f7f7;"></apex:outputText>
+        <br/>
+        <br/>
+
+    </apex:pageBlock>
+    
+    <script>    
+            
+            // --------------- Billing Aging Data Makeup ---------------------- //
+            var BillingAgingData = new Array();
+            var BillingAgingCategories = ['0-Current', '1-30 Days', '31-60 Days', '61-90 Days', 'Over 90 Days'];
+            var mainArray = new Array();
+            var midArray;
+            
+            var gt = 0.00;
+            
+            Visualforce.remoting.timeout = 120000;
+
+    Visualforce.remoting.Manager.invokeAction(
+    '{!$RemoteAction.BillingAgingDashboardUSAController.Billing_Aging}',
+        function(result, event){
+
+            if (event.status) {
+
+                mainArray = new Array();
+
+                for (var key in result) {
+
+                    mainArray.push(result[key] == 0 ? null: result[key]);
+                    gt += result[key];
+                }
+                
+                midArray = {name:'data', data:mainArray, custom:''};
+            
+            	BillingAgingData.push(midArray);
+
+                RenderChartBillingAging(BillingAgingData, gt);
+            } else if (event.type === 'exception') {
+                
+                    console.log('Exception has occured in Billing Aging...');
+                    console.log(event.message);
+                    console.log(event.where);
+            } else {
+                    console.log('Error occured in Billing Aging...');
+                    console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+		function RenderChartBillingAging(BillingAgingData, gt){
+            Highcharts.chart('Billing_Aging', {
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    events: {
+                        load: function() {
+                            var grandtotal = gt.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });;
+                            var grandtotal_text = 'Grand Total: '+grandtotal;
+                            var TextLen = grandtotal_text.length;
+                            
+                            var difference = 6.75;
+                            var recWidth = TextLen * difference;
+                            
+                            var startOnX = this.plotWidth - TextLen * difference;
+                            
+                            
+                            
+                            this.renderer.text(grandtotal_text, startOnX + 5, 82)
+                                      .attr({
+                                        zIndex: 5
+                                      })
+                                      .css({
+                                        fontSize: '12px'
+                                      })
+                                      .add();
+                            
+                            this.renderer.rect(startOnX, 65, recWidth, 25, 2) // x,y,width,height,rx/ry
+                              .attr({
+                                'stroke-width': 1,
+                                stroke: 'black',
+                                fill: '#CEF74A',
+                                zIndex: 4
+                              })
+                              .add();
+                        },
+                        click: function(event) {
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Billing_Aging_SMD&title=Billing Aging&click=chart';
+                            url += '&duration=&str=';
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+                        }
+                    }
+                },
+                title: {
+                    text: ''
+                },
+                subtitle: {
+                    text: ''
+                },
+                legend:{
+                    enabled: false
+                    
+                },
+                xAxis: {
+                    categories: BillingAgingCategories,
+                    min: 0,
+                    max:4
+                    
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Total ($)'
+                    }
+                },
+                tooltip: {
+                    shared: false,
+                    formatter: function () {
+                        return '<b style="color: '+this.series.color+'; font-weight:bold">' + 
+                            this.series.userOptions.custom + '</b><br>'+ this.x +'<br>Amount: '+ this.y.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        borderWidth: 0
+                    },
+                    series: {
+                        minPointLength: 5,
+                        cursor: 'pointer',
+                        events: {
+                            click: function(event) { 
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Billing_Aging_SMD&title=Billing Aging&click=bar';
+                                url += '&duration=&month=&year=&str='+event.point.category;
+                                url += '&dashboard=SMD_USA';
+                                window.open(url, '_blank');
+                            }
+                        }
+                    }
+                },
+                series: BillingAgingData
+            });
+            }
+            </script>
+    <script>
+            
+            function ShowCollectionPerformance(){
+            
+                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Collection_Performance_SMD&title=Collection Performance&click=chart';
+                            url += '&duration=&str=';
+                            url += '&dashboard=SMD_USA';
+                            window.open(url, '_blank');
+            
+            }
+            
+            var AverageDueDays = 0.00;
+            
+            Visualforce.remoting.timeout = 120000;
+
+    Visualforce.remoting.Manager.invokeAction(
+    '{!$RemoteAction.BillingAgingDashboardUSAController.Billing_Collection_Performance}',
+        function(result, event){
+
+            if (event.status) {
+                document.getElementById("spinnercontainer").remove();
+                document.getElementById("spinnerlogo").remove();
+                document.getElementById("Collection_Performance").style.marginTop = '36%';
+				AverageDueDays = result > 120 ? 120 : result;
+                document.getElementById("guagevalueId").innerHTML = "Average Due Days: "+AverageDueDays+" Days";
+                AverageDueDays;
+                RenderChartBillingCollectionPerformance(AverageDueDays);
+            } else if (event.type === 'exception') {
+                
+                    console.log('Exception has occured in Billing Collection Performance...');
+                    console.log(event.message);
+                    console.log(event.where);
+            } else {
+                    console.log('Error occured in Billing Collection Performance...');
+                    console.log(event.message);
+            }
+        }, 
+        {escape: true}
+    );
+            
+       function RenderChartBillingCollectionPerformance(AverageDueDays){     
+            
+            var opts = {
+                angle: 0, // The span of the gauge arc
+                lineWidth: 0.1, // The line thickness
+                radiusScale: 1, // Relative radius
+                pointer: {
+                    length: 0.4, // // Relative to gauge radius
+                    strokeWidth: 0.035, // The thickness
+                    color: '#000000' // Fill color
+                },
+                limitMax: false,     // If false, max value increases automatically if value > maxValue
+                limitMin: false,     // If true, the min value of the gauge will be fixed
+                colorStart: '#6FADCF',   // Colors
+                colorStop: '#8FC0DA',    // just experiment with them
+                strokeColor: '#E0E0E0',  // to see which ones work best for you
+                generateGradient: true,
+                highDpiSupport: true,     // High resolution support
+                // renderTicks is Optional,
+                renderTicks: {
+                    divisions: 4,
+                    divWidth: 1.1,
+                    divLength: 0.7,
+                    divColor: '#333333',
+                    subDivisions: 3,
+                    subLength: 0.5,
+                    subWidth: 1.2,
+                    subColor: '#666666'
+                },
+                staticLabels: {
+                    font: "18px sans-serif",  // Specifies font
+                    labels: [0, 30, 60, 90],  // Print labels at these values
+                    color: "#000000",  // Optional: Label text color
+                    fractionDigits: 0  // Optional: Numerical precision. 0=round off.
+                },
+                staticZones: [
+                    {strokeStyle: "#FFDD00", min: 0, max: 30}, // yellow
+                    {strokeStyle: "#30B32D", min: 30, max: 60}, // green
+                    {strokeStyle: "#F03E3E", min: 60, max: 90}, // red
+                    {strokeStyle: "#8b0000", min: 90, max: 120} // dark red
+                ]
+            };
+            
+            var target = document.getElementById('Collection_Performance'); // your canvas element
+            var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+            gauge.maxValue = 120; // set max gauge value
+            gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+            gauge.animationSpeed = 32; // set animation speed (32 is default value)
+            gauge.set(AverageDueDays); // set actual value 
+            
+            }
+
+            </script>
+
+</apex:page>

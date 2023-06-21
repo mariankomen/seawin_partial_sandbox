@@ -1,0 +1,136 @@
+<apex:page standardcontroller="AcctSeedERP__Sales_Order_Line__c" recordSetVar="solines" extensions="MassEditSalesOrderScreenExtension">
+    <apex:includeScript value="https://cdn.jsdelivr.net/jquery/1.7/jquery.min.js"/>    
+    <apex:includeScript value="https://cdn.jsdelivr.net/jquery.colresizable/1.3/colResizable.min.js"/>
+    <style>
+        .empty{
+        display: none !important;
+        }
+        body .bPageBlock .detailList tr td, 
+        body .bPageBlock .detailList tr th, 
+        body table.list tr td, body table.list tr th, 
+        body .hoverDetail .bPageBlock .detailList tr td, 
+        body .hoverDetail .bPageBlock .detailList tr th {
+        border-color: transparent !important;
+        }
+
+    </style>
+    
+    <apex:sectionHeader title="Sales Order" subtitle="Edit all Sales Order Lines" rendered="{!showBack}"></apex:sectionHeader>
+    
+    <apex:form rendered="{!showBack}">
+        <apex:pageBlock >
+            <apex:pageMessages ></apex:pageMessages>
+        <apex:pageBlockButtons >                
+                <apex:commandButton value="Back" action="{!back}" immediate="true"/>
+            </apex:pageBlockButtons>     
+        </apex:pageBlock>
+    </apex:form>
+    
+    <apex:form rendered="{!editAllProductPermission}" id="form_columns">
+        <apex:sectionHeader title="Sales Order" subtitle="{!so.name}"/>
+        <apex:pageBlock title="Sales Order Lines Edit" >
+            <apex:pageMessages id="msg" escape="false"></apex:pageMessages>
+            <div style="text-align: right; margin-bottom: 5px" rendered="{!visible}">
+                <apex:outputPanel id="buttonsmsg">
+                    <apex:commandButton action="{!yes}" rendered="{!LasttoDelete}" value="Yes" style="background: #ffc; width: 35px;"/>
+                    <apex:commandButton action="{!no}" rendered="{!LasttoDelete}" value="No" reRender="msg, buttonsmsg" style="background: #acbf40; width: 35px;"/>
+                </apex:outputPanel>  
+            </div>
+            <apex:pageBlockSection title="Sales Order" collapsible="false" rendered="{!visible}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Customer: "/>
+                    <apex:outputText value="{!so.AcctSeedERP__Customer__r.name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Opportunity: "/>
+                    <apex:outputText value="{!so.AcctSeedERP__Opportunity__r.name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Status: "/>
+                    <apex:outputText value="{!so.AcctSeedERP__Status__c}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Total: "/>
+                    <apex:outputField value="{!so.AcctSeedERP__Total__c}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Sales Order Lines" id="pbs" collapsible="false" rendered="{!visible}">
+                <apex:pageBlockTable value="{!lines}" var="line"  id="main_table"> 
+                    <apex:column style="width: 75px;">
+                        <apex:commandLink value="Delete" action="{!TrashIt}">
+                            <apex:param name="solId" value="{!line.id}"/>
+                        </apex:commandLink>
+                    </apex:column> 
+                    <apex:column headervalue="Product">
+                        <apex:outputPanel >
+
+                        </apex:outputPanel>
+                        <apex:outputText value="ㅤㅤㅤ" rendered="{!line.Kit_Children__c}"></apex:outputText>
+                        <apex:outputText value="{!line.AcctSeedERP__Product__r.name}"></apex:outputText>
+                    </apex:column>               
+                    <apex:column headervalue="Product Code">
+                        <apex:outputText value="{!line.ProductCode__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Item Description" style="width:250px" >
+
+                        <apex:inputField value="{!line.Item_Description__c}" rendered="{!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                        <apex:outputText value="{!line.Item_Description__c}" rendered="{!!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:outputText>
+
+                    </apex:column>
+                    <apex:column headervalue="Size">
+                        <apex:inputField value="{!line.Size__c}" rendered="{!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:inputField>
+                        <apex:outputText value="{!line.Size__c}" rendered="{!!line.AcctSeedERP__Product__r.Allow_Product_Description_Change__c}"></apex:outputText>
+                    </apex:column>
+                    <apex:column headervalue="Quantity">
+                        <apex:outputPanel id="quantity_field">
+                            <apex:inputField value="{!line.AcctSeedERP__Quantity_Ordered__c}" html-min="1" rendered="{!!line.Kit_Children__c && !hasBillings}">
+                                <apex:actionSupport event="onchange" reRender="msg,quantity_field,pbs" action="{!handleQuantity}">
+                                    <apex:param name="quan" value="{!line.Id}" assignTo="{!newQuantity}"/>
+                                </apex:actionSupport>
+                                <apex:actionSupport event="onclick" reRender="msg"/>
+                            </apex:inputField>
+                            <!-- Quantity KIT  -->
+                            <apex:outputText value="{!line.AcctSeedERP__Quantity_Ordered__c}" rendered="{!line.Kit_Children__c || !!hasBillings}"></apex:outputText> 
+                        </apex:outputPanel>
+                        
+                        <script>
+                        var val = document.getElementById('{!$Component.quantityfield}').value.replace(/,/g,'');
+                        document.getElementById('{!$Component.quantityfield}').value = 
+                            (val == '' || val == null)?'':Math.round(val);
+                        </script>
+                    </apex:column>
+                    <apex:column headervalue="Quantity Allocated" value="{!line.Quantity_Allocated_Formula__c}" />
+                    <apex:column headervalue="Quantity Shipped" value="{!line.Quantity_Shipped_Formula__c}" />
+                    <apex:column headervalue="Sales Price"> 
+                        <apex:inputField id="salesprice" value="{!line.AcctSeedERP__Unit_Price__c}" html-min="1" required="true" rendered="{!!line.Kit_Children__c && !hasBillings}">
+                            <apex:actionSupport event="onchange" reRender="msg"/>
+                            <apex:actionSupport event="onclick" reRender="msg"/>
+                        </apex:inputField>
+
+                        <apex:outputText value="{!line.AcctSeedERP__Unit_Price__c}" rendered="{!line.Kit_Children__c || !!hasBillings}"></apex:outputText> 
+
+                        <script>
+                        // $("[id$=main_table]").colResizable({
+                        //     liveDrag: true,
+                        //     draggingClass: "dragging"
+                        // }); 
+
+                        var val = document.getElementById('{!$Component.salesprice}').value.replace(/,/g,'');
+                        document.getElementById('{!$Component.salesprice}').value = 
+                            (val == '' || val == null)?'':parseFloat(val).toFixed(2);
+                        </script>
+                    </apex:column>
+                    <apex:column headervalue="Total Price">
+
+                        <apex:outputField value="{!line.AcctSeedERP__Total__c}"></apex:outputField>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons >                
+                <apex:commandButton value="Save" action="{!UpdateLine}" rendered="{!visible}"/>
+                <apex:commandButton value="Back" action="{!back}" immediate="true"/>
+            </apex:pageBlockButtons>         
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

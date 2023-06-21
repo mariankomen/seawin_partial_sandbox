@@ -1,0 +1,19 @@
+<apex:page standardcontroller="AcctSeed__Billing__c" extensions="BillingTaxesMessageController">
+
+    <apex:outputPanel rendered="{!!billingHasTaxes}">
+        <div class="main">
+            DO NOT FOGET TO ADD SALES TAXES
+        </div>
+    </apex:outputPanel>
+
+    
+
+    <style type="text/css">
+        .main{
+            width: 100%;
+            color: red;
+            font-size: 28px;
+            text-align: center;
+        }
+    </style>
+</apex:page>

@@ -1,0 +1,23 @@
+<apex:page controller="DeleteLineItemExtension" action="{!dmlOperation}" 
+           tabStyle="{!IF(strTabName<>null,strTabName,'Opportunity')}">
+    
+    <apex:sectionHeader title="Opportunity" subtitle="Delete Opportunity Products" rendered="{!LineType == 'oli'}"/>
+    <apex:sectionHeader title="Sales Order" subtitle="Delete Sales Line Item" rendered="{!LineType == 'sli'}"/>
+    
+    <apex:form >
+        
+         <apex:pageblock rendered="{!hasBillingLinesOLI}">
+            <br/>
+            <apex:pageMessage detail="Opportunity Product cannot be deleted, as billing has already been done."
+                              strength="2"  severity="error"></apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width:60px"></apex:commandButton>
+        </apex:pageblock>
+         
+        <apex:pageblock rendered="{!hasBillingLinesSOL}">
+            <br/>
+            <apex:pageMessage detail="The Sales Order Line Item cannot be deleted, as billing has already been done."
+                              strength="2"  severity="error"></apex:pageMessage>
+            <apex:commandButton value="Back" action="{!back}" style="width:60px"></apex:commandButton>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

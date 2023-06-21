@@ -1,0 +1,5 @@
+<apex:page standardController="Opportunity" extensions="createSalesOrderFromOpportunityExt" Tabstyle="Opportunity" title="Opportunity" action="{!insertRecords}">
+    <apex:pageBlock >
+        <apex:pageMessages ></apex:pageMessages>
+    </apex:pageBlock>
+</apex:page>

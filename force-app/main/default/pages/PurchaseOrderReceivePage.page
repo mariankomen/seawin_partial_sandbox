@@ -1,0 +1,12 @@
+<apex:page controller="PurchaseOrderAutoReceiveController" action="{!PageAction}">
+    <apex:form >
+        <apex:sectionHeader title="Purchase Order" subtitle="{!po.name}"/>
+    	<apex:pageBlock >
+            <apex:pageBlockButtons location="both">
+            <apex:commandButton action="{!back}" value="Back"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessage severity="error" escape="false" detail="Products do not exist on the purchase order." 
+                                  strength="2"></apex:pageMessage>
+    	</apex:pageBlock>
+    </apex:form>
+</apex:page>

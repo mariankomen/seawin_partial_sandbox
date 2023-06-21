@@ -1,0 +1,186 @@
+<apex:page id="AddProductCustomVFPage" controller="AddProductCustomExtension" action="{!IfIdEmpty}" sidebar="true" tabStyle="{!IF(strTabName<>null,strTabName,'Account')}">
+    <style>
+        body .pbBody table.list tr.headerRow td, body .pbBody table.list tr.headerRow th {
+        padding: 5px 22px 4px 22px;
+        }
+    </style>
+    <apex:sectionHeader title="Opportunity" subtitle="Add Opportunity Products" rendered="{!section == 'oli'}"/>
+    <apex:sectionHeader title="Quote" subtitle="Add Quote Line Items" rendered="{!section == 'qli'}"/>
+    <apex:sectionHeader title="Opportunity" subtitle="Add Optional Products Opportunity" rendered="{!section == 'opo'}"/>
+    <apex:sectionHeader title="Quote" subtitle="Add Optional Products Quote" rendered="{!section == 'opq'}"/>
+    <apex:sectionHeader title="Sales Order" subtitle="Add Sales Order Lines" rendered="{!section == 'sli'}"/>
+    <apex:sectionHeader title="Purchase Order" subtitle="Add Purchase Order Lines" rendered="{!section == 'pli'}"/>
+    <apex:pageMessages id="msgs"/>
+    <apex:form rendered="{!showBack}">        
+            <apex:commandButton value="Back" action="{!CancelButton}" style="width: 80px; margin-left:18px;" />
+    </apex:form>
+    <!--<apex:form rendered="{!addProductPermission}">-->
+    <apex:form rendered="{!addProductPermission}">
+        <apex:pageBlock title="{!IF(preventAddLines, '', 'Search')}">
+            <apex:pageBlockButtons location="both" rendered="{!preventAddLines}">
+                    <apex:commandButton value="Cancel" action="{!CancelButton}" 
+                                        style="width: 100px;"/>
+            </apex:pageBlockButtons>
+            {!query123}
+            <apex:pageBlockSection columns="1" rendered="{!!preventAddLines}">
+                    <apex:panelGroup >
+                        <apex:outputLabel for="searchText" style="margin-right: 20px; font-weight: bold;">Search by Text:</apex:outputLabel>
+                        <apex:selectList multiselect="false" size="1" value="{!selectedSearchVal}" 
+                                         style="width: 10%; margin-right: 10px">
+                            <apex:selectOptions value="{!SearchValList}"></apex:selectOptions>
+                        </apex:selectList>
+                        <apex:inputText id="searchText" value="{!searchText}" style="width: 17%; margin-right: 20px"/>
+                        
+                    
+                    <apex:commandButton id="searchClick" value="Search" action="{!searchByName}" 
+                                        rerender="productsRealListing, pageButtonsList, productsListing" 
+                                        status="SearchStatus" style="width: 100px;" 
+                                        oncomplete="({!prods.size} == 1 ) ? IfSingleProduct() : ''"/>                    
+                    <apex:commandButton id="cancelClick" value="Cancel/Back" action="{!CancelButton}" 
+                                        style="width: 100px;"/>
+                        </apex:panelGroup>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" rendered="{!!preventAddLines}">
+            <apex:actionStatus id="SearchStatus" layout="block"  >
+                        <apex:facet name="start" > 
+                            <apex:outputPanel >
+                                <apex:outputLabel value="Fetching products . . ." style="color:#015ba7;"/>
+                            </apex:outputPanel>
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!preventAddLines}">
+                <apex:pageMessage severity="error" escape="false" detail="Products cannot be added to a closed Sales order." 
+                              strength="2"></apex:pageMessage>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!DropShipMessage}">
+            <apex:pageMessage severity="info" detail="The Purchase Order type is Drop Shipment. Only Non-Inventory Products are available which also include taxes etc." 
+                              strength="2" rendered="{!DropShipMessage}"></apex:pageMessage>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:panelGrid columns="2" rendered="{!!preventAddLines}">
+            <apex:pageBlock title="Filters">
+                <apex:pageblockSection columns="1">
+                    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Category" style="font-weight: bold"></apex:outputLabel> 
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                <apex:pageblockSection columns="1">
+                    <apex:pageblockSectionItem >
+                        <apex:actionFunction action="{!searchByCategories}" name="onChangeCatMethod" rerender="productsRealListing, pageButtonsList, productsListing" oncomplete="({!prods.size} == 1 ) ? IfSingleProduct() : ''"/>
+                        <apex:inputField value="{!prod2.Category__c}" html-size="10" style="width: 200px;" onchange="onChangeCatMethod();" />
+                    </apex:pageblockSectionItem>
+                </apex:pageblockSection>
+                <apex:pageblockSection columns="1">
+                    <apex:pageblockSectionItem >
+                        <apex:outputLabel value="Sub Category" style="font-weight: bold" ></apex:outputLabel> 
+                    </apex:pageblockSectionItem>  
+                </apex:pageblockSection>
+                <apex:pageblockSection columns="1">
+                    <apex:pageblockSectionItem >                        
+                        <apex:inputField value="{!prod2.Sub_Category__c}" html-size="10" style="width: 200px;margin-left:12px" onchange="onChangeCatMethod();" />
+                    </apex:pageblockSectionItem>   
+                </apex:pageblockSection>
+                <!--<apex:pageblockSection columns="1">
+<apex:pageblockSectionItem >
+<apex:commandButton value="Submit" action="{!searchByCategories}" 
+rerender="productsRealListing, pageButtonsList, productsListing" status="SearchStatus"/>     
+</apex:pageblockSectionItem>
+</apex:pageblockSection>-->
+            </apex:pageBlock>
+            <apex:pageBlock id="productsListing" title="Select Products">
+                <apex:pageBlockButtons >
+                    <apex:outputPanel id="pageButtonsList">
+                        <apex:commandButton value="Select" action="{!gotoCustomMultiLine}" style="width: 100px;"/>
+                        <apex:commandButton action="{!Beginning}" title="Beginning" value="<<" disabled="{!disablePrevious}" reRender="productsRealListing, pageButtonsList, productsListing" style="width: 37px;"/>
+                        <apex:commandButton action="{!Previous}" title="Previous" value="<" disabled="{!disablePrevious}" reRender="productsRealListing, pageButtonsList, productsListing" style="width: 37px;"/>        
+                        <apex:commandButton action="{!Next}" title="Next" value=">" disabled="{!disableNext}" reRender="productsRealListing, pageButtonsList, productsListing" style="width: 37px;"/>
+                        <apex:commandButton action="{!End}" title="End" value=">>" disabled="{!disableNext}" reRender="productsRealListing, pageButtonsList, productsListing" style="width: 37px;"/> 
+                    </apex:outputPanel>
+                </apex:pageBlockButtons>
+                <apex:pageBlockTable id="productsRealListing" value="{!prods}" var="p" title="General">
+                    <apex:facet name="header">{!headerText}</apex:facet>
+                    <apex:column >
+                        <apex:inputCheckbox value="{!p.isSelected}"/>
+                    </apex:column>
+                    <apex:repeat value="{!$ObjectType.Product2.FieldSets.ProductFieldSet1}" var="field">
+                        <apex:column headerValue="{!field.Label}" rendered="{!IF(field.Label =='Product Name' ,true,false)}">
+                            <apex:facet name="header">                                
+                                <apex:commandLink action="{!checkSort}" value="{!field.Label}" reRender="productsRealListing, pageButtonsList, productsListing">
+                                    <apex:param name="sort" value="{!field.Label}"/>
+                                    <apex:outputPanel rendered="{!ProductNameSortUp}">&#9650;</apex:outputPanel>
+                                    <apex:outputPanel rendered="{!ProductNameSortDown}">&#9660;</apex:outputPanel>
+                                </apex:commandLink>
+                            </apex:facet>
+                            <apex:outputlink value="/{!p.pbe.Product2['Id']}" >{!p.pbe.Product2[field]}</apex:outputlink>
+                        </apex:column>
+
+                        <apex:column headerValue="{!field.Label}" rendered="{!IF(field.Label =='Product Image' ,true,false)}">
+                            <apex:image value="{!p.pbe.Product2['ProductImageURL__c']}" 
+                            width="90" height="-1" alt="Product image" rendered="{!p.pbe.Product2['ProductImageURL__c'] != null}"/>
+                        </apex:column>
+
+                        <apex:column headerValue="{!field.Label}" rendered="{!IF(field.Label =='Product Code' ,true,false)}">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!checkSort}" value="{!field.Label}" reRender="productsRealListing, pageButtonsList, productsListing">
+                                    <apex:param name="sort" value="{!field.Label}"/>
+                                    <apex:outputPanel rendered="{!ProductCodeSortUp}">&#9650;</apex:outputPanel>
+                                    <apex:outputPanel rendered="{!ProductCodeSortDown}">&#9660;</apex:outputPanel>
+                                </apex:commandLink>
+                            </apex:facet>
+                            {!p.pbe.Product2[field]}
+                        </apex:column>
+                        <apex:column headerValue="{!field.Label}" rendered="{!IF(field.Label =='Size' ,true,false)}">
+                            <apex:facet name="header">
+                                <apex:commandLink action="{!checkSort}" value="{!field.Label}" reRender="productsRealListing, pageButtonsList, productsListing">
+                                    <apex:param name="sort" value="{!field.Label}"/>
+                                    <apex:outputPanel rendered="{!SizeSortUp}">&#9650;</apex:outputPanel>
+                                    <apex:outputPanel rendered="{!SizeSortDown}">&#9660;</apex:outputPanel>
+                                </apex:commandLink>
+                            </apex:facet>
+                            {!p.pbe.Product2[field]}
+                        </apex:column>
+                        
+                        <!-- Needed to add the new field in the rendered part in the column below -->
+                        <apex:column headerValue="{!field.Label}" value="{!p.pbe.Product2[field]}" rendered="{!IF(field.Label !='Product Name',IF(field.Label !='Product Code',IF(field.Label !='Size' ,IF(field.Label !='Unit Cost' ,IF(field.Label !='Product Image' ,true,false),false),false),false),false)}"/>
+                    </apex:repeat>
+                    <apex:column headerValue="Available Quantity">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.pbe.Product2.id][1]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Allocated Quantity">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.pbe.Product2.id][2]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Actual Quantity">
+                        <apex:outputText value="{0, number, integer}">
+                            <apex:param value="{!ibMap[p.pbe.Product2.id][0]}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:facet name="footer">{!headerText}</apex:facet>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+        </apex:panelGrid>
+        <apex:actionFunction name="IfSingleProduct" action="{!IfSingleProduct}"/>
+    </apex:form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script>
+        $(document).ready( function(){
+            $(document).keypress(function(e) {
+                if(e.which == 13) {
+                    $("[id$='searchClick']").click();
+                    e.preventDefault();
+                }
+            });
+        
+            $(document).keyup(function(e) {
+                if(e.which == 27) {
+                    $("[id$='cancelClick']").click();
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</apex:page>

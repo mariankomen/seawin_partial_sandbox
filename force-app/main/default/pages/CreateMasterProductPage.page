@@ -1,0 +1,136 @@
+<apex:page standardcontroller="Master_Product__c"  tabStyle="Master_Product__c" title="New Master Product">
+
+
+    <apex:sectionHeader title="Master Product Edit" subtitle="New Master Product" id="first_section" />
+    <apex:pageBlock id="thePageBlock" title="Master Product Edit">
+        <apex:form >
+            <apex:includeLightning />
+            <apex:outputPanel styleClass="custPopup" layout="block">
+                <div id="LightningComponentid" />
+            </apex:outputPanel>	   
+        </apex:form>
+    </apex:pageBlock>
+
+
+    
+
+    <script>
+        $Lightning.use("c:MasterProductApp", function() {
+            $Lightning.createComponent("c:masterProductCreateComponent",{},
+            "LightningComponentid",
+            function(cmp) {
+                console.log('LWC Componenet added in VF page');
+            });
+        });
+</script>
+
+<!-- <style>
+    .selectlist{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    select{
+        width: 200px;
+    }
+</style>
+    <apex:sectionHeader title="Master Product Edit" subtitle="New Master Product" id='first_section' />
+
+    <apex:pageBlock id="thePageBlock" title="Master Product Edit">
+        <apex:pageBlockButtons >
+            <!-- <apex:commandButton status="saveStatus" value="Save" action="{!createBilling}" rendered="{!!allIsPaid}"/>
+            <apex:commandButton value="Back" action="/{!creditOrderId}" immediate="true" /> 
+        </apex:pageBlockButtons>
+        <apex:form>
+            <apex:pageBlockSection title="Information" columns="2">
+                    <apex:inputField value="{!master_product.name}" />
+                    <apex:inputField value="{!master_product.isActive__c}"/>
+                    <apex:inputField value="{!master_product.Product_Code__c}"  />
+                    <apex:inputField value="{!master_product.Family__c}"/>
+                    <apex:inputField value="{!master_product.Series__c}"/>
+                    <apex:inputField value="{!master_product.Sub_Category__c}"/>
+                    <apex:inputField value="{!master_product.ProductImageURL__c}"/>
+                    <apex:inputField value="{!master_product.Complementary_Category__c}"/>
+                    <apex:inputField value="{!master_product.StockKeepingUnit__c}"/>
+                    <apex:inputField value="{!master_product.Quantity_Unit_Of_Measure__c}"/>
+                    <apex:inputField value="{!master_product.UPC_Code__c}"/>
+                    <apex:inputField value="{!master_product.Unit_Cost__c}"/>
+                    <apex:inputField value="{!master_product.Technical_Specs_Id__c}"/>
+                    <apex:inputField value="{!master_product.Last_Cost__c}"/>
+                    <apex:inputField value="{!master_product.Allow_Custom_Image__c}"/>
+                    <apex:inputField value="{!master_product.Allow_Product_Description_Change__c}"/>
+                    
+                    
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="Description Information" columns="2">
+                <apex:inputField value="{!master_product.Product_Description__c}"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Inventory Information" columns="2">
+                <apex:inputField value="{!master_product.Inventory_Product__c}"/>
+                <apex:inputField value="{!master_product.Minimum_Order_Quantity__c}"/>
+                <apex:inputField value="{!master_product.Serialized__c}"/>
+                <apex:inputField value="{!master_product.Lead_Time__c}"/>
+                <apex:inputField value="{!master_product.Inventory_Type__c}"/>
+                <apex:inputField value="{!master_product.Safety_Stock_Quantity__c}"/>
+                <apex:inputField value="{!master_product.Default_Vendor__c}"/>
+                <apex:inputField value="{!master_product.Available_Quantity__c}"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Taxes/Comissions/Other Flags" columns="2">
+                <apex:inputField value="{!master_product.Tax_Type__c}"/>
+                <apex:inputField value="{!master_product.Commissionable_Product__c}"/>
+                <apex:inputField value="{!master_product.Tax_Code__c}"/>
+                <apex:inputField value="{!master_product.Shippable_Product__c}"/>
+                <apex:inputField value="{!master_product.Tax_Rate__c}"/>
+                <apex:inputField value="{!master_product.Credit_Card_Fee__c}"/>
+                <apex:inputField value="{!master_product.Tax_Group__c}"/>
+                <apex:inputField value="{!master_product.Sales_Order_Exclude__c}"/>
+                <apex:inputField value="{!master_product.Inventory_Asset__c}"/>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Accounting" columns="2">
+                <apex:inputField value="{!master_product.Inventory_GL_Account__c}"/>
+                <apex:inputField value="{!master_product.GL_Account_Variable_1__c}"/>
+                <apex:inputField value="{!master_product.Expense_GL_Account__c}" />
+                <apex:inputField value="{!master_product.Revenue_GL_Account__c}"/>
+            </apex:pageBlockSection>
+
+        </apex:form>
+        <apex:outputPanel id='testtest'/>
+        <apex:outputPanel>
+            <apex:form>
+                <apex:variable var="index" value="{!0}" /> 
+                <apex:commandButton action="{!test}" value='test'/>
+                <apex:repeat var="field" value="{!iterable_set}">
+                
+                    <div class="selectlist">
+                        <apex:selectList value="{!opt}" multiselect="true" size='24'>
+                        <!-- <apex:selectList value="{!selected_options[index]}" multiselect="true" size='24' onchange="countryChanged(this)"> -->
+                            <!-- <apex:selectOptions value="{!iterable_options_map[field]}"/> -->
+                            <!-- <apex:actionSupport event="onchange" action="{!handlePicklistChange}" rerender="testtest">
+                                <apex:param name="iterable_key" value="{!field}"/>
+                            </apex:actionSupport> 
+                        </apex:selectList>
+
+                        <apex:commandButton action="{!handlePicklistChange}" value="click me" rerender="testtest">
+                            <apex:param name="iterable_key" value="{!field}"/>
+                        </apex:commandButton>
+                        <apex:selectList value="{!iterable_options_map[field]}" multiselect="true" size='24'>
+                            <!-- <apex:selectOptions value="{!iterable_options_map[field]}"/> --
+                        </apex:selectList>
+                    </div>
+                    <apex:outputPanel rendered="{!index != selected_options.size-1}">
+                        <apex:variable var="index" value="{!index+1}"/>
+                    </apex:outputPanel>
+                </apex:repeat>
+
+        </apex:form>
+        </apex:outputPanel>
+    </apex:pageBlock>
+
+    <script>
+        
+    </script>
+-->
+</apex:page>

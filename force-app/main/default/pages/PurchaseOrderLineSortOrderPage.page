@@ -1,0 +1,96 @@
+<apex:page standardcontroller="AcctSeedERP__Purchase_Order_Line__c" recordSetVar="polines" extensions="PurchaseOrderLineSortOrder">
+    <style>
+        .hiddenColumn{
+        display: none !important;   
+        }
+    </style>
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Purchase Order" subtitle="{!po.name}"/>
+        <apex:pageBlock id="thePageBlock" title="Purchase Order Lines">
+            <apex:pageMessages id="msg"></apex:pageMessages>
+            <apex:outputPanel rendered="{!visible}">
+                <div style="height: 30px; width: 100%; margin-bottom: 5px; margin-top: 17px;">
+                    <apex:outputText value="Note: Drag and Drop the respective products to sort."></apex:outputText>
+                </div>
+            </apex:outputPanel>
+            <apex:pageBlockTable value="{!lines}" var="line" id="theTable" rendered="{!visible}">
+                <apex:column value="{!line.id}" headerClass="hiddenColumn" styleClass="hiddenColumn"/>
+                <apex:column value="{!line.acctseederp__product__r.name}"/>
+                <apex:column value="{!line.Product_Code__c}"/>
+                <apex:column value="{!line.Description__c}"/>
+                <apex:column value="{!line.Size__c}"/>
+                <apex:column value="{!line.Quantity_Formula__c}"/>
+                <apex:column value="{!line.Quantity_Received_Formula__c}"/>
+                <apex:column value="{!line.Quantity_Unreceived_Formula__c}"/>
+                <apex:column value="{!line.Purchase_Price__c}"/>
+                <apex:column value="{!line.Total_Price__c}"/>
+            </apex:pageBlockTable>
+            <apex:pageBlockButtons rendered="{!visible}">
+                <apex:commandButton value="Save" onclick="savesort(); return false;" reRender="" />
+                <apex:commandButton value="Back" action="{!Back}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:actionFunction name="sendsort" action="{!createsort}" reRender="" oncomplete="" rendered="{!visible}">
+            <apex:param name="sortstring" value=""/>
+        </apex:actionFunction>
+        <apex:inputText id="sortedarray" style="display: none" rendered="{!visible}"></apex:inputText>       
+    </apex:form>
+    <apex:outputPanel rendered="{!visible}">
+        <apex:stylesheet value="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.2/jquery-ui.js"/>
+        <script>
+        //var $g = jQuery.noConflict();
+        var sortEventHandler = function(event, ui){
+            console.log("New sort order!");
+            var listElements = $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").children();
+            console.log(listElements);
+            
+            
+            var finalSort = [];
+            var position = 1;
+            listElements.each(function(i, row){
+                var initSort = {};
+                $(this).find('td').each (function(i,row) {
+                    if(i == 0){
+                        console.log(position);
+                        console.log($(this).text());
+                        
+                        // listValues[$(this).text()] = position;
+                        initSort['id'] = $(this).text();
+                        initSort['sorts'] = position;
+                    }
+                });
+                finalSort.push(initSort);
+                position++;
+            });
+            
+            var jsonStr = JSON.stringify(finalSort);
+            
+            document.getElementById("{!$Component.theForm.sortedarray}").value = jsonStr;
+            console.log(jsonStr);
+        };
+        $(document).ready(function(){
+            $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").sortable({
+                stop: sortEventHandler,
+                cursor: 'move'
+            });
+            $(document.getElementById("{!$Component.theForm.thePageBlock.theTable}")).find("tbody").on("sortchange", sortEventHandler);
+        });
+        
+        function savesort(){
+            
+            var val = document.getElementById("{!$Component.theForm.sortedarray}").value;
+            
+            if(val == ''){
+                alert('No Sorting has been done yet.');
+            }
+            
+            //action function call
+            sendsort(val);
+            
+        }
+        </script>
+        
+    </apex:outputPanel>
+</apex:page>

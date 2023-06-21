@@ -1,0 +1,538 @@
+<apex:page controller="InventoryInformationController" showChat="false" showHeader="true" tabStyle="Product2" showQuickActionVfHeader="false"
+    sidebar="false" title="Inventory Information for {!Product.Name}" id="inventoryinformation">
+    <apex:form id="mainForm">
+
+        <apex:sectionHeader title="Product" subtitle="Inventory Information" />
+        <style>
+            .bPageBlock .pbTitle {
+                vertical-align: middle;
+                color: #222;
+                font-size: 91%;
+                width: 50%;
+            }
+
+            #helpimg {
+                float: right;
+                width: 15px;
+                height: 15px;
+            }
+            .test1{
+                background-color: red;
+            }
+        </style>
+        <script>
+            function colorPageBlock(pageblock, color) {
+            if (pageblock != null) pageblock.firstChild.style.cssText = “background-color: ” + color + “;”;
+            
+            }
+        </script>
+        <apex:variable value="This shows the available quantity for the product on each related Inventory Quantity Available." var="AvailableQuantityHelpText"></apex:variable>
+        <apex:variable value="This is calculated as available quantity of Kit Children divided by Quantity of Kit Children on Kit for the Kit Children which has least quantity on Kit." var="KitAvailableQuantityHelpText"></apex:variable>
+        <apex:variable value="This shows the quantity that needs to be allocated for the product on each related open Sales Order(s)." var="QuantityHelpText"></apex:variable>
+        <apex:variable value="This shows the quantity allocated but not shipped for the product on each related open Sales Order(s)." var="AllocatedHelpText"></apex:variable>
+        <apex:variable value="This shows the quantity unreceived for the product on each related Purchase Order(s)." var="UnreceivedHelpText"></apex:variable>
+        <apex:variable value="This shows the full quantity (allocated but not shipped + available) for the product on each related Inventory Quantity Available."
+            var="InstockQuantityHelpText"></apex:variable>
+        <apex:variable value="For a kit this is equal to the available quantity." var="KitInStockQuantityHelpText"></apex:variable>
+
+
+
+        <apex:pageBlock title="Inventory Information for {!product.Name} ({!product.ProductCode})" id="pageblock">
+            <apex:pageBlockButtons location="both" id="buttonsblock">
+                <apex:commandButton value="Close" onclick="GoBack(); return false;" reRender="pageblock"></apex:commandButton>
+            </apex:pageBlockButtons>
+
+
+            <apex:pageBlockSection collapsible="true" columns="1" id="AvailableQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>Available Quantity
+                        <span style="color:black;">({!notKitInventoryInfo.totalAvailableQuantity})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <!-- AVAILABLE QUANTITY FOR NOT KIT -->
+                <apex:pageBlockTable value="{!notKitInventoryInfo.availableQuantity}" var="aq" columnsWidth="15%,35%,35%,30%" rendered="{!notKitInventoryInfo.availableQuantity.size > 0}"
+                    id="AvailableQuantityTable">
+                    <apex:column headerValue="Inventory Quantity Available">
+                        <apex:outputLink value="{!'/' + aq.inventoryQuantityAvailableId}">{!aq.inventoryQuantityAvailableName}</apex:outputLink>
+                    </apex:column>
+
+                    <apex:column headervalue="Warehouse">
+                        <apex:outputLink value="{!'/' + aq.warehouseId}">{!aq.warehouseName}</apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Location">
+                        <apex:outputLink value="{!'/' + aq.locationId}">{!aq.locationName}</apex:outputLink>
+                    </apex:column>
+
+
+                    <apex:column headervalue="Available Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!aq.quantity}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+
+
+
+            <!-- SALES ORDER QUANTITY FOR NOT KIT -->
+
+            <apex:pageBlockSection collapsible="true" columns="1" id="SOQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>On Sales Order
+                        <span style="color:black;">({!notKitInventoryInfo.totalSalesOrderQuantity})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <!-- AVAILABLE QUANTITY FOR NOT KIT -->
+
+                <apex:pageBlockTable value="{!notKitInventoryInfo.salesOrderQuantity}" var="aq" rendered="{!notKitInventoryInfo.salesOrderQuantity.size > 0}"
+                    id="SOQuantityTable">
+                
+                    <apex:column headerValue="Sales Order">
+                        <apex:outputLink value="{!'/' + aq.salesOrderId}">{!aq.salesOrderName}</apex:outputLink>
+                    </apex:column>
+
+                    <apex:column headervalue="Quantity (needs to be allocated)">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!aq.salesOrderQuantity}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+
+            <!-- SALES ORDER ALLOCATED QUANTITY FOR NOT KIT -->
+
+            <apex:pageBlockSection collapsible="true" columns="1" id="SOAllocatedQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>Allocated
+                        <span style="color:black;">({!notKitInventoryInfo.totalAllocatedQuantity})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:pageBlockTable value="{!notKitInventoryInfo.salesOrderAllocatedQuantity}" var="aq" rendered="{!notKitInventoryInfo.salesOrderAllocatedQuantity.size > 0}"
+                    id="SOQuantityTable">
+                
+                    <apex:column headerValue="Sales Order">
+                        <apex:outputLink value="{!'/' + aq.salesOrderId}">{!aq.salesOrderName}</apex:outputLink>
+                    </apex:column>
+
+                    <apex:column headervalue="Quantity (needs to be allocated)">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!aq.salesOrderAllocatedQuantity}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+
+            <!-- PURCHASE ORDER QUANTITY FOR NOT KIT -->
+
+            <apex:pageBlockSection collapsible="true" columns="1" id="POAllocatedQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>On Purchase Order
+                        <span style="color:black;">({!notKitInventoryInfo.totalPurchaseOrderQuantity})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:pageBlockTable value="{!notKitInventoryInfo.purchaseOrderQuantity}" var="aq" rendered="{!notKitInventoryInfo.purchaseOrderQuantity.size > 0}"
+                    id="SOQuantityTable">
+                
+                    <apex:column headerValue="Purchase Order">
+                        <apex:outputLink value="{!'/' + aq.purchaseOrderId}">{!aq.purchaseOrderName}</apex:outputLink>
+                    </apex:column>
+
+                    <apex:column headervalue="Unreceived Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!aq.purchaseOrderUnallocatedQuantity}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            
+
+            <!-- AVAILABLE QUANTITY FOR KITS -->
+            <apex:pageBlockSection collapsible="true" columns="1" id="AvailableQuantityKitSection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>Available Quantity
+                        <span style="color:black;">({!kitInventoryInfo.maxAvailableQuantity})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:repeat value="{!kitInventoryInfo.kitChildrensInventory}" var="children">
+                    <apex:pageBlockSection collapsible="true">
+
+                        <apex:facet name="header">
+                            <style>
+                                .mySectionStyle {
+                                    background-color: #F0F0F0; /* Змініть цей колір на бажаний */
+                                }
+                            </style>
+                            <h3>{!children.product.Name}
+                                <span style="color:black;">({!children.totalAvailableQuantity})</span>
+                            </h3>
+                            <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                        </apex:facet>
+
+                        <apex:pageBlockTable value="{!children.availableQuantity}" var="aq" columnsWidth="15%,35%,35%,30%">
+                            <apex:column headerValue="Inventory Quantity Available">
+                                <apex:outputLink value="{!'/' + aq.inventoryQuantityAvailableId}">{!aq.inventoryQuantityAvailableName}</apex:outputLink>
+                            </apex:column>
+
+                            <apex:column headervalue="Warehouse">
+                                <apex:outputLink value="{!'/' + aq.warehouseId}">{!aq.warehouseName}</apex:outputLink>
+                            </apex:column>
+                            <apex:column headervalue="Location">
+                                <apex:outputLink value="{!'/' + aq.locationId}">{!aq.locationName}</apex:outputLink>
+                            </apex:column>
+
+
+                            <apex:column headervalue="Available Quantity">
+                                <apex:outputText value="{0,number, integer}">
+                                    <apex:param value="{!aq.quantity}" />
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:repeat>
+            </apex:pageBlockSection>
+            
+            <!-- SALES ORDER QUANTITY FOR KITS -->
+            <apex:pageBlockSection collapsible="true" columns="1" id="SOQuantityKitSection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>On Sales Order
+                        <span style="color:black;"></span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:repeat value="{!kitInventoryInfo.kitChildrensInventory}" var="children">
+                    <apex:pageBlockSection collapsible="true">
+                        
+                        <apex:facet name="header">
+                            <h3>{!children.product.Name}
+                                <span style="color:black;">({!children.totalSalesOrderQuantity})</span>
+                            </h3>
+                            <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                        </apex:facet>
+
+                        <apex:pageBlockTable value="{!children.salesOrderQuantity}" var="aq" columnsWidth="50%,50%">
+                            <apex:column headerValue="Sales Order">
+                                <apex:outputLink value="{!'/' + aq.salesOrderId}">{!aq.salesOrderName}</apex:outputLink>
+                            </apex:column>
+
+                            <apex:column headervalue="Quantity (needs to be allocated)">
+                                <apex:outputText value="{0,number, integer}">
+                                    <apex:param value="{!aq.salesOrderQuantity}" />
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:repeat>
+            </apex:pageBlockSection>
+
+            
+            <!-- SALES ORDER ALLOCATED QUANTITY FOR KITS -->
+            <apex:pageBlockSection collapsible="true" columns="1" id="SOAllocatedQuantityKitSection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>Allocated
+                        <span style="color:black;"></span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:repeat value="{!kitInventoryInfo.kitChildrensInventory}" var="children">
+                    <apex:pageBlockSection collapsible="true">
+                        
+                        <apex:facet name="header">
+                            <h3>{!children.product.Name}
+                                <span style="color:black;">({!children.totalAllocatedQuantity})</span>
+                            </h3>
+                            <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                        </apex:facet>
+
+                        <apex:pageBlockTable value="{!children.salesOrderAllocatedQuantity}" var="aq" columnsWidth="50%,50%">
+                            <apex:column headerValue="Sales Order">
+                                <apex:outputLink value="{!'/' + aq.salesOrderId}">{!aq.salesOrderName}</apex:outputLink>
+                            </apex:column>
+
+                            <apex:column headervalue="Quantity (needs to be allocated)">
+                                <apex:outputText value="{0,number, integer}">
+                                    <apex:param value="{!aq.salesOrderAllocatedQuantity}" />
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:repeat>
+            </apex:pageBlockSection>
+
+            <!-- PURCHASE ORDER ALLOCATED QUANTITY FOR KITS -->
+            <apex:pageBlockSection collapsible="true" columns="1" id="POAllocatedQuantityKitSection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>On Purchase Order
+                        <span style="color:black;"></span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+
+                <apex:repeat value="{!kitInventoryInfo.kitChildrensInventory}" var="children">
+                    <apex:pageBlockSection collapsible="true">
+                        
+                        <apex:facet name="header">
+                            <h3>{!children.product.Name}
+                                <span style="color:black;">({!children.totalPurchaseOrderQuantity})</span>
+                            </h3>
+                            <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                        </apex:facet>
+
+                        <apex:pageBlockTable value="{!children.purchaseOrderQuantity}" var="aq" columnsWidth="50%,50%">
+                            <apex:column headerValue="Purchase Order">
+                                <apex:outputLink value="{!'/' + aq.purchaseOrderId}">{!aq.purchaseOrderName}</apex:outputLink>
+                            </apex:column>
+
+                            <apex:column headervalue="Unreceived Quantity">
+                                <apex:outputText value="{0,number, integer}">
+                                    <apex:param value="{!aq.purchaseOrderUnallocatedQuantity}" />
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:repeat>
+            </apex:pageBlockSection>
+
+
+        </apex:pageBlock>
+
+        
+    </apex:form>
+
+
+
+        <!-- <apex:PageBlock title="Inventory Information for {!Product.Name} ({!Product.ProductCode})" id="pageblock">
+            <apex:pageBlockButtons location="both" id="buttonsblock">
+                <apex:commandButton value="Close" onclick="GoBack(); return false;" reRender="pageblock"></apex:commandButton>
+            </apex:pageBlockButtons>
+            <!-- Available Quantity 
+            <apex:pageBlockSection collapsible="true" columns="1" id="AvailableQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>Available Quantity
+                        <span style="color:black;">({!AvailableQuantityTotal})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AvailableQuantityHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!AvailableQuantity}" var="aq" columnsWidth="15%,35%,35%,30%" rendered="{!AvailableQuantity.size > 0}"
+                    id="AvailableQuantityTable">
+                    <apex:column headerValue="Inventory Quantity Available">
+                        <apex:outputLink value="{!'/' + aq.Id}">{!aq.Name}</apex:outputLink>
+                    </apex:column>
+                    <apex:column value="{!aq.AcctSeedERP__Warehouse__c}"></apex:column>
+                    <apex:column value="{!aq.AcctSeedERP__Location__c}"></apex:column>
+                    <!--<apex:column value="{!aq.AcctSeedERP__Available_Quantity__c}"></apex:column>-
+                    <apex:column headervalue="Available Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!aq.Available_Quantity__c}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity avaiable for this product in any Warehouse(s)." 
+                rendered="{!AvailableQuantity.size == 0}">
+                </apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection collapsible="true" columns="1" id="KitAvailableQuantitySection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>Available Quantity
+                        <span style="color:black;">({!AvailableList[0]})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!KitAvailableQuantityHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!AvailableList}" var="al" 
+                columnsWidth="15%,35%,35%,30%" rendered="{!AvailableList.size > 0}"
+                    id="KitAvailableQuantityTable">
+                    <apex:column headerValue="Kit">
+                        <apex:outputLink value="{!'/' + Product.Id}">{!Product.Name}</apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Available Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!AvailableList[0]}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity avaiable for this kit." 
+                rendered="{!AvailableList.size == 0}">
+                </apex:outputText>
+            </apex:pageBlockSection>
+            <!-- Sales Order Quantity --
+            <apex:pageBlockSection collapsible="true" columns="1" id="QuantityOnSalesOrdersSection">
+                <apex:facet name="header">
+                    <h3>On Sales Order
+                        <span style="color:black;">({!QuantityOnSalesOrdersTotal})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!QuantityHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!QuantityOnSalesOrders}" var="sol" columnsWidth="35%,35%,30%" rendered="{!QuantityOnSalesOrders.size > 0}"
+                    id="QuantityOnSalesOrdersTable">
+                    <!--<apex:column headerValue="Product">
+                                <apex:outputLink value="{!'/' + sol['product']}">{!Product.Name}</apex:outputLink>
+                            </apex:column>--
+                    <apex:column headerValue="Sales Order">
+                        <apex:outputLink value="{!'/' + sol['salesorder']}">{!QuantityOnSalesOrdersMap[sol['salesorder']]}
+                        </apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Quantity (needs to be allocated)">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!sol['quantity']}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity that needs to be allocated on any open Sales Order(s)." 
+                rendered="{!QuantityOnSalesOrders.size == 0 && !isKit}"></apex:outputText>
+                <apex:outputText value="There is no quantity for this kit on any open Sales Order(s)." 
+                rendered="{!QuantityOnSalesOrders.size == 0 && isKit}"></apex:outputText>
+            </apex:pageBlockSection>
+
+            <!-- Sales Order Allocated Quantity --
+            <apex:pageBlockSection collapsible="true" columns="1" id="AllocatedQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>Allocated
+                        <span style="color:black;">({!AllocatedOnSalesOrdersTotal})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!AllocatedHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!AllocatedOnSalesOrders}" var="sol" columnsWidth="35%,35%,30%" rendered="{!AllocatedOnSalesOrders.size > 0}"
+                    id="AllocatedQuantityTable">
+                    <!--<apex:column headerValue="Product">
+                                <apex:outputLink value="{!'/' + sol['product']}">{!Product.Name}</apex:outputLink>
+                            </apex:column>--
+                    <apex:column headerValue="Sales Order">
+                        <apex:outputLink value="{!'/' + sol['salesorder']}">{!AllocatedOnSalesOrdersMap[sol['salesorder']]}
+                        </apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Allocated Quantity (without shipped)">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!QuantityAllocatedOnSalesOrderMap[sol['salesorder']]}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity that is allocated but not shipped for this product on any open Sales Order(s)." rendered="{!AllocatedOnSalesOrders.size == 0}"></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection collapsible="true" columns="1" id="KitAllocatedQuantitySection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>Allocated
+                        <span style="color:black;">({!AllocatedList[0]})</span>
+                    </h3>
+                    <!--<img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!KitAllocatedHelpText}" /z
+                </apex:facet>
+                <apex:outputText value="There is no allocated quantity on any Sales Order(s) because kits cannot be allocated." 
+                ></apex:outputText>
+            </apex:pageBlockSection>
+
+            <!-- Purchase Order Unreceived Quantity --
+            <apex:pageBlockSection collapsible="true" columns="1" id="UnreceivedQuantitySection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>On Purchase Order
+                        <span style="color:black;">({!UnreceivedOnPurchaseOrdersTotal})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!UnreceivedHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!UnreceivedOnPurchaseOrders}" var="pol" columnsWidth="35%,35%,30%" rendered="{!UnreceivedOnPurchaseOrders.size > 0}"
+                    id="UnreceivedQuantityTable">
+                    <!--<apex:column headerValue="Product">
+                                <apex:outputLink value="{!'/' + pol['product']}">{!Product.Name}</apex:outputLink>
+                            </apex:column>--
+                    <apex:column headerValue="Purchase Order">
+                        <apex:outputLink value="{!'/' + pol['purchaseorder']}">{!UnreceivedOnPurchaseOrdersMap[pol['purchaseorder']]}
+                        </apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Unreceived Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!pol['unreceived']}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity unreceived for this product on any Purchase Order(s)." 
+                rendered="{!UnreceivedOnPurchaseOrders.size == 0 && !isKit}"></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection collapsible="true" columns="1" id="KitUnreceivedQuantitySection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>On Purchase Order
+                        <span style="color:black;">(0)</span>
+                    </h3>
+                </apex:facet>
+                <apex:outputText value="There is no unreceived quantity on any Purchase Order(s) because kits cannot be received/unreceived." 
+                ></apex:outputText>
+            </apex:pageBlockSection>
+
+            <!-- In Stock Quantity -->
+            
+            <!-- <apex:pageBlockSection collapsible="true" columns="1" id="InStockSection" rendered="{!!isKit}">
+                <apex:facet name="header">
+                    <h3>In Stock
+                        <span style="color:black;">({!AvailableQuantityTotal + AllocatedOnSalesOrdersTotal})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!InstockQuantityHelpText}" />
+                </apex:facet>
+               <apex:pageBlockTable value="{!InstockQuantity}" var="iq" 
+                columnsWidth="15%,35%,35%,30%" rendered="{!InstockQuantity.size > 0}"
+                    id="InStockTable">
+                    <apex:column headerValue="Inventory Quantity Available">
+                        <apex:outputLink value="{!'/' + iq.Id}">{!iq.Name}</apex:outputLink>
+                    </apex:column>
+                    <apex:column value="{!iq.AcctSeedERP__Warehouse__c}"></apex:column>
+                    <apex:column value="{!iq.AcctSeedERP__Location__c}"></apex:column>
+                    <apex:column headervalue="In-Stock Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!AllocatedQuantityMap[iq.Id]}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity in-stock for this product in any Warehouse(s)." 
+                rendered="{!InstockQuantity.size == 0}"></apex:outputText>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection collapsible="true" columns="1" id="KitInStockSection" rendered="{!isKit}">
+                <apex:facet name="header">
+                    <h3>In Stock
+                        <span style="color:black;">({!InStockList[0]})</span>
+                    </h3>
+                    <img id="helpimg" src="/s.gif" alt="Help" class="helpIcon" title="{!KitInStockQuantityHelpText}" />
+                </apex:facet>
+                <apex:pageBlockTable value="{!InStockList}" var="al" 
+                columnsWidth="15%,35%,35%,30%" rendered="{!InStockList.size > 0}"
+                    id="KitInStockTable">
+                    <apex:column headerValue="Kit">
+                        <apex:outputLink value="{!'/' + Product.Id}">{!Product.Name}</apex:outputLink>
+                    </apex:column>
+                    <apex:column headervalue="Quantity">
+                        <apex:outputText value="{0,number, integer}">
+                            <apex:param value="{!InStockList[0]}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:outputText value="There is no quantity in-stock for this kit." 
+                rendered="{!InStockList.size == 0}">
+                </apex:outputText>
+            </apex:pageBlockSection> --
+        </apex:PageBlock> 
+    </apex:form> -->
+
+    <apex:includeScript value="{!$Resource.jQueryV331}" />
+
+    <script>
+        // For single section
+        // twistSection(document.getElementById('{!$Component.pageblock.aqsection}').getElementsByTagName('img')[0])
+        // For multiple section
+        $("div[id*='inventoryinformation:mainForm:pageblock'] .pbSubheader img[id*='img_inventoryinformation:mainForm:pageblock']").each(
+            function (index) {
+                twistSection($(this)[0]);
+            });
+
+        function GoBack() {
+
+            window.close();
+        }
+
+    </script>
+</apex:page>

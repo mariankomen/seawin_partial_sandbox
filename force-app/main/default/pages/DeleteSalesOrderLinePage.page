@@ -1,0 +1,12 @@
+<apex:page standardcontroller="AcctSeedERP__Sales_Order_Line__c" extensions="DeleteSalesOrderLineExtensions" action="{!doDelete}">
+    
+     <apex:sectionHeader title="Sales Order" subtitle="Delete Sales Order Line"></apex:sectionHeader>
+    <apex:form >
+        
+        <apex:pageBlock >
+            
+            <apex:pageMessages ></apex:pageMessages>
+            <apex:commandButton action="{!GetBackToSalesOrder}" value="Back" style="width: 80px; margin-left:18px;" />
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

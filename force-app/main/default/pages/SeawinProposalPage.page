@@ -1,0 +1,187 @@
+<apex:page controller="SeawinProposalPageController" showHeader="false" sidebar="false" 
+           standardStylesheets="false" renderAs="pdf" 
+           applyHtmlTag="false" applyBodyTag="false" > 
+    <html
+          xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <title></title>
+            <style>
+                @page {
+                size: letter;
+                margin-top: 1cm;
+                margin-right: 0cm;
+                margin-left: 0cm;
+                }
+                * {margin:0; padding:0; text-indent:0; 
+                }
+                .s1 { color: black; 
+                font-family: sans-serif; 
+                font-style: normal; 
+                font-weight: normal; 
+                text-decoration: none; 
+                font-size: 10pt; 
+                }
+                
+                h1 { 
+                color: #3A90CE;
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 25px;
+                transform: scale(1, 2);
+                }
+                h2 { 
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 25px;
+                transform: scale(1, 1.9);
+                padding: 5px;
+                }
+                p { 
+                color: #3A90CE; 
+                font-family: sans-serif; 
+                font-style: normal; 
+                text-decoration: none; 
+                }
+                .opportunity-title{
+                font-weight: bold;
+                font-family: sans-serif;
+                font-style: normal;
+                text-decoration: none;
+                font-size: 20px;
+                transform: scale(1, 1.5);
+                padding: 5px 0px 20px 0px;
+                }
+                
+                .center {
+                margin-top: 20px;
+                margin-bottom: 5px;
+                margin-left: auto;
+                margin-right: auto;
+                width: 80%;
+                border: 2px solid #3A90CE;
+                padding: 0px 10px 0px 10px;
+                text-align: center;
+                position: relative;
+                bottom: 20px;
+                }
+                
+                .center-front-page {
+                margin: 10px auto;
+                width: 85%;
+                }
+                .category-label{
+                color: #3A90CE;
+                font-family: sans-serif;
+                font-style: normal;
+                font-weight: bold;
+                word-break: break-word;
+                font-size: 20px;
+                transform: scale(1, 1.5);
+                position: relative;
+                left: 3px;
+                bottom: 5px;
+                
+                
+                }
+                
+                /*------------Header----------------------*/
+                .header-box {
+                    background-color: #3A90CE;
+                	width: 100%;
+                    height: 30px;
+                }
+                .header-box p {
+                	color: white;
+                    text-align: center;
+                    font-family: sans-serif;
+                    font-style: normal;
+                    font-weight: bold;
+                    font-size: 15px;
+                    padding-top: 4px;
+                }
+                
+            </style>
+        </head>
+        <body>
+            <p style="text-indent: 0pt;text-align: left;">
+                <br/>
+            </p>
+            <div class="s1" style="text-indent: 0pt;line-height: 10pt;text-align: center;">
+                <span>
+                    <img width="107" height="56" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_001.png')}"/>
+                </span>
+                <span>
+                    <img width="149" height="56" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_002.png')}"/>
+                </span>
+                <span>
+                    <img width="46" height="55" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_003.png')}"/>
+                </span>
+            </div>
+            <h1 style="text-indent: 0pt;text-align: center; margin-top: 15px;">HOSPITALITY</h1>
+            <div style="text-align: center; width: 100%;
+                        background-color: #3A90CE; margin-top: 30px; height: 60px;display: table;vertical-align: middle;">
+                <h2 style="text-indent: 0pt; color: white; margin-top: 11px;">PROPOSAL</h2>
+            </div>
+            <p style="text-indent: 0pt;text-align: left;">
+                <br/>
+            </p>
+            <div class="center" style="height: 60px;">
+                <p class="opportunity-title" style="text-indent: 0pt;line-height: 15pt;">{!OpptyName}</p>
+            </div>
+            <p style="text-indent: 0pt;text-align: center; text-align: -webkit-center; ">
+                <span>
+                    <img width="819" height="489" alt="image" src="{!URLFOR($Resource.ProposalImages,'Image_005.jpg')}"/>
+                </span>
+            </p>
+            <div class="center-front-page" style="margin-top: 15px;">
+                <div style="float: left; width: 55%;">
+                    <apex:variable value="{!1}" var="i"/>
+                        <apex:repeat value="{!Categories}" var="c">
+                            <div style="{!IF(mod(i,2)==0, 'float: right; width: 47%; margin:0px 0px 5px 0px; position: relative;','float: left; width: 50%;margin:0px 0px 5px 0px;position: relative;')}">
+                                <img style="position: relative;" width="26" height="26" alt="image" 
+                                     src="{!URLFOR($Resource.ProposalImages,'Image_006.png')}"/>
+                                <apex:image style="position: absolute; left: 3px; top: 2px;" 
+                                            value="{!URLFOR($Resource.ProposalImages,'mark.png')}"
+                                            rendered="{!CheckboxMap[c]}"
+                                            width="20" height="20" />
+                                <span class="category-label">{!c}</span>
+                                <apex:variable value="{!i+1}" var="i"/>
+                            </div>
+                        </apex:repeat>
+                </div>
+                <div style="float: right; width: 40%;">
+                    <div class="box" style="float: right; width: 285px; height: 140px; border: 2px solid #3A90CE;">
+                        <div class="header-box">
+                            <p>
+                                SALES REP CONTACT INFORMATION
+                            </p>
+                        </div>
+                        <div style="padding-left: 5px; padding-top: 5px; font-family: sans-serif;font-style: normal;">
+                            <apex:outputText value="{!Name}<br/>" style="color:#3A90CE; font-weight: bold;"
+                                             escape="false"></apex:outputText>
+                            <apex:outputText rendered="{!Email != null}" style="color:#3A90CE;font-weight: bold;"
+                                             value="{!Email}<br/>" escape="false"></apex:outputText>
+
+                            <apex:outputText rendered="{!Phone != null}" style="color:#3A90CE;font-weight: bold;"
+                                             value="O: "></apex:outputText>
+                            <apex:outputText rendered="{!Phone != null}" style="color:#3A90CE; font-weight: bold;"
+                                             value="{!Phone}<br/>" escape="false"></apex:outputText>
+                            
+                            <apex:outputText rendered="{!MobilePhone != null}" style="color:#3A90CE; font-weight: bold;"
+                                             value="C: "></apex:outputText>
+                            <apex:outputText rendered="{!MobilePhone != null}" style="color:#3A90CE; font-weight: bold;"
+                                             value="{!MobilePhone}<br/>" escape="false"></apex:outputText>
+
+                            <apex:outputText rendered="{!Website != null}" style="color:#3A90CE;font-weight: bold;"
+                                             value="{!Website}"></apex:outputText>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

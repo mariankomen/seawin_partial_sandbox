@@ -1,0 +1,1 @@
+<apex:page controller="TransferRelatedListProducts" action="{!dmlOperation}"></apex:page>
