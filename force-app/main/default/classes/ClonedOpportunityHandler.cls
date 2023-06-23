@@ -1,7 +1,7 @@
 public class ClonedOpportunityHandler {
     
     public static void OnCloneCopyOP(LIST<Opportunity> TriggerData){
-        
+        system.debug(11);
         if(TriggerData[0].isClone()){
             
             Id SourceId = TriggerData[0].getCloneSourceId();

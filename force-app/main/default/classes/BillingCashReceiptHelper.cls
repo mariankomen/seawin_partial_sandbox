@@ -1,7 +1,14 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 06-22-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
     
-    public static final String POST_BILLING_BEFORE_APPLYING_PAYMENT_ERROR = '<h1>Post billing before applying payment.</h1>';
-    public static final String DELETE_WITH_EXISTING_PAYABLE_ERROR = '<h1>Can not delete cash receipt, as it have related commission(s) with payables.</h1>';
+    private static final String POST_BILLING_BEFORE_APPLYING_PAYMENT_ERROR = '<h1>Post billing before applying payment.</h1>';
+    private static final String DELETE_WITH_EXISTING_PAYABLE_ERROR = '<h1>Can not delete cash receipt, as it have related commission(s) with payables.</h1>';
 
     public static void beforeInsert(List<sObject> newList) {
         beforeInsert_checkIfBillingPosted(newList);
@@ -31,13 +38,13 @@ public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
     public static void afterDelete(List<sObject> oldList , Map<Id, sObject> oldMap) {
         List<AcctSeed__Billing_Cash_Receipt__c> billingCashReceiptOldList = (List<AcctSeed__Billing_Cash_Receipt__c>)oldList;
 
-        Set<Id> cash_rec_ids = new Set<Id>();
+        Set<Id> cashReceiptIds = new Set<Id>();
 
         for(AcctSeed__Billing_Cash_Receipt__c cr: billingCashReceiptOldList){
-            cash_rec_ids.add(cr.AcctSeed__Cash_Receipt__c);
+            cashReceiptIds.add(cr.AcctSeed__Cash_Receipt__c);
         }
 
-        AfterBillingCashReceiptExtension.unpostRelatedCashReceipts(cash_rec_ids);
+        AfterBillingCashReceiptExtension.unpostRelatedCashReceipts(cashReceiptIds);
     }
      
     public static void afterUnDelete(List<sObject> newList, Map<Id, sObject> newMap) {
@@ -81,28 +88,26 @@ public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
                                                         WHERE ID IN: billingIds];
         List<EmailNotificationWrapper> emailNotificationWrapperList = new List<EmailNotificationWrapper>();
         for(AcctSeed__Billing__c billing: billingList){
-            system.debug('billing.AcctSeed__Balance__c: '+billing.AcctSeed__Balance__c);
-            system.debug(billing.AcctSeed__Balance__c == 0);
-            if(billing.AcctSeed__Balance__c == 0){
-                if(billing.AcctSeedERP__Sales_Order__c != null){
-                    emailNotificationWrapperList.add(new EmailNotificationWrapper(
-                        billing.Name,
-                        billing.AcctSeedERP__Sales_Order__r.Name,
-                        billing.AcctSeedERP__Sales_Order__r.Owner.Name,
-                        billing.AcctSeedERP__Sales_Order__r.Owner.Email,
-                        billing.Id,
-                        'Sales Order'
-                    ));
-                }else if(billing.AcctSeed__Opportunity__c != null){
-                    emailNotificationWrapperList.add(new EmailNotificationWrapper(
-                        billing.Name,
-                        billing.AcctSeed__Opportunity__r.Name,
-                        billing.AcctSeed__Opportunity__r.Owner.Name,
-                        billing.AcctSeed__Opportunity__r.Owner.Email,
-                        billing.Id,
-                        'Opportunity'
-                    ));
-                }
+            if(billing.AcctSeedERP__Sales_Order__c != null){
+                emailNotificationWrapperList.add(new EmailNotificationWrapper(
+                    billing.Name,
+                    billing.AcctSeedERP__Sales_Order__r.Name,
+                    billing.AcctSeedERP__Sales_Order__r.Owner.Name,
+                    billing.AcctSeedERP__Sales_Order__r.Owner.Email,
+                    billing.Id,
+                    'Sales Order',
+                    billing.AcctSeed__Balance__c == 0
+                ));
+            }else if(billing.AcctSeed__Opportunity__c != null){
+                emailNotificationWrapperList.add(new EmailNotificationWrapper(
+                    billing.Name,
+                    billing.AcctSeed__Opportunity__r.Name,
+                    billing.AcctSeed__Opportunity__r.Owner.Name,
+                    billing.AcctSeed__Opportunity__r.Owner.Email,
+                    billing.Id,
+                    'Opportunity',
+                    billing.AcctSeed__Balance__c == 0
+                ));
             }
         }
         system.debug('emailNotificationWrapperList: '+emailNotificationWrapperList.size());
@@ -216,10 +221,10 @@ public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
         List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
 
         for(EmailNotificationWrapper wrap :emailDataWrapperList) {
-
+            String isFullyPaid = wrap.isFullyPaid ? 'fully' : 'partially';
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
 
-            string body = 'Billing: ' +wrap.billingNumber + ' of '+ wrap.relatedRecordSObjectName + ': "' + wrap.relatedRecordName + '" was fully paid.';
+            string body = 'Billing: ' +wrap.billingNumber + ' of '+ wrap.relatedRecordSObjectName + ': "' + wrap.relatedRecordName + '" was <b>'+isFullyPaid+'</b> paid.';
 
             mail.setSubject('Billing Payment Notification');
             mail.setToAddresses(new List<String>{wrap.ownerEmail});
@@ -242,14 +247,16 @@ public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
         public String ownerEmail {get;set;}
         public Id billingId {get;set;}
         public String relatedRecordSObjectName {get;set;}
+        public Boolean isFullyPaid {get;set;}
 
-        public EmailNotificationWrapper(String billingNumber, String relatedRecordName, String ownerName, String ownerEmail, Id billingId, String relatedRecordSObjectName){
+        public EmailNotificationWrapper(String billingNumber, String relatedRecordName, String ownerName, String ownerEmail, Id billingId, String relatedRecordSObjectName, Boolean isFullyPaid){
             this.billingNumber = billingNumber;
             this.relatedRecordName = relatedRecordName;
             this.ownerName = ownerName;
             this.ownerEmail = ownerEmail;
             this.billingId = billingId;
             this.relatedRecordSObjectName = relatedRecordSObjectName;
+            this.isFullyPaid = isFullyPaid;
         }
     }
 }

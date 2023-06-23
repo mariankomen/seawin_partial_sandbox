@@ -1,0 +1,7 @@
+{
+    "queries": [
+        "select count(id) t from Opportunity_Dashboard__c",
+        "select count(id) from Opportunity_Dashboard__c",
+        "select id, name from account"
+    ]
+}

@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "outcome": "Passed",
+    "testsRan": 2,
+    "passing": 2,
+    "failing": 0,
+    "skipped": 0,
+    "passRate": "100%",
+    "failRate": "0%",
+    "skipRate": "0%",
+    "testStartTime": "Thu Jun 22 2023 14:03:09",
+    "testExecutionTimeInMs": 2754,
+    "testTotalTimeInMs": 2754,
+    "commandTimeInMs": 554,
+    "hostname": "https://seawin--partialsdx.sandbox.my.salesforce.com",
+    "orgId": "00DE20000007icDMAQ",
+    "username": "sgrushai.seawin@peeklogic.com.partialsdx",
+    "testRunId": "707E2000006AekL",
+    "userId": "0051I000000nZqrQAE"
+  },
+  "tests": [
+    {
+      "id": "07ME2000000IDYHMA4",
+      "queueItemId": "709E2000000GXb7IAG",
+      "stackTrace": null,
+      "message": null,
+      "asyncApexJobId": "707E2000006AekLIAS",
+      "methodName": "deleteTest",
+      "outcome": "Pass",
+      "apexLogId": "07LE2000000yAcPMAU",
+      "apexClass": {
+        "id": "01pE20000002JzRIAU",
+        "name": "BillingTriggerHelperTest",
+        "namespacePrefix": null,
+        "fullName": "BillingTriggerHelperTest"
+      },
+      "runTime": 1987,
+      "testTimestamp": "2023-06-22T11:03:39.000+0000",
+      "fullName": "BillingTriggerHelperTest.deleteTest"
+    },
+    {
+      "id": "07ME2000000IDYIMA4",
+      "queueItemId": "709E2000000GXb7IAG",
+      "stackTrace": null,
+      "message": null,
+      "asyncApexJobId": "707E2000006AekLIAS",
+      "methodName": "updateTest",
+      "outcome": "Pass",
+      "apexLogId": "07LE2000000yAcPMAU",
+      "apexClass": {
+        "id": "01pE20000002JzRIAU",
+        "name": "BillingTriggerHelperTest",
+        "namespacePrefix": null,
+        "fullName": "BillingTriggerHelperTest"
+      },
+      "runTime": 767,
+      "testTimestamp": "2023-06-22T11:04:05.000+0000",
+      "fullName": "BillingTriggerHelperTest.updateTest"
+    }
+  ]
+}

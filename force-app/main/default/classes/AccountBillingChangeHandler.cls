@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 06-22-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public class AccountBillingChangeHandler {
     
     public static void AccountBillingChangeHandler(list<Account> oldValues, list<Account> newValues){
@@ -177,4 +184,5 @@ public class AccountBillingChangeHandler {
             }
         }
     }
+
 }

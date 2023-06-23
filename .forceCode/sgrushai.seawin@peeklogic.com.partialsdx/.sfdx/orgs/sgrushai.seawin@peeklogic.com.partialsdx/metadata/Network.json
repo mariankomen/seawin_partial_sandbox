@@ -1,0 +1,29 @@
+{
+  "status": 0,
+  "result": [
+    {
+      "createdById": "0051I000000nZqrQAE",
+      "createdByName": "Marian Lyzhychka",
+      "createdDate": "2022-08-19T14:45:12.000Z",
+      "fileName": "networks/test.network",
+      "fullName": "test",
+      "id": "0DBEY000000002s4AA",
+      "lastModifiedById": "0051I000000nZqrQAE",
+      "lastModifiedByName": "Marian Lyzhychka",
+      "lastModifiedDate": "2022-08-19T14:45:18.000Z",
+      "type": "Network"
+    },
+    {
+      "createdById": "0051I000000nZqrQAE",
+      "createdByName": "Marian Lyzhychka",
+      "createdDate": "2021-02-22T09:09:51.000Z",
+      "fileName": "networks/Sales.network",
+      "fullName": "Sales",
+      "id": "0DB1I000000Goq1WAC",
+      "lastModifiedById": "0051I000000nZqrQAE",
+      "lastModifiedByName": "Marian Lyzhychka",
+      "lastModifiedDate": "2021-05-18T16:42:00.000Z",
+      "type": "Network"
+    }
+  ]
+}

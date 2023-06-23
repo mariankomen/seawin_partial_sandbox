@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "outcome": "Passed",
+    "testsRan": 1,
+    "passing": 1,
+    "failing": 0,
+    "skipped": 0,
+    "passRate": "100%",
+    "failRate": "0%",
+    "skipRate": "0%",
+    "testStartTime": "Thu Jun 22 2023 13:15:07",
+    "testExecutionTimeInMs": 5800,
+    "testTotalTimeInMs": 5800,
+    "commandTimeInMs": 585,
+    "hostname": "https://seawin--partialsdx.sandbox.my.salesforce.com",
+    "orgId": "00DE20000007icDMAQ",
+    "username": "sgrushai.seawin@peeklogic.com.partialsdx",
+    "testRunId": "707E2000006AhgN",
+    "userId": "0051I000000nZqrQAE"
+  },
+  "tests": [
+    {
+      "id": "07ME2000000IDWfMAO",
+      "queueItemId": "709E2000000GXXtIAO",
+      "stackTrace": null,
+      "message": null,
+      "asyncApexJobId": "707E2000006AhgNIAS",
+      "methodName": "deleteTest",
+      "outcome": "Pass",
+      "apexLogId": "07LE2000000y9V3MAI",
+      "apexClass": {
+        "id": "01pE20000001zavIAA",
+        "name": "BillingCashReceiptHelperTest",
+        "namespacePrefix": null,
+        "fullName": "BillingCashReceiptHelperTest"
+      },
+      "runTime": 5800,
+      "testTimestamp": "2023-06-22T10:15:23.000+0000",
+      "fullName": "BillingCashReceiptHelperTest.deleteTest"
+    }
+  ]
+}

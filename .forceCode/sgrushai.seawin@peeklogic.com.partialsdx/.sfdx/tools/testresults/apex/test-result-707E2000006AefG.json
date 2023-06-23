@@ -1,0 +1,47 @@
+{
+  "summary": {
+    "outcome": "Failed",
+    "testsRan": 1,
+    "passing": 0,
+    "failing": 1,
+    "skipped": 0,
+    "passRate": "0%",
+    "failRate": "100%",
+    "skipRate": "0%",
+    "testStartTime": "Thu Jun 22 2023 13:12:16",
+    "testExecutionTimeInMs": 0,
+    "testTotalTimeInMs": 0,
+    "commandTimeInMs": 550,
+    "hostname": "https://seawin--partialsdx.sandbox.my.salesforce.com",
+    "orgId": "00DE20000007icDMAQ",
+    "username": "sgrushai.seawin@peeklogic.com.partialsdx",
+    "testRunId": "707E2000006AefG",
+    "userId": "0051I000000nZqrQAE"
+  },
+  "tests": [
+    {
+      "id": "07ME2000000IDTRMA4",
+      "queueItemId": "709E2000000GXT3IAO",
+      "stackTrace": "(AcctSeed)",
+      "message": "System.LimitException: AcctSeed:Too many SOQL queries: 101",
+      "asyncApexJobId": "707E2000006AefGIAS",
+      "methodName": "deleteTest",
+      "outcome": "Fail",
+      "apexLogId": null,
+      "apexClass": {
+        "id": "01pE20000001zavIAA",
+        "name": "BillingCashReceiptHelperTest",
+        "namespacePrefix": null,
+        "fullName": "BillingCashReceiptHelperTest"
+      },
+      "runTime": 0,
+      "testTimestamp": "2023-06-22T10:12:33.000+0000",
+      "fullName": "BillingCashReceiptHelperTest.deleteTest",
+      "diagnostic": {
+        "exceptionMessage": "System.LimitException: AcctSeed:Too many SOQL queries: 101",
+        "exceptionStackTrace": "(AcctSeed)",
+        "compileProblem": ""
+      }
+    }
+  ]
+}

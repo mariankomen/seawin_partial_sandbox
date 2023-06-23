@@ -1,7 +1,14 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 06-22-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class OpportunityLineItemHelper implements ITriggerHelper{
     
     public static void beforeInsert(List<sObject> newList) {
-        List<OpportunityLineItem> OpportunityLinesAfter_1_Processing = beforeInsert_setPriceLevels(newList);
+        List<OpportunityLineItem> opportunityLinesAfter1Processing = beforeInsert_setPriceLevels(newList);
     }
      
     public static void afterInsert(List<sObject> newList , Map<Id, sObject> newMap) {
@@ -12,7 +19,7 @@ public with sharing class OpportunityLineItemHelper implements ITriggerHelper{
         denieUpdatableAccessForBilledLines(oldMap, newMap);
 
         //We use beforeMethod here, because the logic need to be the same. After any update of line, we need to set Opportunity Price Level to line.
-        List<OpportunityLineItem> OpportunityLinesAfter_1_Processing = beforeInsert_setPriceLevels(newList); 
+        List<OpportunityLineItem> opportunityLinesAfter1Processing = beforeInsert_setPriceLevels(newList); 
 
     }
      
