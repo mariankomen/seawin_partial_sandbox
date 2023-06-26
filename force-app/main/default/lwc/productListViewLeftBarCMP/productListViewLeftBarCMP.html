@@ -1,0 +1,50 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 06-25-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <article class="slds-card" style="border: 1px solid #D4D4D4; border-top: 3px solid #00c0ff;">
+        <div class="slds-card__body slds-card__body_inner header_main">
+            <div>
+                <lightning-combobox name="Family"
+                                    label="Family"
+                                    value={selectedFamilyValue}
+                                    placeholder="Select Family"
+                                    options={familyOptions}
+                                    disabled={_disableFamilyPicklist}
+                                    onchange={handleFamilyChange} ></lightning-combobox>
+            </div>
+            <div>
+                <lightning-combobox name="Category"
+                                    label="Category"
+                                    value={selectedCategoryValue}
+                                    placeholder="Select Category"
+                                    options={categoryOptions}
+                                    disabled={_disableCategoryPicklist}
+                                    onchange={handleCategoryChange} ></lightning-combobox>
+            </div>
+            <div>
+                <lightning-combobox name="Sub Category"
+                                    label="Sub Category"
+                                    value={selectedSubCategoryValue}
+                                    placeholder="Select Sub Category"
+                                    options={subCategoryOptions}
+                                    disabled={_disableSubCategoryPicklist}
+                                    onchange={handleSubCategoryChange} ></lightning-combobox>
+            </div>
+            <div style="margin-top: 30px;">
+                <lightning-input type="toggle" label="Only Active Products" name="input2" checked={isOnlyActiveToggle} onchange={toggleChangeHandler} required></lightning-input>
+
+            </div>
+        </div>
+
+        <template if:true={isSpinnerShowing}>
+            <div class="exampleHolder">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+    </article>
+</template>

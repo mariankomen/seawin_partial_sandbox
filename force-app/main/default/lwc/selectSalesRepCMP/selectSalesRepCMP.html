@@ -2,25 +2,33 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 06-23-2023
+  @last modified on  : 06-25-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
-    <lightning-card  variant="Narrow"  title="Sales Rep/Team Edit" icon-name="standard:groups">
+    <lightning-card  variant="Narrow"  title="Sales Rep/Team Edit" icon-name="custom:custom84">
         <p class="slds-p-horizontal_small">Select New Sales Rep/Team</p>
         <hr style="margin:0;"/>
 
         <div>
             <div class="main">
-                <c-reusable-lookup label="Sales Rep/Team" selected-icon-name="standard:swarm_request" object-label="Sales Rep / Team"
-                    object-api-name="Sales_Rep__c" field-api-name="Name" other-field-api-name="Title__c"
-                    onvalueselected={handleSelectedValue}>
+                <c-reusable-lookup label="Sales Rep/Team" 
+                                    selected-icon-name="custom:custom84" 
+                                    object-label="Sales Rep / Team"
+                                    object-api-name="Sales_Rep__c"
+                                    field-api-name="Name" 
+                                    other-field-api-name="Email__c" 
+                                    help-text="Select Sales Rep/Team"
+                                    required="true"
+                                    onvalueselected={handleSelectedValue} 
+                                    onvalueremoved={onRemoveHandler}>
                 </c-reusable-lookup>
 
                 <template if:true={_isMembersReady}>
                     <br/>
                     <lightning-combobox
                         name="Owner"
+                        required
                         label="Owner"
                         placeholder="Select Owner"
                         options={selectedSalesRepMembers}
@@ -31,7 +39,7 @@
         </div>
 
         <div slot="footer">        
-            <lightning-button variant="neutral" label="Back" title="Primary action" onclick={handleClick} class="slds-m-left_x-small"></lightning-button>
+            <!-- <lightning-button variant="neutral" label="Back" title="Primary action" onclick={handleClick} class="slds-m-left_x-small"></lightning-button> -->
             <lightning-button variant="brand" label="Continue" title="Primary action" onclick={handleContinue} class="slds-m-left_x-small"></lightning-button>
 
         </div>

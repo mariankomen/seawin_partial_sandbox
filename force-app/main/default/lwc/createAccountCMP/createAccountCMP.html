@@ -1,0 +1,314 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 06-25-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:false={isSalesRepSelected}>
+        <c-select-sales-rep-c-m-p oncontinue={handleSalesRepSelection}></c-select-sales-rep-c-m-p>
+    </template>
+
+    <template if:true={isSalesRepSelected}>
+
+      <lightning-card  title="New Account" icon-name="standard:account">
+        <lightning-record-edit-form object-api-name="Account" onsuccess={handleSuccess}>
+          <lightning-messages> </lightning-messages>
+
+          <lightning-accordion allow-multiple-sections-open active-section-name={openedSections}>
+            <lightning-accordion-section name="A" label="Account Information">
+              <div class="slds-grid">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="Name" value=""></lightning-input-field>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="Sales_Rep_O__c" disabled value={_salesRepAndOwner.sales_rep_id}></lightning-input-field>
+                  </div>
+              </div>
+
+
+              <div class="slds-grid">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="Website"></lightning-input-field>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="Manufacture_Representative__c"></lightning-input-field>
+                  </div>
+              </div>
+
+              <div class="slds-grid">
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="Type" required></lightning-input-field>
+                  </div>
+                  <div class="slds-col slds-size_1-of-2">
+                    <lightning-input-field field-name="ParentId"></lightning-input-field>
+                  </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Phone"></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Industry"></lightning-input-field>
+                </div>
+              </div>
+
+            <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Email__c"></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Price_Level__c"></lightning-input-field>
+                </div>
+            </div>
+
+            <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Fax"></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Description"></lightning-input-field>
+                </div>
+            </div>
+
+            <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Contact_Person__c"></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Status__c"></lightning-input-field>
+                </div>
+            </div>
+
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="B" label="Address Information">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Contact__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Shipping_Contact__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="BillingStreet" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="ShippingStreet"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="BillingCity" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="ShippingCity"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="BillingState" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="ShippingState"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="BillingPostalCode" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="ShippingPostalCode"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="BillingCountry" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="ShippingCountry"></lightning-input-field>
+                </div>
+              </div>
+
+
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="C" label="Quote Lines">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Shower_Doors__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Barn_Doors__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Wall_Surrounds__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="LED_Mirrors__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Shower_Bases__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Vanities_Kitchens__c"></lightning-input-field>
+                </div>
+              </div>
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="D" label="Accounting Information">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Accounting_Active__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__GL_Account_Variable_1__c" required></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Accounting_Type__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Credit_Card_Vendor__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Default_Expense_GL_Account__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__X1099_Vendor__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__File_Import_Match_Name__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Default_1099_Box__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Taxpayer_Identification_Number__c"></lightning-input-field>
+                </div>
+              </div>
+
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="E" label="Commission Structure (Manufacturer Rep)">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Price_Level_1_12__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Price_Level_21_26__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Price_Level_13_20__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Price_Level_27_30__c"></lightning-input-field>
+                </div>
+              </div>
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="F" label="Accounting Payable Information">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Payment_Terms__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Discount_Percent__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Account_Payable_Terms__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Discount_Days_Due__c"></lightning-input-field>
+                </div>
+              </div>
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="G" label="Billing Information">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Terms_Name__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Discount_Percent__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="Deposit__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Discount_Days_Due__c"></lightning-input-field>
+                </div>
+              </div>
+
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Days_Due__c" ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="AcctSeed__Billing_Format__c"></lightning-input-field>
+                </div>
+              </div>
+            </lightning-accordion-section>
+
+            <lightning-accordion-section name="H" label="System Information">
+              <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                  <lightning-input-field field-name="OwnerId" readonly value={_salesRepAndOwner.owner_id} ></lightning-input-field>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                </div>
+              </div>
+            </lightning-accordion-section>
+          </lightning-accordion>
+              
+          <div class="slds-align_absolute-center">
+            <lightning-button variant="brand" label="Cancell"></lightning-button>
+            <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+          </div>
+          
+        </lightning-record-edit-form>
+      </lightning-card>
+           
+
+
+      
+      
+    </template>
+</template>

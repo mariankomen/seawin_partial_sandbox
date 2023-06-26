@@ -1,0 +1,30 @@
+.card-header{
+    display:flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.main-div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.outer-div{
+    position: relative;
+}
+.spinner{
+    position: absolute;
+}
+
+.table-btns{
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.records-info{
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+}

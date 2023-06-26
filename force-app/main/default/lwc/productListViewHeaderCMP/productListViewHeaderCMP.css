@@ -1,0 +1,8 @@
+.header_main{
+    display: flex;
+    align-items: flex-end;
+}
+
+.m-r-10{
+    margin-right: 10px;
+}

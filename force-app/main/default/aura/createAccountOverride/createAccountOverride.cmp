@@ -1,0 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 06-25-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride">
+    <c:createAccountCMP></c:createAccountCMP>
+</aura:component>	

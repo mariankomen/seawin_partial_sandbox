@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 06-23-2023
+  @last modified on  : 06-24-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -13,7 +13,7 @@
                     <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
                         <lightning-input onchange={handleChange} type="search" autocomplete="off" label={label}
                             required={required} field-level-help={helpText} placeholder={placeholder}
-                            onblur={handleInputBlur}></lightning-input>
+                            onblur={handleInputBlur} onfocus={handleOnFocus}></lightning-input>
                     </div>
                 </div>
             </div>

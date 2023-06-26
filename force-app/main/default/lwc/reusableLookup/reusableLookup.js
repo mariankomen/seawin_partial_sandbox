@@ -69,6 +69,11 @@ export default class ReusableLookup extends LightningElement {
         return this.selectedRecordId;
     }
 
+    handleOnFocus(){
+        if(this.recordsList.length <= 0){
+            this.fetchSobjectRecords(false);
+        }
+    }
     //handler for calling apex when user change the value in lookup
     handleChange(event) {
         this.searchString = event.target.value;
@@ -90,6 +95,10 @@ export default class ReusableLookup extends LightningElement {
     handleCommit() {
         this.selectedRecordId = "";
         this.selectedRecordName = "";
+
+        const selectedEvent = new CustomEvent('valueremoved');
+        //dispatching the custom event
+        this.dispatchEvent(selectedEvent);
     }
 
     //handler for selection of records from lookup result list

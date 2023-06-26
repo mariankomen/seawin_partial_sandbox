@@ -1,0 +1,142 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 06-26-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:true={isModalOpen}>
+        <!-- Modal/Popup Box LWC starts here -->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box LWC header here -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close"
+                            alternative-text="close"
+                            variant="inverse"
+                            size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Add Product{headerLabel}</h2>
+                </header>
+                <!-- Modal/Popup Box LWC body starts here -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <template if:true={_isDataReady}>
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example default base table of Opportunities">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Product
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Image
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Quantity
+                                        </div>
+                                    </th>
+    
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Sales Price
+                                        </div>
+                                    </th>
+    
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Size
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Item Description
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Opportunity Name">
+                                            Remove
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={selectedProducts} for:item="product">
+                                    <tr class="slds-hint-parent" key={product.Id}  >
+                                        <th data-label="Product Name" scope="row">
+                                            <div class="slds-truncate" title={product.Name} style="width: 200px;">
+                                                <a href={product.link} tabindex="-1">{product.Name}</a>
+                                            </div>
+                                        </th>
+                                        
+                                        <td data-label="Image">
+                                            <div class="slds-truncate" title="">
+                                                <img src={product.Product_Image_Short_URL__c}/>
+                                            </div>
+                                        </td>
+                                        <td data-label="Quantity">
+                                            <div class="slds-truncate" title="Quantity">
+                                                <lightning-input type="number" data-id={product.Id} value="0" onchange={handleQuantity} required></lightning-input>
+                                            </div>
+                                        </td>
+                                        <td data-label="Sales Price">
+                                            <div class="slds-truncate" title="Sales Price">
+                                                <lightning-input type="number" data-id={product.Id} value={product.UnitPrice} onchange={handleSalesPrice}></lightning-input>
+                                            </div>
+                                        </td>
+                                        <td data-label="Size">
+                                            <div class="slds-truncate" title="Prospecting">
+                                                    <lightning-input type="text" value={product.Size__c} data-id={product.Id} onchange={handleSizeChange}></lightning-input>
+                                            </div>
+                                        </td>
+    
+                                        <td data-label="Description">
+                                            <div class="slds-truncate" title="Description">
+                                                <template if:true={product.Allow_Product_Description_Change__c}>
+                                                    <lightning-textarea value={product.Description} data-id={product.Id} onchange={handleDescriptionChange}></lightning-textarea>
+    
+                                                </template>
+    
+                                                <template if:false={product.Allow_Product_Description_Change__c}>
+                                                    <lightning-textarea value={product.Description} disabled="true"></lightning-textarea>
+                                                </template>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <div class="slds-truncate" title="Description">
+                                                <lightning-button-icon icon-name="utility:delete"  data-id={product.Id} onclick={removeLineHandler} variant="destructive" alternative-text="Remove" title="Remove"></lightning-button-icon>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                
+                            </tbody>
+                        </table>
+                    </template>
+                    
+
+
+
+
+
+
+
+
+                </div>
+                <!-- Modal/Popup Box LWC footer starts here -->
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={closeModal} title="Cancel">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick={submitDetails} title="Save">Save</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 06-23-2023
+ * @last modified on  : 06-24-2023
  * @last modified by  : Marian Lyzhychka
 **/
 import { LightningElement, track } from 'lwc';
@@ -32,6 +32,12 @@ export default class SelectSalesRepCMP extends LightningElement {
         this.getSalesRepMembers();
     }
 
+    onRemoveHandler(e){
+        this.selectedSalesRep = '';
+        this.selectedOwner = '';
+        this.selectedSalesRepMembers = [];
+        
+    }
     getSalesRepMembers(){
         getSalesRepTeamMembers({
             salesRepId: this.selectedSalesRep
@@ -53,6 +59,14 @@ export default class SelectSalesRepCMP extends LightningElement {
     }
 
     handleContinue(){
+        if(this.selectedSalesRep == '' || !this.selectedSalesRep){
+            this.showToast('Can not continue', 'Sales Rep/Team is required.', TOAST_WARNING_TYPE);
+            return;
+        }
+        if(this.selectedOwner == '' || !this.selectedOwner){
+            this.showToast('Can not continue', 'Owner is required.', TOAST_WARNING_TYPE);
+            return;
+        }
         const outputObject = {
             sales_rep_id: this.selectedSalesRep,
             owner_id: this.selectedOwner
