@@ -1,0 +1,443 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-03-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:true={firstStepIsReady}>
+        <div>
+            <c-select-sales-rep-c-m-p oncontinue={handleContinue}></c-select-sales-rep-c-m-p>
+        </div>
+    </template>
+    
+    <template if:true={secondStepIsReady}>
+
+        <lightning-card  title="New Opportunity" icon-name="standard:opportunity">
+            <lightning-record-edit-form
+                object-api-name='Opportunity'
+                record-type-id={recordTypeId}
+                onsuccess={handleSuccess}
+            >
+            <lightning-messages> </lightning-messages>
+                <div class="slds-var-m-top_medium" style="display: flex; justify-content: center;">
+                    <lightning-button variant="brand" type="submit" label="Save">
+                    </lightning-button>
+
+                    <lightning-button variant="neutral" label="Back" onclick={goBackHandler} style="margin-left:10px;"></lightning-button>
+                </div>
+
+                <div class="slds-grid allow_duplicate">
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input-field field-name="Allow_Duplicate_Opportunity__c" value={checkboxValue}></lightning-input-field>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <!-- <lightning-input-field field-name="RecordTypeId" disabled value={recordTypeId}></lightning-input-field> -->
+                    </div>
+                </div>
+
+                <lightning-accordion allow-multiple-sections-open active-section-name={openedSections}>
+                    <lightning-accordion-section name="A" label="Opportunity Information">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Name" value="" required onchange={handleOpportunityNameChange}></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="RecordTypeId" disabled value={recordTypeId}></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="AccountId"></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Sales_Rep_O__c" disabled value={salesRepAndOwnerObj.sales_rep_id}></lightning-input-field>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="ContactPerson__c"></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Manufacturer_Rep__c"></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Type" required value={opportunityType}></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Referral_Sales_Rep__c"></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="LeadSource" required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Specified_Rep__c"></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Parent_Opportunity__c"></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="StageName" required onchange={handleStageChange}></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="GL_Account_Variable_1__c" required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Probability" value={opportunityProbability} required></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Project__c"></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="ForecastCategoryName" value={opportunityForecastCategory} required></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Approval_Status__c" required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="CloseDate" required></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Loss_Reason__c"></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-output-field field-name="Amount"></lightning-output-field>
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Price_Level__c"></lightning-input-field>
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+
+                    <template if:true={isSeawinHospitalityRecordType}>
+                        <lightning-accordion-section name="B" label="Hospitality Analysis">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Quote_Due__c" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Braking_Ground_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Submittal_Due_Date__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Project_Completion_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Quote_Format_del__c" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Specified_del__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Awarded_Owner__c" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Construct_Connect_ID__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+                    
+                    <template if:true={isSeawinHospitalityRecordType}>
+                        <lightning-accordion-section name="C" label="Hospitality Sales Related">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Sent_to_TakeOff_Team__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <!-- <lightning-input-field field-name="Braking_Ground_Date__c" ></lightning-input-field> -->
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Quote_Submitted_Date__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Project_Owner_Developer__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Decision_Date_del__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Contact_Owner_Developer__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+
+                    <template if:true={isSeawinHospitalityRecordType}>
+                        <lightning-accordion-section name="D" label="Drawings / Approvals">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Architect__c" ></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Financial_Clearance_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Drawing_Date__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="submittal_approval_date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Revision__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Contract_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="submittal_submitted_date__c" ></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Number__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <!-- <lightning-input-field field-name="submittal_submitted_date__c" required></lightning-input-field> -->
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+
+
+                    <template if:true={isChinaRecordType}>
+                        <lightning-accordion-section name="E" label="Approvals">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="submittal_submitted_date__c" ></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Financial_Clearance_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Date__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="submittal_approval_date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Number__c" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Contract_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="submittal_submitted_date__c" required></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Number__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <!-- <lightning-input-field field-name="submittal_submitted_date__c" required></lightning-input-field> -->
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="PO_Date__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+
+                    <template if:true={isSeawinHospitalityRecordType}>
+                        <lightning-accordion-section name="F" label="Sales Team">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Team_Estimator__c" ></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Project_Manager__c" ></lightning-input-field>
+                                </div>
+                            </div>
+
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Team_Engineer__c"></lightning-input-field>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                  <lightning-input-field field-name="Team_Notes__c" ></lightning-input-field>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+
+                    <lightning-accordion-section name="G" label="Billing Information">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Billing_Terms_Name__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Billing_Deposit__c" ></lightning-input-field>
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+
+                    <lightning-accordion-section name="H" label="Additional Information">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Description" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Note__c" ></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="deliver_by__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_Term__c" ></lightning-input-field>
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+
+                    <lightning-accordion-section name="I" label="Shipping Details">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_Account__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_Name__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_Street__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_City__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_State__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_PostalCode__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Shipping_Country__c" ></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+
+                    <lightning-accordion-section name="J" label="System Information">
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-output-field field-name="OwnerId" value={salesRepAndOwnerObj.owner_id}></lightning-output-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                    </lightning-accordion-section>
+                   
+                </lightning-accordion>
+
+
+                <div class="slds-var-m-top_medium" style="display: flex; justify-content: center;">
+                    <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                    <lightning-button variant="neutral" label="Back" onclick={goBackHandler} style="margin-left:10px;"></lightning-button>
+                </div>
+            </lightning-record-edit-form>
+
+        </lightning-card>
+
+    </template>
+</template>

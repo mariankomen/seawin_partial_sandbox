@@ -1,0 +1,18 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-02-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride, force:lightningQuickAction">
+
+    <aura:html tag="style">             
+        .slds-modal__container{        
+        width: 100% !important;
+        max-width: 100rem !important;
+        }        
+    </aura:html>
+
+    <c:createBillingCMP recordId="{!v.recordId}"></c:createBillingCMP>
+</aura:component>	

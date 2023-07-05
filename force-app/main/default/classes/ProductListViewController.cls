@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 06-26-2023
+ * @last modified on  : 07-03-2023
  * @last modified by  : Marian Lyzhychka
 **/
 public with sharing class ProductListViewController {
@@ -39,17 +39,22 @@ public with sharing class ProductListViewController {
 
             if(!String.isBlank(filtersWrapper.family) && filtersWrapper.family != 'None'){
                 query += ' AND Category__c = \'' + filtersWrapper.family + '\'';
-                
-                if(!String.isBlank(filtersWrapper.category) && filtersWrapper.category != 'None'){
-                    query += ' AND Sub_Category__c = \'' + filtersWrapper.category + '\'';
-
-                    if(!String.isBlank(filtersWrapper.subcategory) && filtersWrapper.subcategory != 'null' && filtersWrapper.subcategory != 'None'){
-                        query += ' AND Complementary_Category__c = \'' + filtersWrapper.subcategory + '\'';
-                        
-                    }
-                }
+            }else if(filtersWrapper.family == 'None'){
+                query += ' AND Category__c = null';
             }
 
+            if(!String.isBlank(filtersWrapper.category) && filtersWrapper.category != 'None'){
+                query += ' AND Sub_Category__c = \'' + filtersWrapper.category + '\'';
+            }else if(filtersWrapper.category == 'None'){
+                query += ' AND Sub_Category__c = null';
+            }
+
+            if(!String.isBlank(filtersWrapper.subcategory) && filtersWrapper.subcategory != 'None'){
+                query += ' AND Complementary_Category__c = \'' + filtersWrapper.subcategory + '\'';
+            }else if(filtersWrapper.subcategory == 'None'){
+                query += ' AND Complementary_Category__c = null';
+            }
+            
             Integer offset = (pageNumber - 1) * pageSize;
             String queryTotalWithoutLimit = query;
             query += ' LIMIT ' + pageSize + ' OFFSET ' + offset;
@@ -84,17 +89,49 @@ public with sharing class ProductListViewController {
     @AuraEnabled
     public static String getProductFieldsDependencies(){
         try {
-            Map<String, List<String>> familyToCategoryDependencies = PicklistValuesController.getFieldDependencies('Product2',
+            Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> familyToCategoryDependencies = PicklistValuesController.getFieldDependenciesWrap('Product2',
                                                                                                 'Category__c',
                                                                                                 'Sub_Category__c');
-
-
-            Map<String, List<String>> categoryToSubCategoryDependencies = PicklistValuesController.getFieldDependencies('Product2',
+            Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> categoryToSubCategoryDependencies = PicklistValuesController.getFieldDependenciesWrap('Product2',
                                                                                                 'Sub_Category__c',
                                                                                                 'Complementary_Category__c');
+
             ProductFieldDependenciesWrapper wrapper = new ProductFieldDependenciesWrapper(familyToCategoryDependencies, categoryToSubCategoryDependencies);
 
             return JSON.serialize(wrapper);
+        } catch (Exception e) {
+            throw new ProductListViewControllerException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static void updateEditedProductFields(String updatedDataJson){
+        try {
+            List<ProductPicklistUpdateWrapper> productFieldsWrapper = (List<ProductPicklistUpdateWrapper>)JSON.deserialize(updatedDataJson, List<ProductPicklistUpdateWrapper>.class);
+            Set<String> productIdSet = new Set<String>();
+
+            for(ProductPicklistUpdateWrapper productWR: productFieldsWrapper){
+                productIdSet.add(productWR.productId);
+            }
+
+            Map<Id, Product2> productMap = new Map<Id, Product2>([SELECT Id, Category__c, Sub_Category__c, Complementary_Category__c FROM Product2 WHERE Id IN:productIdSet]);
+            List<Product2> productToUpdate = new List<Product2>();
+
+            for(ProductPicklistUpdateWrapper productWR: productFieldsWrapper){
+                if(productMap.containsKey(productWR.productId)){
+                    Product2 product = productMap.get(productWR.productId);
+                    product.Category__c = productWR.family;
+                    product.Sub_Category__c = productWR.category;
+                    product.Complementary_Category__c = productWR.subcategory;
+
+                    productToUpdate.add(product);
+                }
+            }
+
+            if(!productToUpdate.isEmpty()){
+                update productToUpdate;
+            }
         } catch (Exception e) {
             throw new ProductListViewControllerException(e.getMessage());
         }
@@ -114,12 +151,87 @@ public with sharing class ProductListViewController {
             
             if(sobjectType == 'so'){
                 insertSalesOrderLines(recordId, lines);
+            }else if(sobjectType == 'opp'){
+                insertOpportunityLineItems(recordId, lines);
             }
         } catch (Exception e) {
             throw new ProductListViewControllerException(e.getMessage());
         }
     }
 
+    private static void insertOpportunityLineItems(String recordId, List<InsertSObjectLineParamsWrapper> linesWrapper){
+        Set<Id> productsIds = new Set<Id>();
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            productsIds.add(wrap.productId);
+        }
+        Id priceBookId = Test.isRunningTest() ? Test.getStandardPricebookId() : [select id, name from Pricebook2 where isStandard = true limit 1][0].id;
+        Map<Id, PriceBookEntry> productsPriceMap = new Map<Id, PriceBookEntry>();
+
+        for (PriceBookEntry pbe : [
+            SELECT id, unitprice, product2id
+            FROM pricebookentry
+            WHERE product2id IN :productsIds
+            and pricebook2Id=:priceBookId
+        ]) {
+            productsPriceMap.put(pbe.Product2Id, pbe);
+        }
+
+
+
+        Opportunity opp = [SELECT Id, GL_Account_Variable_1__c FROM Opportunity WHERE Id =: recordId LIMIT 1];
+
+        List<OpportunityLineItem> existingOpportunityLines = [SELECT Id, SortOrder, OpportunityId FROM OpportunityLineItem WHERE OpportunityId =: recordId ORDER BY SortOrder DESC];
+        Boolean needUpdateExistingSortOrder = false;
+        Integer lastSortOrder;
+
+        if(existingOpportunityLines.size() > 0 && existingOpportunityLines[0].SortOrder != null){
+            lastSortOrder = Integer.valueOf(existingOpportunityLines[0].SortOrder + 1);
+        }else if(existingOpportunityLines.size() > 0){
+            lastSortOrder = 1;
+            needUpdateExistingSortOrder = true;
+        }else{
+            lastSortOrder = 1;
+        }
+
+
+        if(needUpdateExistingSortOrder){
+            for(OpportunityLineItem sol: existingOpportunityLines){
+                sol.SortOrder = lastSortOrder;
+                lastSortOrder += 1;
+            }
+            update existingOpportunityLines;
+        }
+
+        List<OpportunityLineItem> newOpportunityLineItemsList = new List<OpportunityLineItem>();
+
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            OpportunityLineItem oli = new OpportunityLineItem();
+            oli.OpportunityId = recordId;
+            oli.Product2Id = wrap.productId;
+            oli.SortOrder = lastSortOrder;
+            oli.Item_Description__c = wrap.description;
+            oli.AcctSeed__GL_Account_Variable_1__c = opp.GL_Account_Variable_1__c;
+            oli.Allow_Product_Description_Change__c = wrap.allowDescriptionChange;
+            oli.Size__c = wrap.size;
+            oli.UnitPrice = wrap.salesPrice;
+            oli.Quantity = wrap.quantity;
+            oli.PricebookEntryId = productsPriceMap.containsKey(wrap.productId) ? productsPriceMap.get(wrap.productId).id : null;
+
+            newOpportunityLineItemsList.add(oli);
+            lastSortOrder += 1;
+        }
+
+        if(!newOpportunityLineItemsList.isEmpty()){
+            try{
+                insert newOpportunityLineItemsList;
+            }catch(Exception e){
+                system.debug(e.getMessage());
+                throw new ProductListViewControllerException(e.getMessage());
+            }
+        }
+
+
+    }
     private static void insertSalesOrderLines(String recordId, List<InsertSObjectLineParamsWrapper> linesWrapper){
         AcctSeedERP__Sales_Order__c salesOrder = [SELECT AcctSeedERP__Status__c, GL_Account_Variable_1__c FROM AcctSeedERP__Sales_Order__c WHERE id = :recordId LIMIT 1];
         if(salesOrder.AcctSeedERP__Status__c == 'Closed'){
@@ -183,13 +295,22 @@ public with sharing class ProductListViewController {
         public String description {get;set;}
         public String size {get;set;}
         public Boolean allowDescriptionChange {get;set;}
+
+        public InsertSObjectLineParamsWrapper(String productId, Decimal quantity, Decimal salesPrice, String description, String size, Boolean allowDescriptionChange){
+            this.productId = productId;
+            this.quantity = quantity;
+            this.salesPrice = salesPrice;
+            this.description = description;
+            this.size = size;
+            this.allowDescriptionChange = allowDescriptionChange;
+        }
     }
 
     public class ProductFieldDependenciesWrapper{
-        public Map<String, List<String>> familyToCategory {get;set;}
-        public Map<String, List<String>> categoryToSubCategory {get;set;}
+        public Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> familyToCategory {get;set;}
+        public Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> categoryToSubCategory {get;set;}
 
-        public ProductFieldDependenciesWrapper(Map<String, List<String>> familyToCategory, Map<String, List<String>> categoryToSubCategory){
+        public ProductFieldDependenciesWrapper(Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> familyToCategory, Map<String, List<PicklistValuesController.DependentPicklistOptionWrapper>> categoryToSubCategory){
             this.familyToCategory = familyToCategory;
             this.categoryToSubCategory = categoryToSubCategory;
         }
@@ -224,4 +345,11 @@ public with sharing class ProductListViewController {
         }
     }
     
+
+    public class ProductPicklistUpdateWrapper{
+        public String productId {get;set;}
+        public String family {get;set;}
+        public String category {get;set;}
+        public String subcategory {get;set;}
+    }
 }

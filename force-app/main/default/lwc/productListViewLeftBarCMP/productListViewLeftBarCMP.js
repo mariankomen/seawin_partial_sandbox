@@ -88,8 +88,8 @@ export default class ProductListViewLeftBarCMP extends LightningElement {
         }else{
             this.familyToCategoryDependencies[this.selectedFamilyValue].forEach(category => {
                 options.push({
-                    label: category,
-                    value: category
+                    label: category.label,
+                    value: category.apiname
                 })
             })
     
@@ -122,8 +122,8 @@ export default class ProductListViewLeftBarCMP extends LightningElement {
         }else{
             this.categoryToSubCategoryDependencies[this.selectedCategoryValue].forEach(subcategory => {
                 options.push({
-                    label: subcategory,
-                    value: subcategory
+                    label: subcategory.label,
+                    value: subcategory.apiname
                 })
             })
     

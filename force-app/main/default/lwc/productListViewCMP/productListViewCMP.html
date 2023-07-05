@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 06-27-2023
+  @last modified on  : 07-02-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -10,7 +10,7 @@
 
         <div style="width: 170%; ">
             <div class="slds-p-horizontal_small"> <!-- Header-->
-                <c-product-list-view-header-c-m-p onselected={handleHeaderFilterEvent}></c-product-list-view-header-c-m-p>
+                <c-product-list-view-header-c-m-p onselected={handleHeaderFilterEvent} onmassedit={handleMassEditMode}></c-product-list-view-header-c-m-p>
             </div>
 
             <div class="slds-p-horizontal_small main-div" style="margin-top: 10px;" > <!-- Main -->
@@ -21,7 +21,7 @@
                     onsubcategorychange={handleRightBarFilterEvent}
                     ></c-product-list-view-left-bar-c-m-p>
                 </div>
-
+                <div style="width: 15px;"></div>
                 <div style="width: 150%; "> <!-- Right Datatable -->
                     <article class="slds-card" style="border: 1px solid #D4D4D4; border-top: 3px solid #00c0ff !important;">
                         <div class="slds-card__header slds-grid">
@@ -40,8 +40,18 @@
                                     </h2>
                                 </div>
                             </header>
+                            
+                            
                         </div>
                 
+                        <template if:true={isMassEditMode}>
+                            <div class="mass-edit-message">
+                                <lightning-icon icon-name="utility:warning" size="medium" class='yellow-utility-icon' ></lightning-icon>
+                                <p>You are in Mass Edit Mode. Select products what you want to update, and click "Select" button. To exit from Mass Edit mode, click "Mass Edit" button.</p>
+                            </div>
+                        </template>
+
+
                         <div class="slds-card__body slds-card__body_inner header_main">
                             <template if:true={isSpinnerShowing}>
                                 <div class="outer-div" style="height: 400px; position:relative">
@@ -84,6 +94,13 @@
                                         </lightning-button-group>
                                     </div>
                                 </div>
+
+                                <template if:true={isEditMode}>
+                                    <div class="table-btns" style="background: rgb(214,241,255);
+                                    background: linear-gradient(90deg, rgba(214,241,255,1) 22%, rgba(9,140,182,0.7343531162464986) 66%, rgba(0,228,255,1) 100%);">
+                                        <lightning-button label="SAVE" onclick={saveUpdateChanges} ></lightning-button>
+                                    </div>
+                                </template>
                                 
                                 <c-salesforce-codex-data-table
                                                 key-field="Id"
@@ -143,6 +160,6 @@
             </div>
         </div>
         
-
+        <c-products-mass-edit-c-m-p></c-products-mass-edit-c-m-p>
         <c-add-product-c-m-p></c-add-product-c-m-p>
 </template>

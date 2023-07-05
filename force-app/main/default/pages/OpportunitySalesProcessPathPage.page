@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 06-27-2023
+  @last modified by  : Marian Lyzhychka
+-->
 <apex:page docType="html-5.0" standardcontroller="Opportunity" extensions="OpportunitySalesProcessPathExtension" 
                showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" 
                applyBodyTag="false" id="OpportunitySalesProcessPath">

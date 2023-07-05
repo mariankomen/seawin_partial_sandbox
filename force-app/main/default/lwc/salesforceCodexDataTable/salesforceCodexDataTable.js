@@ -12,7 +12,7 @@ export default class SalesforceCodexDataTable extends LightningDatatable  {
         picklistType: {
             template: picklistType,
             standardCellLayout: true,
-            typeAttributes: ['label','value','placeholder','options']
+            typeAttributes: ['label','value','placeholder','options','fieldapi', 'productId','disabled']
         }
     };
 

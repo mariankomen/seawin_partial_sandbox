@@ -1,7 +1,0 @@
-String filters = '{"header_type":"All","header_key":null,"family":null,"category":null,"subcategory":null,"isAllActive":true}';
-    Integer pageSize =  15;
-    Integer pageNumber =  1;
-    String sortedBy = 'Name';
-    String sortDirection = 'asc';
-    
-    ProductListViewController.fetchProducts(filters, pageSize, pageNumber, sortedBy, sortDirection);

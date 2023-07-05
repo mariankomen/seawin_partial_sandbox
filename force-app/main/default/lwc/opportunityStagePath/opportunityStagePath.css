@@ -1,0 +1,19 @@
+.triangle{
+    width: 16px;
+    height: 21px;
+    border: none;
+    background: none;
+}
+option {
+    background-color: #fff;
+    color: #000;
+    font-size: 14px;
+} 
+select {
+    border: none;
+    outline: none;
+    scroll-behavior: smooth;
+}
+select:hover{
+    cursor: pointer;
+} 

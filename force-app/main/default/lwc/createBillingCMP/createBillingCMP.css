@@ -1,0 +1,36 @@
+.slds-modal__container{
+    max-width: 70rem !important;
+    width:90% !important;
+    
+}
+
+.header-fields{
+    /* background-color: #F8F8F8; */
+}
+.header_buttons{
+    display: flex;
+    justify-content: center;
+}
+.header-fields__row{
+    display: flex;
+    width: 100%;
+    padding-left: 9rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f2f2f2;
+}
+.header-fields__row__item{
+    display: flex;
+    width: 50%;
+    
+}
+.fields__row__item_span{
+    display: flex;
+    align-items: flex-end;
+}
+.field_start{
+    width: 100px;
+    display: flex;
+    justify-content: end;
+    margin-right: 10px;
+}
+

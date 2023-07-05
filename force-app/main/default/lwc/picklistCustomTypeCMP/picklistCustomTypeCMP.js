@@ -7,15 +7,20 @@ export default class PicklistCustomTypeCMP extends LightningElement {
     @api value = '';
     @api placeholder = '';
     @api options = [];
-
+    @api fieldapi;
+    @api productid;
+    @api disable = false;
 
     handleChange(e){
+        let row = this.productid
         const selectEvent = new CustomEvent('picklistselect', {
             composed: true,
             bubbles: true,
             detail: {
                 value: e.detail.value,
-                field: 'test'
+                field: e.target.dataset.field,
+                rowId: row,
+                test: 'test'
             }
         });
         this.dispatchEvent(selectEvent);

@@ -1,0 +1,15 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-03-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride,lightning:hasPageReference">
+    <aura:attribute name="selectedRecordId" type="Id" />
+     
+    <!--Declare Handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>  
+
+    <c:createOpportunity recordTypeId="{!v.selectedRecordId}"></c:createOpportunity>
+</aura:component>	

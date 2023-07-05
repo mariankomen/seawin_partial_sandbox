@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 06-26-2023
+  @last modified on  : 07-02-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -42,7 +42,9 @@
 				<lightning-input name="enter-search"
 								 type="search"
 								 onchange={handleChangeInput}
+								 onkeypress={handleEnter}
 				></lightning-input>
+				
 			</span>
 
 			<span class="m-r-10">
@@ -52,17 +54,17 @@
 
 			<span class="m-r-10">
 				<lightning-button-group>
-					<template if:true={isUserAdmin}>
-						<lightning-button label="New Product"></lightning-button>
-						<lightning-button label="Mass Edit"></lightning-button>
-						<lightning-button label="Update Categories"></lightning-button>
-					</template>
+					<!-- <template if:true={isUserAdmin}> -->
+						<lightning-button label="New Product" onclick={redirectToNewProduct}></lightning-button>
+						<lightning-button label="Mass Edit" variant={massEditButtonVariant} onclick={executeMassEditMode}></lightning-button>
+						<!-- <lightning-button label="Update Categories"></lightning-button> -->
+					<!-- </template> -->
 					
 					<lightning-button label="Standard List View" onclick={redirectToDefaultProduct}></lightning-button>
-					<template if:true={isUserAdmin}>
+					<!-- <template if:true={isUserAdmin}> -->
 						<lightning-button label="Conf. Product Prop."></lightning-button>
 						<lightning-button label="Master Product" onclick={redirectToMasterProduct}></lightning-button>
-					</template>
+					<!-- </template> -->
 					
 				</lightning-button-group>
 			</span>

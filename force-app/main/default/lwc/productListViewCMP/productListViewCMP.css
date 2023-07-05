@@ -28,3 +28,14 @@
     align-items: center;
     margin: 0 10px;
 }
+
+.mass-edit-message{
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-left: 14px;
+}
+
+.yellow-utility-icon {
+    --sds-c-icon-color-foreground-default: #e8e883;
+}

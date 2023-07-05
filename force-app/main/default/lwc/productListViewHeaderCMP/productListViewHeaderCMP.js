@@ -26,6 +26,7 @@ export default class ProductListViewHeaderCMP extends NavigationMixin(LightningE
 
     searchKey = '';
 
+    @track massEditButtonVariant = 'Neutral';
 
     @wire(getRecord, { recordId: USER_ID, fields: [USER_PROFILE] })
     wireUser({ error, data }) {
@@ -51,6 +52,12 @@ export default class ProductListViewHeaderCMP extends NavigationMixin(LightningE
 
     }
 
+    handleEnter(e){
+        if(e.keyCode === 13){
+            this.handleRunSearch();
+        }
+    }
+
     handleRunSearch(){
         const searchOptions = {
             filter_type: this.selectedFilterBy,
@@ -59,6 +66,15 @@ export default class ProductListViewHeaderCMP extends NavigationMixin(LightningE
         const selectedEvent = new CustomEvent('selected', { detail: searchOptions });
 
         this.dispatchEvent(selectedEvent);
+    }
+
+    executeMassEditMode(){
+        if(this.massEditButtonVariant == 'Neutral'){
+            this.massEditButtonVariant = 'Brand'
+        }else{
+            this.massEditButtonVariant = 'Neutral'
+        }
+        this.dispatchEvent(new CustomEvent('massedit'));
     }
 
     redirectToMasterProduct(){
@@ -76,5 +92,15 @@ export default class ProductListViewHeaderCMP extends NavigationMixin(LightningE
               url: '/recordlist/Product2/Default'
             }
           });
+    }
+
+    redirectToNewProduct(){
+        this[NavigationMixin.Navigate]({
+            type: 'standard__objectPage',
+            attributes: {
+                objectApiName: 'Product2',
+                actionName: 'new'
+            }
+        });
     }
 }

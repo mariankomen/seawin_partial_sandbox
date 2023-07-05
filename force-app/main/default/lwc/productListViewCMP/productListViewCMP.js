@@ -3,8 +3,8 @@ import fetchProducts from '@salesforce/apex/ProductListViewController.fetchProdu
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CurrentPageReference } from 'lightning/navigation';
 import { NavigationMixin } from 'lightning/navigation';
-import { updateRecord } from 'lightning/uiRecordApi';
-import { getPicklistValues } from 'lightning/uiObjectInfoApi';
+import getProductFieldsDependencies from '@salesforce/apex/ProductListViewController.getProductFieldsDependencies'
+import updateEditedProductFields from '@salesforce/apex/ProductListViewController.updateEditedProductFields'
 
 
 const TOAST_SUCCESS_TYPE = 'success';
@@ -39,19 +39,46 @@ const columns = [
     { label: 'Product Code', fieldName: 'ProductCode', sortable: true },
     { label: 'Description', fieldName: 'Description' },
     { label: 'Size', fieldName: 'Size__c', sortable: true },
-    { label: 'Family', fieldName: 'Category__c' },
-
     {
         label: 'Family',
         type: 'picklistType',
         wrapText: true,
         typeAttributes: {
             label: {fieldName: ''},
-            options: {fieldName: 'picklistOptions'}
+            options: {fieldName: 'familyOptions'},
+            value: {fieldName: 'Category__c'},
+            fieldapi: 'Category__c',
+            productId: {fieldName: 'Id'},
+            disabled: {fieldName: 'disableFamily'}
         }
     },
-    { label: 'Category', fieldName: 'Sub_Category__c'},
-    { label: 'Sub Category', fieldName: 'Complementary_Category__c' },
+    {
+        label: 'Category',
+        type: 'picklistType',
+        wrapText: true,
+        typeAttributes: {
+            label: {fieldName: ''},
+            options: {fieldName: 'categoryOptions'},
+            value: {fieldName: 'Sub_Category__c'},
+            fieldapi: 'Sub_Category__c',
+            productId: {fieldName: 'Id'},
+            disabled: {fieldName: 'disableCategory'}
+        }
+    },
+
+    {
+        label: 'Sub Category',
+        type: 'picklistType',
+        wrapText: true,
+        typeAttributes: {
+            label: {fieldName: ''},
+            options: {fieldName: 'subCategoryOptions'},
+            value: {fieldName: 'Complementary_Category__c'},
+            fieldapi: 'Complementary_Category__c',
+            productId: {fieldName: 'Id'},
+            disabled: {fieldName: 'disableSubCategory'}
+        }
+    },
     { label: 'Hardware Finish', fieldName: 'Hardware_Finish__c' },
     { label: 'Glass', fieldName: 'Glass__c' },
     { label: 'Glass Thickness', fieldName: 'Glass_Thickness__c' }
@@ -70,13 +97,18 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
 
     @api paginationLimit;
     @api createProductForSObject = '';
-    
+
+    familyToCategoryDependencies;
+    categoryToSubCategoryDependencies;
+
     draftValues = [];
     sobject; // If component use for adding lines to sobject, current param identificates to which sobject need to add products
     targetRecordId; //target sobject id. Identificates to which record need to add lines
 
     @track data = [];
     @track isAddingMode = false; // If False - Checkboxes Present || True - Hidden
+    @track isEditMode = false;
+    @track isMassEditMode = false;
     @track pageNumber = 1;
     @track totalRecords = 0;
     @track sortDirection = 'asc';
@@ -139,8 +171,23 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
             this.isAddingMode = true;
         }
     }
+
+    
     connectedCallback(){
         // this.fetchProductRecords();
+        this.getFieldDependencies();
+    }
+
+    getFieldDependencies(){
+        getProductFieldsDependencies().then(res => {
+            const dependencies = JSON.parse(res);
+            this.familyToCategoryDependencies = dependencies.familyToCategory;
+            this.categoryToSubCategoryDependencies = dependencies.categoryToSubCategory;
+
+        }).catch(err => {
+            console.log(err);
+            this.showToast('Error occured during fetching field dependencies', err.body.message, TOAST_ERROR_TYPE);
+        })
     }
 
     /* Start Custom Event from child components Handlers */
@@ -167,6 +214,11 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
     fetchProductRecords(){
         this.showSpinner();
         this.dataIsReady = false;
+        console.log('JSON.stringify(this.filterConfig): ',JSON.stringify(this.filterConfig))
+        console.log('this.pageSize: ', JSON.stringify(this.pageSize))
+        console.log('this.pageNumber: ', JSON.stringify(this.pageNumber))
+        console.log('this.sortedBy: ', JSON.stringify(this.sortedBy))
+        console.log('this.sortDirection: ', JSON.stringify(this.sortDirection))
         fetchProducts({
             filters: JSON.stringify(this.filterConfig),
             pageSize: this.pageSize,
@@ -176,21 +228,31 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
         }).then(res => {
             const result = JSON.parse(res);
             let parsedData = result.data.map(el => el.product)
+
+            let familyOptions = []
+            for(let family in this.familyToCategoryDependencies){
+                familyOptions.push({
+                    label: family,
+                    value: family
+                })
+            }
+
+            
+
             parsedData.forEach(product => {
                 product.Product_Image_Short_URL__c = product.Product_Image_Short_URL__c ? product.Product_Image_Short_URL__c.replace('sales','partner') : '';
                 product['product_url'] = '/detail/'+product.Id;
+                product['familyOptions'] = familyOptions.sort((a,b) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0));
+                product['categoryOptions'] = this.compileDependentPicklistOptions(this.familyToCategoryDependencies, product.Category__c);
+                product['subCategoryOptions'] = this.compileDependentPicklistOptions(this.categoryToSubCategoryDependencies, product.Sub_Category__c);
+                
+
+                product['disableFamily'] = product['familyOptions'].length == 0;
+                product['disableCategory'] = product['categoryOptions'].length == 0;
+                product['disableSubCategory'] = product['subCategoryOptions'].length == 0;
+                product['edited'] = false;
             })
 
-            let data11 = ['New','Open','Test']
-            parsedData.forEach(el => {
-                el['picklistOptions'] = data11.map(r => {
-                    return {
-                        label: r,
-                        value: r
-                    }
-                })
-            })
-            console.log('kaka: ',JSON.stringify(parsedData));
             this.data = parsedData;
             this.totalRecords = result.totalRecords;
             this.dataIsReady = true;
@@ -203,6 +265,18 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
         })
     }
 
+    compileDependentPicklistOptions(dependency, productDependencyFieldValue){
+        let categoryValue = []
+        if(dependency[productDependencyFieldValue]){
+            dependency[productDependencyFieldValue].forEach(category => {
+                categoryValue.push({
+                    label: category.label,
+                    value: category.apiname
+                })
+            })
+        }
+        return categoryValue.sort((a,b) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0));
+    }
 
     sortBy(field, reverse, primer) {
         const key = primer
@@ -283,8 +357,14 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
     selectHandler(){
         const selectedRecords =  this.template.querySelector("c-salesforce-codex-data-table").getSelectedRows();
         if(selectedRecords.length > 0){
-            const modal = this.template.querySelector("c-add-product-c-m-p");
-            modal.setSelectedProducts(JSON.stringify(selectedRecords), this.sobject, this.targetRecordId);
+            if(this.isMassEditMode){
+                const modal = this.template.querySelector("c-products-mass-edit-c-m-p");
+                modal.initial();
+            }else{
+                const modal = this.template.querySelector("c-add-product-c-m-p");
+                modal.setSelectedProducts(JSON.stringify(selectedRecords), this.sobject, this.targetRecordId);
+            }
+            
         }else{
             this.showToast('Warning', 'No products selected.', TOAST_WARNING_TYPE);
         }
@@ -305,11 +385,84 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
     }
 
     handlePicklistChange(e){
-        console.log(JSON.stringify(this.data))
+        let index = this.data.findIndex(product => product.Id == e.detail.rowId)
+        console.log('index: ',index , ' === ', e.detail.rowId)
+        console.log('this.data[index]: ',JSON.stringify(this.data[index]))
+        console.log('JSON.s',JSON.stringify(this.data))
+        if(index > -1){
+            this.data[index][e.detail.field] = e.detail.value;
+
+            this.data[index]['categoryOptions'] = this.compileDependentPicklistOptions(this.familyToCategoryDependencies, this.data[index].Category__c);
+            this.data[index]['subCategoryOptions'] = this.compileDependentPicklistOptions(this.categoryToSubCategoryDependencies, this.data[index].Sub_Category__c);
+            
+
+            this.data[index]['disableFamily'] = this.data[index]['familyOptions'].length == 0;
+            this.data[index]['disableCategory'] = this.data[index]['categoryOptions'].length == 0;
+            this.data[index]['disableSubCategory'] = this.data[index]['subCategoryOptions'].length == 0;
+
+            this.data[index]['edited'] = true;
+        }
+
+        this.data = [...this.data]
         console.log(JSON.stringify(e.detail))
+
+        this.handleCheckIfProductsWereEdited();
+    }
+
+    saveUpdateChanges(){
+        this.showSpinner();
+        let editableData = []
+
+        this.data.forEach(el => {
+            if(el['edited'] == true){
+                editableData.push({
+                    productId: el.Id,
+                    family: el['Category__c'],
+                    category: el['Sub_Category__c'],
+                    subcategory: el['Complementary_Category__c']
+                })
+            }
+        })
+
+        if(editableData.length > 0){
+            console.log('JSON.stringify(editableData): ',JSON.stringify(editableData))
+            updateEditedProductFields({
+                updatedDataJson: JSON.stringify(editableData)
+            }).then(res => {
+                this.showToast('Success', 'Record were updated successfully.', TOAST_SUCCESS_TYPE);
+
+                this.refresh();
+                this.isEditMode = false;
+
+            }).catch(err => {
+                this.showToast('Error occured during updating fields.', err.body.message, TOAST_ERROR_TYPE);
+
+            })
+        }
+    }
+    handleCheckIfProductsWereEdited(){
+        let dataCopy = [...this.data]
+        let totalEdited = dataCopy.filter(el => el.edited == true).length
+        this.isEditMode = totalEdited > 0;
     }
     handleSave(e){
+        
         console.log(JSON.stringify(e.detail.draftValues))
+    }
+
+    handleMassEditMode(e){
+        if(this.data.length > 0){
+            if(this.isMassEditMode){ //If this.isMassEditMode = true, disable edit mode
+                this.isAddingMode = true; //False means checkboxes present
+                this.isMassEditMode = false;
+            }else{
+                this.isAddingMode = false; //False means checkboxes present
+                this.isMassEditMode = true;
+            }
+        }else{
+            this.showToast('Warning','List view has no displayed records. Please select some filters and click "Mass Edit" button again.', TOAST_WARNING_TYPE)
+        }
+        console.log('mass edit')
     }
 
     showToast(t, m, v) {
