@@ -5,7 +5,7 @@ public class AddProductCustomExtensionTest
  	{
          integer recordSize = 2;
     	AcctSeed__Accounting_Variable__c av = 
-            new AcctSeed__Accounting_Variable__c(Name = 'Seawin USA', 
+            new AcctSeed__Accounting_Variable__c(Name = 'Seawin Factory', 
             AcctSeed__Type__c = 'GL Account Variable 1');
         insert av;
         
@@ -309,15 +309,11 @@ public class AddProductCustomExtensionTest
         // create inventory balances 1
         AcctSeederp__warehouse__c warehouse = new AcctSeederp__warehouse__c();
         warehouse.Name = 'myWarehouse';
-        warehouse.GL_Account_Variable_1__c = av.Id;
-
         insert warehouse;
         
         AcctSeedErp__location__c location = new AcctSeedErp__location__c();
         location.Name = 'myLocation';
         location.AcctSeedERP__Warehouse__c = warehouse.id;
-        // location.GL_Account_Variable_1__c = av.Id;
-
         insert location;
         
         acctseederp__inventory_balance__c ib = new acctseederp__inventory_balance__c();
@@ -326,8 +322,6 @@ public class AddProductCustomExtensionTest
         ib.AcctSeedERP__Location__c = location.id;
         ib.AcctSeedERP__Product__c = prodList[0].id;
         ib.AcctSeedERP__Ledger__c = ledger.id;
-        ib.GL_Account_Variable_1__c = av.Id;
-
         insert ib;
 
         
@@ -376,19 +370,18 @@ public class AddProductCustomExtensionTest
         poim2.AcctSeedERP__Unit_Cost__c = 1;
         insert poim2;
         
-        // AcctSeedERP__Sales_Order_Inventory_Movement__c soim2 = new AcctSeedERP__Sales_Order_Inventory_Movement__c();
-        // soim2.AcctSeedERP__GL_Account_Variable_1__c = av.id;
-        // soim2.AcctSeedERP__Inventory_Balance__c = ib2.id;
-        // soim2.AcctSeedERP__Quantity__c = 1;
-        // soim2.AcctSeedERP__Movement_Date__c = date.today();
-        // soim2.AcctSeedERP__Sales_Order_Line__c = solines.id;
-        // soim2.AcctSeedERP__Unit_Cost__c = 1;
-        // insert soim2;
+        AcctSeedERP__Sales_Order_Inventory_Movement__c soim2 = new AcctSeedERP__Sales_Order_Inventory_Movement__c();
+        soim2.AcctSeedERP__GL_Account_Variable_1__c = av.id;
+        soim2.AcctSeedERP__Inventory_Balance__c = ib2.id;
+        soim2.AcctSeedERP__Quantity__c = 1;
+        soim2.AcctSeedERP__Movement_Date__c = date.today();
+        soim2.AcctSeedERP__Sales_Order_Line__c = solines.id;
+        soim2.AcctSeedERP__Unit_Cost__c = 1;
+        insert soim2;
 
     }
     
     @isTest static void firstRun(){
-        Test.startTest();
         
         OPportunity opp = [select id from Opportunity where name = 'myOpportunity' limit 1];
         
@@ -415,6 +408,7 @@ public class AddProductCustomExtensionTest
         AcctSeedERP__Purchase_Order_Line__c pol = [select id from AcctSeedERP__Purchase_Order_Line__c where
                                                    AcctSeedERP__Purchase_Order__c =:po.id limit 1];
         
+        Test.startTest();
         
         PageReference myVfPage = Page.AddProductCustomVFPage;
         Test.setCurrentPage(myVfPage);

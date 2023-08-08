@@ -1,0 +1,35 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-19-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+	<div>
+		<div style="width: 100px; height: 100px; background: red;"></div>
+	</div>
+	<div>
+
+	</div>
+	<table class="planer">
+	  <thead>
+		<tr>
+		  <th></th>
+		  <template for:each={days} for:item="day">
+			<th key={day}>{day}</th>
+		  </template>
+		</tr>
+	  </thead>
+	  <tbody>
+		<template for:each={hours} for:item="hour">
+		  <tr key={hour}>
+			<th>{hour}</th>
+			<template for:each={days} for:item="day">
+			  <td key={day} data-hour={hour} data-day={day}></td>
+			</template>
+		  </tr>
+		</template>
+	  </tbody>
+	</table>
+  </template>

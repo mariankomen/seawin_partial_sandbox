@@ -1,0 +1,134 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-01-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+	<template if:true={isSalesOrderOpened}>
+		<article class="slds-card">
+
+            <template if:true={_datatableData.Sales_Order_Commissions__c}>
+                <template if:true={_spinnersVisibility.Sales_Order_Commissions__c}>
+                    <div class="exampleHolder">
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                
+
+
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="custom:custom16" alternative-text="Products" title="Sales Order Line(s)"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Commission(s) ({_datatableData.Sales_Order_Commissions__c.totalRecords})</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+							<button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleRedirectToCreatePayable}>Create Payable</button>
+							<button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleRecalculateCommissions}>Recalculate Commissions</button>
+							<button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleCreateCommissionManually}>Create Commission Manually</button>
+
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="Sales_Order_Commissions__c"
+                                                    key-field="Id"
+                                                    data={_datatableData.Sales_Order_Commissions__c.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.Sales_Order_Commissions__c}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.Sales_Order_Commissions__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="Sales_Order_Commissions__c" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.Sales_Order_Commissions__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="Sales_Order_Commissions__c" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+
+
+
+        <article class="slds-card">
+
+            <template if:true={_datatableData.AcctSeed__Account_Payable__c}>
+                <template if:true={_spinnersVisibility.AcctSeed__Account_Payable__c}>
+                    <div class="exampleHolder">
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                
+
+
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="custom:custom16" alternative-text="Products" title="Sales Order Line(s)"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Commissions (Payables) ({_datatableData.AcctSeed__Account_Payable__c.totalRecords})</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+							<!-- <button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleRedirectToCreatePayable}>Create Payable</button> -->
+							<!-- <button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleRecalculateCommissions}>Recalculate Commissions</button> -->
+							<!-- <button class="slds-button slds-button_neutral" data-sobject="Sales_Order_Commissions__c" onclick={handleCreateCommissionManually}>Create Commission Manually</button> -->
+
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="AcctSeed__Account_Payable__c"
+                                                    key-field="Id"
+                                                    data={_datatableData.AcctSeed__Account_Payable__c.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.AcctSeed__Account_Payable__c}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.AcctSeed__Account_Payable__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="AcctSeed__Account_Payable__c" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.AcctSeed__Account_Payable__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="AcctSeed__Account_Payable__c" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+	</template>
+
+    <c-create-commission-manually-c-m-p record-id={recordId}></c-create-commission-manually-c-m-p>
+</template>

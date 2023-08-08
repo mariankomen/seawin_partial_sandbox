@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-12-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public class ListOfRecordsController {
     public Map<String, Set<String>> UserAndTeams_Map { get; set; }
     public Set<String> usersNames { get; set; }
@@ -243,9 +250,7 @@ public class ListOfRecordsController {
     }
     public void calculateTotalAmountCur(List<Opportunity_Dashboard__c> data, String totalFieldName){
         current_total = 0.00;
-        system.debug('data: '+JSON.serialize(data));
         for(Opportunity_Dashboard__c item: data){
-
                 try{
                     if(item.Opportunity__r != null && item.Opportunity__r.get(totalFieldName) != null){
                         current_total += (Decimal)item.Opportunity__r.get(totalFieldName);
@@ -2807,11 +2812,12 @@ public class ListOfRecordsController {
                 QueryStr += ' GL_Account_Variable_1__r.name = \'Seawin USA\' and ';
                 QueryStr += ' id in:eligibleIds and ';
                 QueryStr += ' (stagename = \'Closed Won\' or stagename = \'Closed Lost\') ';
-                QueryStr += ' and (NOT Name LIKE:ChangeOrder) ';
-                QueryStr += ' and (NOT Name LIKE:MockupOne) ';
-                QueryStr += ' and (NOT Name LIKE:MockupTwo) ';
-                QueryStr += ' and (NOT Name LIKE:MockupThree) ';
-                QueryStr += ' and (NOT Name LIKE:MockupFour) ';
+                QueryStr += ' and Type = \'Estimate\' ';
+                // QueryStr += ' and (NOT Name LIKE:ChangeOrder) ';
+                // QueryStr += ' and (NOT Name LIKE:MockupOne) ';
+                // QueryStr += ' and (NOT Name LIKE:MockupTwo) ';
+                // QueryStr += ' and (NOT Name LIKE:MockupThree) ';
+                // QueryStr += ' and (NOT Name LIKE:MockupFour) ';
                 
                 if (click == 'chart') {
                     QueryStr += ' and sales_rep_o__r.name in:Active_SalesReps_USA ';
@@ -2840,11 +2846,13 @@ public class ListOfRecordsController {
             QueryStr += ' RecordType.name = \'Seawin USA Hospitality\' and ';
             QueryStr += ' GL_Account_Variable_1__r.name = \'Seawin USA\' and ';
             QueryStr += ' (stagename = \'Closed Won\' or stagename = \'Closed Lost\') ';
-            QueryStr += ' and (NOT Name LIKE:ChangeOrder) ';
-            QueryStr += ' and (NOT Name LIKE:MockupOne) ';
-            QueryStr += ' and (NOT Name LIKE:MockupTwo) ';
-            QueryStr += ' and (NOT Name LIKE:MockupThree) ';
-            QueryStr += ' and (NOT Name LIKE:MockupFour) ';
+            QueryStr += ' and Type = \'Estimate\' ';
+
+            // QueryStr += ' and (NOT Name LIKE:ChangeOrder) ';
+            // QueryStr += ' and (NOT Name LIKE:MockupOne) ';
+            // QueryStr += ' and (NOT Name LIKE:MockupTwo) ';
+            // QueryStr += ' and (NOT Name LIKE:MockupThree) ';
+            // QueryStr += ' and (NOT Name LIKE:MockupFour) ';
             
             if (click == 'chart') {
                 QueryStr += ' and sales_rep_o__r.name in:Active_SalesReps_USA ';
@@ -3217,6 +3225,8 @@ public class ListOfRecordsController {
             Map<string, integer> Last12MonthsList_CombinedMap = MainSalesManagerDashboardUSACtrl.Last12MonthsList_CombinedMap();
 
             String yearStr = ApexPages.currentPage().getParameters().get('year');
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String monthStr = ApexPages.currentPage().getParameters().get('month');
             String recordTypeName = ApexPages.currentPage().getParameters().get('recordType');
             Integer year = yearStr != null && yearStr != '' ? Integer.valueOf(yearStr) : Date.Today().Year();
@@ -3253,8 +3263,11 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
             opp_dashboards = table_data;
 
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'Sales_Reps_PreOrder_Pipeline_SMD_USA'){
             //markkk
             /*****************************************************************************************************
@@ -3272,6 +3285,8 @@ public class ListOfRecordsController {
             ShowOwner = true;
             ShowAwardedOwner = true;
             
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
             String str = Apexpages.currentPage().getParameters().get('str');
@@ -3315,8 +3330,13 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
 
             opp_dashboards = table_data;
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            
+
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'PreOrder_Pipeline_By_Lead_Source_SMD_USA'){
             /*****************************************************************************************************
             *   @dashboard name  : Pipeline Last 12 Months By Lead Source
@@ -3332,6 +3352,8 @@ public class ListOfRecordsController {
             ShowOwner = true;
             ShowAwardedOwner = true;
             
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String str = Apexpages.currentPage().getParameters().get('str');
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
@@ -3366,9 +3388,13 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
 
             opp_dashboards = table_data;
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
 
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            
         }else if(chart == 'Company_Negotiation_Pipeline_SMD_USA'){
             
             isOpptys = true;
@@ -3381,6 +3407,8 @@ public class ListOfRecordsController {
 
             Map<string, integer> Last12MonthsList_CombinedMap = MainSalesManagerDashboardUSACtrl.Last12MonthsList_CombinedMap();
 
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
             String recordTypeName = ApexPages.currentPage().getParameters().get('recordType');
@@ -3420,8 +3448,11 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
             opp_dashboards = table_data;
 
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'Sales_Reps_Negotiation_Pipeline_SMD_USA'){
             //markkk
             /*****************************************************************************************************
@@ -3439,6 +3470,8 @@ public class ListOfRecordsController {
             ShowOwner = true;
             ShowAwardedOwner = true;
             
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
             String str = Apexpages.currentPage().getParameters().get('str');
@@ -3483,8 +3516,11 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
 
             opp_dashboards = table_data;
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'Negotiation_Pipeline_By_Lead_Source_SMD_USA'){
             /*****************************************************************************************************
             *   @dashboard name  : Pipeline Last 12 Months By Lead Source
@@ -3500,6 +3536,8 @@ public class ListOfRecordsController {
             ShowOwner = true;
             ShowAwardedOwner = true;
             
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String str = Apexpages.currentPage().getParameters().get('str');
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
@@ -3534,9 +3572,11 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
 
             opp_dashboards = table_data;
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+            
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'Monthly_Sales_Last_12_Months_Spec_SMD_H'){
             /*****************************************************************************************************
             *   @dashboard name  : Pipeline Last 12 Months By Lead Source
@@ -4703,7 +4743,8 @@ public class ListOfRecordsController {
             ShowAwardedOwner = true;
 
             Map<string, integer> Last12MonthsList_CombinedMap = MainSalesManagerDashboardUSACtrl.Last12MonthsList_CombinedMap();
-
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
 
@@ -4739,8 +4780,12 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
             opp_dashboards = table_data;
 
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
+
         }else if(chart == 'Company_Negotiation_Pipeline_SMD_USA_Sales'){
             isOpptys = true;
             showCloseDate = true;
@@ -4751,7 +4796,8 @@ public class ListOfRecordsController {
             ShowAwardedOwner = true;
 
             Map<string, integer> Last12MonthsList_CombinedMap = MainSalesManagerDashboardUSACtrl.Last12MonthsList_CombinedMap();
-
+            String calculateTotalBy = ApexPages.currentPage().getParameters().get('calculateTotalBy');
+            calculateTotalBy = calculateTotalBy == null ? 'Current Amount' : calculateTotalBy;
             String yearStr = ApexPages.currentPage().getParameters().get('year');
             String monthStr = ApexPages.currentPage().getParameters().get('month');
 
@@ -4787,8 +4833,11 @@ public class ListOfRecordsController {
             List<Opportunity_Dashboard__c> table_data = (List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query);
             opp_dashboards = table_data;
 
-            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount');
-            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), 'Amount__c');
+            String totalCalculationFieldCurrent = calculateTotalBy == 'Current Amount' ? 'Amount' : 'ExpectedRevenue';
+            String totalCalculationField = calculateTotalBy == 'Current Amount' ? 'Amount__c' : 'Opportunity_Expected_Revenue__c';
+
+            calculateTotalAmountCur((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationFieldCurrent);
+            calculateTotalAmount((List<Opportunity_Dashboard__c>)Database.query(opportunity_dashboard_query), totalCalculationField);
         }else if(chart == 'Tasks_Completion_SMD'){
             isTasks = true;
 

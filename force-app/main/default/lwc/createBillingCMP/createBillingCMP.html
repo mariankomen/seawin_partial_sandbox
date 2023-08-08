@@ -2,13 +2,14 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 07-02-2023
+  @last modified on  : 07-06-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
     <div class="c-container"> 
         <div class="header_buttons">
             <lightning-button label="Save" onclick={handleCreateBilling}></lightning-button>
+            <lightning-button label="Back" onclick={handleCloseQuickActionModal}></lightning-button>
         </div>
         <div class="header-fields">
 
@@ -77,6 +78,7 @@
                                                 field-api-name="Name" 
                                                 other-field-api-name="AcctSeed__Type__c" 
                                                 help-text="Select PDF Format"
+                                                selected-record-id={selectedBillingFormat}
                                                 required="true"
                                                 onvalueselected={handleSelectedValue} 
                                                 onvalueremoved={onRemoveHandler}>

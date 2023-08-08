@@ -5,7 +5,7 @@
   @last modified on  : 07-02-2023
   @last modified by  : Marian Lyzhychka
 -->
-<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride, force:lightningQuickAction">
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride,force:lightningQuickAction">
 
     <aura:html tag="style">             
         .slds-modal__container{        
@@ -15,4 +15,4 @@
     </aura:html>
 
     <c:createBillingCMP recordId="{!v.recordId}"></c:createBillingCMP>
-</aura:component>	
+</aura:component>

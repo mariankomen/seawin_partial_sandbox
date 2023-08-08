@@ -1,15 +1,22 @@
-<apex:page controller="ProductLabel3x4Controller" showHeader="false" sidebar="false" renderAs="pdf"
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-10-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<apex:page controller="ProductLabel3x4Controller" showHeader="false" sidebar="false" renderAs="advanced_pdf"
 applyBodyTag="false" applyHtmlTag="false">
 
     <html>
         <head>
             <style>
                 @page { 
-                
+                padding-top: 0;
                 size: 4in 3in; <!--width height-->
                 margin-left: 0.1cm;
                 margin-right: 0.1cm;
-                margin-top: 0.1cm;
+                margin-top: 0 !important;
                 margin-bottom: 0.1cm;
                 font-size: 13px;
 
@@ -17,6 +24,7 @@ applyBodyTag="false" applyHtmlTag="false">
                 
                 .print:last-child {
                     page-break-after: auto;
+                    page-break-inside: avoid;
                 }
 
                 body{
@@ -46,10 +54,14 @@ applyBodyTag="false" applyHtmlTag="false">
                     border-top: none;
                 }
                 .autoclass{
+                    display:block;
                     page-break-after: always;
+                    page-break-inside:avoid;
                 }
                 .breakclass{
+                    display:block;
                     page-break-after: auto;
+                    page-break-inside:avoid;
                 }
                 .pt5{
                     padding-top: 2px;
@@ -70,9 +82,11 @@ applyBodyTag="false" applyHtmlTag="false">
                 <!-- <apex:repeat value="{!line.iterations}" var="iter" id="theRepeatRender"> -->
                     <!-- Label 4x3 Hardware -->
                     <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Hardware' ,true,false)}">
-                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 1,
+                        
+                        <div>
+                        <!-- <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 1,
                         IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 38, 
-                        IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 35 )))}px;">
+                        IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 35 )))}px;"> -->
                             
                             <div >
                                 <div class=" w-50" style="display:inline-block;">
@@ -278,6 +292,7 @@ applyBodyTag="false" applyHtmlTag="false">
                         <div style="float: right; font-size: 9px; margin-top: -12px;">
                             {!line.templateName}
                         </div>
+                        
                     </apex:outputPanel>
                     
 
@@ -285,10 +300,11 @@ applyBodyTag="false" applyHtmlTag="false">
 
                     <!-- Label 4x3 Glass -->
                     <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Glass' ,true,false)}">
-
-                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 10,
+                        
+                        <div>
+                        <!-- <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 10,
                             IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 45, 
-                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 43, 45 )))}px;">
+                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 43, 45 )))}px;"> -->
 
                             
                             <div >
@@ -496,14 +512,16 @@ applyBodyTag="false" applyHtmlTag="false">
                         <div style="float: right; font-size: 9px; margin-top: -12px;">
                             {!line.templateName}
                         </div>
+                        
                     </apex:outputPanel>
     
 
                     <!-- Label 4x3 Generic -->
                     <apex:outputPanel rendered="{!IF(line.templateName == 'Label 4x3 Generic',true,false)}">
-                        <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 5,
+                        <div>
+                        <!-- <div style="margin-top: {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 5,
                             IF(AND(line.hasHardwareTemplateBefore, NOT(line.hasGlassTemplateBefore), NOT(line.hasGenericTemplateBefore)), 35, 
-                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 38 )))}px;">
+                            IF(AND(NOT(line.hasHardwareTemplateBefore), line.hasGlassTemplateBefore, NOT(line.hasGenericTemplateBefore)), 35, 38 )))}px;"> -->
 
                             <div >
                                <!-- <div> {!IF(NOT(OR(line.hasHardwareTemplateBefore, line.hasGlassTemplateBefore, line.hasGenericTemplateBefore)), 5,

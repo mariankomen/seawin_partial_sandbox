@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-11-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 @isTest
 public class USASalesManagerDashboardsTest {
     
@@ -983,12 +990,13 @@ public class USASalesManagerDashboardsTest {
     @isTest static void specified_dashboards(){
         Test.startTest();
         String recordTypeName = 'Seawin USA Hospitality';
-        HospitalityDashboardUSAController.Company_Total_Pre_Order_Pipeline_Last_12_Months(recordTypeName);
-        HospitalityDashboardUSAController.Sales_Reps_Total_Pipeline_Pre_Order_Last_12_Months(recordTypeName);
-        HospitalityDashboardUSAController.Pipeline_Pre_Order_Last_12_Months_By_Lead_Source(recordTypeName);
-        HospitalityDashboardUSAController.Company_Total_Negotiation_Pipeline_Last_12_Months(recordTypeName);
-        HospitalityDashboardUSAController.Sales_Reps_Total_Pipeline_Negotiation_Last_12_Months(recordTypeName);
-        HospitalityDashboardUSAController.Pipeline_Negotiation_Last_12_Months_By_Lead_Source(recordTypeName);
+        String calculateTotalBy = 'Current Amount';
+        HospitalityDashboardUSAController.Company_Total_Pre_Order_Pipeline_Last_12_Months(recordTypeName, calculateTotalBy);
+        HospitalityDashboardUSAController.Sales_Reps_Total_Pipeline_Pre_Order_Last_12_Months(recordTypeName, calculateTotalBy);
+        HospitalityDashboardUSAController.Pipeline_Pre_Order_Last_12_Months_By_Lead_Source(recordTypeName, calculateTotalBy);
+        HospitalityDashboardUSAController.Company_Total_Negotiation_Pipeline_Last_12_Months(recordTypeName, calculateTotalBy);
+        HospitalityDashboardUSAController.Sales_Reps_Total_Pipeline_Negotiation_Last_12_Months(recordTypeName, calculateTotalBy);
+        HospitalityDashboardUSAController.Pipeline_Negotiation_Last_12_Months_By_Lead_Source(recordTypeName, calculateTotalBy);
 
         SpecifiedDashboardController.Specififed_Reps_Total_Pipeline_Pre_Order_Last_12_Months();
         SpecifiedDashboardController.Specififed_Reps_Sales_Last_12_Months();

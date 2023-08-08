@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 07-03-2023
+  @last modified on  : 07-06-2023
   @last modified by  : Marian Lyzhychka
 -->
 <aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride,lightning:hasPageReference">
@@ -11,5 +11,5 @@
     <!--Declare Handler-->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>  
 
-    <c:createOpportunity recordTypeId="{!v.selectedRecordId}"></c:createOpportunity>
-</aura:component>	
+    <c:createOpportunity accountId="{!v.recordId}" recordTypeId="{!v.selectedRecordId}"></c:createOpportunity>
+</aura:component>

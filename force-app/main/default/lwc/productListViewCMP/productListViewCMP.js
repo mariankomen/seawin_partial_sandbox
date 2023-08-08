@@ -152,13 +152,14 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
           this.urlStateParameters = currentPageReference.state;
           this.setParametersBasedOnUrl();
 
-          console.log('sobject: ',this.sobject)
+        //   console.log('sobject: ',this.sobject)
           console.log('targetRecordId: ',this.targetRecordId)
        }
     }
 
     setParametersBasedOnUrl() {
         this.sobject = this.urlStateParameters.sobject || null;
+        console.log('sobject is: ',JSON.stringify(this.sobject))
         this.targetRecordId = this.urlStateParameters.recordId || null;
 
         this.checkIfComponentUseForAddingProducts();
@@ -174,7 +175,7 @@ export default class ProductListViewCMP extends NavigationMixin(LightningElement
 
     
     connectedCallback(){
-        // this.fetchProductRecords();
+        this.fetchProductRecords();
         this.getFieldDependencies();
     }
 

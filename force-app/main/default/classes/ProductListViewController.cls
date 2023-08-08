@@ -2,10 +2,10 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 07-03-2023
+ * @last modified on  : 08-02-2023
  * @last modified by  : Marian Lyzhychka
 **/
-public with sharing class ProductListViewController {
+public without sharing class ProductListViewController {
     
     public class ProductListViewControllerException extends Exception{}
     private static final Set<String> HEADER_FILTER_SET = new Set<String>{'Name', 'ProductCode', 'Description', 'Size__c', 'Type__c', 'UPC_Code__c', 'AcctSeed__Inventory_Type__c'};
@@ -148,16 +148,175 @@ public with sharing class ProductListViewController {
     public static void insertLinesController(String sobjectType, String recordId, String linesWrapper){
         try {
             List<InsertSObjectLineParamsWrapper> lines = (List<InsertSObjectLineParamsWrapper>)JSON.deserialize(linesWrapper, List<InsertSObjectLineParamsWrapper>.class);
-            
+            system.debug('123');
+            system.debug('sobjectType: '+sobjectType);
             if(sobjectType == 'so'){
                 insertSalesOrderLines(recordId, lines);
             }else if(sobjectType == 'opp'){
                 insertOpportunityLineItems(recordId, lines);
+            }else if(sobjectType == 'optionalopp'){
+                insertOptionalOpportunityLineItems(recordId, lines);
+            }else if(sobjectType == 'QuoteLineItem'){
+                system.debug('QuoteLineItem');
+                insertQuoteLineItems(recordId, lines);
+                system.debug('QuoteLineItem end');
+            }else if(sobjectType == 'OptionalProductQuote'){
+
             }
+            system.debug('345');
         } catch (Exception e) {
             throw new ProductListViewControllerException(e.getMessage());
         }
     }
+    private static void insertQuoteLineItems(String recordId, List<InsertSObjectLineParamsWrapper> linesWrapper){
+        Set<Id> productsIds = new Set<Id>();
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            productsIds.add(wrap.productId);
+        }
+        Id priceBookId = Test.isRunningTest() ? Test.getStandardPricebookId() : [select id, name from Pricebook2 where isStandard = true limit 1][0].id;
+        Map<Id, PriceBookEntry> productsPriceMap = new Map<Id, PriceBookEntry>();
+
+        for (PriceBookEntry pbe : [
+            SELECT id, unitprice, product2id
+            FROM pricebookentry
+            WHERE product2id IN :productsIds
+            and pricebook2Id=:priceBookId
+        ]) {
+            productsPriceMap.put(pbe.Product2Id, pbe);
+        }
+
+        List<QuoteLineItem> existingOptionalOpportunityLines = [SELECT Id, SortOrder FROM QuoteLineItem WHERE QuoteId =: recordId ORDER BY SortOrder DESC];
+        Boolean needUpdateExistingSortOrder = false;
+        Integer lastSortOrder;
+
+        if(existingOptionalOpportunityLines.size() > 0 && existingOptionalOpportunityLines[0].SortOrder != null){
+            lastSortOrder = Integer.valueOf(existingOptionalOpportunityLines[0].SortOrder + 1);
+        }else if(existingOptionalOpportunityLines.size() > 0){
+            lastSortOrder = 1;
+            needUpdateExistingSortOrder = true;
+        }else{
+            lastSortOrder = 1;
+        }
+
+
+        if(needUpdateExistingSortOrder){
+            for(QuoteLineItem sol: existingOptionalOpportunityLines){
+                sol.SortOrder = lastSortOrder;
+                lastSortOrder += 1;
+            }
+            update existingOptionalOpportunityLines;
+        }
+
+        List<QuoteLineItem> newOpportunityLineItemsList = new List<QuoteLineItem>();
+
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            QuoteLineItem oli = new QuoteLineItem();
+
+            oli.QuoteId = recordId;
+            oli.Product2Id = wrap.productId;
+            oli.SortOrder = lastSortOrder;
+            oli.Item_Description__c = wrap.description;
+            oli.Allow_Product_Description_Change__c = wrap.allowDescriptionChange;
+            oli.Size__c = wrap.size;
+            oli.UnitPrice = wrap.salesPrice;
+            oli.Quantity = wrap.quantity;
+            oli.PriceBookEntryId = productsPriceMap.containsKey(wrap.productId) ? productsPriceMap.get(wrap.productId).id : null;
+
+            newOpportunityLineItemsList.add(oli);
+            lastSortOrder += 1;
+        }
+
+        if(!newOpportunityLineItemsList.isEmpty()){
+            try{
+                insert newOpportunityLineItemsList;
+            }catch(Exception e){
+                system.debug(e.getMessage());
+                throw new ProductListViewControllerException(e.getMessage());
+            }
+        }
+    }
+
+
+
+
+    /**
+    * @description 
+    * @author Marian Lyzhychka | 08-01-2023 
+    * @param recordId 
+    * @param linesWrapper 
+    **/
+    private static void insertOptionalOpportunityLineItems(String recordId, List<InsertSObjectLineParamsWrapper> linesWrapper){
+        Set<Id> productsIds = new Set<Id>();
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            productsIds.add(wrap.productId);
+        }
+        Id priceBookId = Test.isRunningTest() ? Test.getStandardPricebookId() : [select id, name from Pricebook2 where isStandard = true limit 1][0].id;
+        Map<Id, PriceBookEntry> productsPriceMap = new Map<Id, PriceBookEntry>();
+
+        for (PriceBookEntry pbe : [
+            SELECT id, unitprice, product2id
+            FROM pricebookentry
+            WHERE product2id IN :productsIds
+            and pricebook2Id=:priceBookId
+        ]) {
+            productsPriceMap.put(pbe.Product2Id, pbe);
+        }
+
+
+
+        Opportunity opp = [SELECT Id, GL_Account_Variable_1__c FROM Opportunity WHERE Id =: recordId LIMIT 1];
+
+        List<Optional_Products_Opportunity__c> existingOptionalOpportunityLines = [SELECT Id, SortOrder__c, Opportunity__c FROM Optional_Products_Opportunity__c WHERE Opportunity__c =: recordId ORDER BY sortorder__c DESC];
+        Boolean needUpdateExistingSortOrder = false;
+        Integer lastSortOrder;
+
+        if(existingOptionalOpportunityLines.size() > 0 && existingOptionalOpportunityLines[0].SortOrder__c != null){
+            lastSortOrder = Integer.valueOf(existingOptionalOpportunityLines[0].SortOrder__c + 1);
+        }else if(existingOptionalOpportunityLines.size() > 0){
+            lastSortOrder = 1;
+            needUpdateExistingSortOrder = true;
+        }else{
+            lastSortOrder = 1;
+        }
+
+
+        if(needUpdateExistingSortOrder){
+            for(Optional_Products_Opportunity__c sol: existingOptionalOpportunityLines){
+                sol.SortOrder__c = lastSortOrder;
+                lastSortOrder += 1;
+            }
+            update existingOptionalOpportunityLines;
+        }
+
+        List<Optional_Products_Opportunity__c> newOpportunityLineItemsList = new List<Optional_Products_Opportunity__c>();
+
+        for(InsertSObjectLineParamsWrapper wrap: linesWrapper){
+            Optional_Products_Opportunity__c oli = new Optional_Products_Opportunity__c();
+            oli.Opportunity__c = recordId;
+            oli.Product__c = wrap.productId;
+            oli.SortOrder__c = lastSortOrder;
+            oli.Item_Description__c = wrap.description;
+            oli.GL_Account_Variable_1__c = opp.GL_Account_Variable_1__c;
+            oli.Allow_Product_Description_Change__c = wrap.allowDescriptionChange;
+            oli.Size__c = wrap.size;
+            oli.UnitPrice__c = wrap.salesPrice;
+            oli.Quantity__c = wrap.quantity;
+            oli.PriceBookEntryId__c = productsPriceMap.containsKey(wrap.productId) ? productsPriceMap.get(wrap.productId).id : null;
+
+            newOpportunityLineItemsList.add(oli);
+            lastSortOrder += 1;
+        }
+
+        if(!newOpportunityLineItemsList.isEmpty()){
+            try{
+                insert newOpportunityLineItemsList;
+            }catch(Exception e){
+                system.debug(e.getMessage());
+                throw new ProductListViewControllerException(e.getMessage());
+            }
+        }
+    }
+
 
     private static void insertOpportunityLineItems(String recordId, List<InsertSObjectLineParamsWrapper> linesWrapper){
         Set<Id> productsIds = new Set<Id>();

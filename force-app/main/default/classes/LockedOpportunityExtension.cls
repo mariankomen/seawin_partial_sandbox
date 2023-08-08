@@ -19,7 +19,7 @@ public class LockedOpportunityExtension {
         Billed = o.TotalBills__c > 0 ? true : false;
         Closed = o.Account.Status__c != 'Rejected' && o.StageName == 'Closed Won' && o.TotalSalesOrderInOpp__c > 0;
 		Specified = o.Referral_Sales_Rep__c != null && o.Specified_Rep__c == null && o.Specified_del__c == false;
-        AlreadySpecified = o.Specified_Rep__c != null || o.Specified_del__c == true;
+        AlreadySpecified = o.Specified_Rep__c != null;
         String msg = '';
 
         // If Opportunity in Approval

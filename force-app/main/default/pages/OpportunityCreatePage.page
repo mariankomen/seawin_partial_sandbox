@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-06-2023
+  @last modified by  : Marian Lyzhychka
+-->
 <apex:page standardcontroller="Opportunity" extensions="OpportunityCreateExtension" id="createpage">
     <style>
         .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
@@ -75,24 +82,20 @@
                 
 
                 <apex:inputField value="{!Opp.GL_Account_Variable_1__c}" />
-                <apex:inputField id="probability" value="{!Opp.Probability}"/>
-                
+                <apex:inputField value="{!Opp.Sub_Stage__c}" />
 
                 <apex:inputField value="{!Opp.Project__c}" />
+                <apex:inputField id="probability" value="{!Opp.Probability}"/>
+                
+                <apex:inputField value="{!Opp.Approval_Status__c}" required="true"/>
                 <apex:inputField id="forecastcategoryname" value="{!Opp.ForecastCategoryName}" />
                 
-
-                <apex:inputField value="{!Opp.Approval_Status__c}" required="true"/>
+                <apex:outputField value="{!Opp.Amount}" />
                 <apex:inputField value="{!Opp.CloseDate}" />
 
-                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opp.Price_Level__c}" />
                 <apex:inputField value="{!Opp.Loss_Reason__c}" />
                 
-
-                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
-                <apex:outputField value="{!Opp.Amount}" />
-                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
-                <apex:inputField value="{!Opp.Price_Level__c}" />
             </apex:pageBlockSection>
             <apex:pageBlockSection title="Hospitality Analysis" columns="2" 
             collapsible="false" rendered="{!RecordTypeName == 'Seawin USA Hospitality'}">

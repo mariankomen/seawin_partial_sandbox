@@ -38,13 +38,13 @@ public with sharing class BillingCashReceiptHelper implements ITriggerHelper{
     public static void afterDelete(List<sObject> oldList , Map<Id, sObject> oldMap) {
         List<AcctSeed__Billing_Cash_Receipt__c> billingCashReceiptOldList = (List<AcctSeed__Billing_Cash_Receipt__c>)oldList;
 
-        Set<Id> cashReceiptIds = new Set<Id>();
+        Set<Id> cash_rec_ids = new Set<Id>();
 
         for(AcctSeed__Billing_Cash_Receipt__c cr: billingCashReceiptOldList){
-            cashReceiptIds.add(cr.AcctSeed__Cash_Receipt__c);
+            cash_rec_ids.add(cr.AcctSeed__Cash_Receipt__c);
         }
 
-        AfterBillingCashReceiptExtension.unpostRelatedCashReceipts(cashReceiptIds);
+        AfterBillingCashReceiptExtension.unpostRelatedCashReceipts(cash_rec_ids);
     }
      
     public static void afterUnDelete(List<sObject> newList, Map<Id, sObject> newMap) {

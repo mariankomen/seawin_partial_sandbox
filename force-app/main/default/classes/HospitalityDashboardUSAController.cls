@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-11-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 global without sharing class HospitalityDashboardUSAController extends MainSalesManagerDashboardUSACtrl {
 
     public Map<String, Boolean> dashboardVisibility {get;set;}
@@ -1957,12 +1964,6 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
         Set<string> Active_SalesReps = Active_SalesReps();
 
-        String ChangeOrder = '%Change Order%';
-        String MockupOne = '%Mock-Up%';
-        String MockupTwo = '%Mock Up%';
-        String MockupThree = '%Mock%';
-        String MockupFour = '%Mockup%';
-        
         map<string, List<ValuesWrapper>> NegWinRateMapLocal = new Map<string, List<ValuesWrapper>>();
         
         // get records from opportunity history which were at negotiation stage
@@ -2005,11 +2006,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
                 AND GL_Account_Variable_1__r.name = 'Seawin USA'
                 AND (StageName = 'Closed Won'
                      OR StageName = 'Closed Lost')
-                AND (NOT Name LIKE :ChangeOrder)
-                AND (NOT Name LIKE :MockupOne)
-                AND (NOT Name LIKE :MockupTwo)
-                AND (NOT Name LIKE :MockupThree)
-                AND (NOT Name LIKE :MockupFour)
+                AND Type = 'Estimate'
                 AND id IN :eligibleIds
                 AND sales_rep_o__r.name IN :Active_SalesReps
                 GROUP BY sales_rep_o__r.name
@@ -2032,11 +2029,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
                     RecordType.name = 'Seawin USA Hospitality'
                     AND GL_Account_Variable_1__r.name = 'Seawin USA'
                     AND StageName = 'Closed Won'
-                    AND (NOT Name LIKE :ChangeOrder)
-                    AND (NOT Name LIKE :MockupOne)
-                    AND (NOT Name LIKE :MockupTwo)
-                    AND (NOT Name LIKE :MockupThree)
-                    AND (NOT Name LIKE :MockupFour)
+                    AND Type = 'Estimate'
                     AND id IN :eligibleIds
                     AND sales_rep_o__r.name IN :Active_SalesReps
                     GROUP BY Sales_Rep_O__r.name
@@ -2100,11 +2093,14 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
         Set<string> Active_SalesReps = Active_SalesReps();
 
-        String ChangeOrder = '%Change Order%';
-        String MockupOne = '%Mock-Up%';
-        String MockupTwo = '%Mock Up%';
-        String MockupThree = '%Mock%';
-        String MockupFour = '%Mockup%';
+        // Add picklist for pre-order and negotiationa, Current Amount (full total without probability) / expected revenue 
+        // Month End Amount/current/expected revenue,  display total in same column
+
+        // type Estimate = for USA
+        // for pipeline total sum Expected Revenue
+
+
+        
         
         map<string, List<ValuesWrapper>> WinRateMapLocal = new Map<string, List<ValuesWrapper>>();
         
@@ -2116,11 +2112,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
             AND GL_Account_Variable_1__r.name = 'Seawin USA'
             AND (StageName = 'Closed Won'
                  OR StageName = 'Closed Lost')
-            AND (NOT Name LIKE :ChangeOrder)
-            AND (NOT Name LIKE :MockupOne)
-            AND (NOT Name LIKE :MockupTwo)
-            AND (NOT Name LIKE :MockupThree)
-            AND (NOT Name LIKE :MockupFour)
+            AND Type = 'Estimate'
             AND sales_rep_o__r.name IN :Active_SalesReps
             GROUP BY sales_rep_o__r.name
         ];
@@ -2142,11 +2134,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
                 RecordType.name = 'Seawin USA Hospitality'
                 AND GL_Account_Variable_1__r.name = 'Seawin USA'
                 AND StageName = 'Closed Won'
-                AND (NOT Name LIKE :ChangeOrder)
-                AND (NOT Name LIKE :MockupOne)
-                AND (NOT Name LIKE :MockupTwo)
-                AND (NOT Name LIKE :MockupThree)
-                AND (NOT Name LIKE :MockupFour)
+                AND Type = 'Estimate'
                 AND sales_rep_o__r.name IN :Active_SalesReps
                 GROUP BY Sales_Rep_O__r.name
                 ORDER BY Sales_Rep_O__r.name
@@ -2791,7 +2779,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
     @RemoteAction
     @ReadOnly
-    global static List<AggregateResult> Company_Total_Pre_Order_Pipeline_Last_12_Months(String recordTypeName) {
+    global static List<AggregateResult> Company_Total_Pre_Order_Pipeline_Last_12_Months(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Company Total Pipeline Last 12 Months
         *   @chart name      : Company_Total_Pipeline_SMD_USA
@@ -2802,23 +2790,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
         Map<string, integer> Last12MonthsList_CombinedMap = Last12MonthsList_CombinedMap();
         Set<String> months = Last12MonthsList_CombinedMap.keySet();
-        // List<AggregateResult> opportunity_data = [
-        //     SELECT  
-        //     SUM(Amount__c) amount, 
-        //     calendar_month(Inserting_Date__c) month,
-        //     calendar_year(Inserting_Date__c) year
-        //     FROM Opportunity_Dashboard__c 
-        //     WHERE 
-        //     Month_Year__c IN:Last12MonthsList_CombinedMap.keySet()
-        //     AND Opportunity_Forecast_Category__c = 'Pipeline'
-        //     AND Opportunity_StageName__c = 'Pre-Order'
-        //     AND Opportunity_GL_Var_1__r.Name = 'Seawin USA'
-        //     AND Amount__c != null
-        //     AND Sal_Rep_Team_Name__c IN:All_SalesReps
-            
-        //     GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)
-        // ];
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year';
         query += ' FROM Opportunity_Dashboard__c ';
@@ -2841,7 +2818,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
     @RemoteAction
     @ReadOnly
-    global static Map<String, List<AggregateResult>> Sales_Reps_Total_Pipeline_Pre_Order_Last_12_Months(String recordTypeName) {
+    global static Map<String, List<AggregateResult>> Sales_Reps_Total_Pipeline_Pre_Order_Last_12_Months(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Pipeline Preorder Last 12 Months by Sales Rep / Team
         *   @chart name      : Sales_Reps_Total_Pipeline_SMD_USA
@@ -2867,7 +2844,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
         //                                                             calendar_year(Inserting_Date__c), 
         //                                                             calendar_month(Inserting_Date__c)];
 
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year,';
         query += ' Sales_Rep_Team__r.Name sal_rep';
@@ -2902,7 +2884,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
     @RemoteAction
     @ReadOnly
-    global static Map<String, List<AggregateResult>> Pipeline_Pre_Order_Last_12_Months_By_Lead_Source(String recordTypeName) {
+    global static Map<String, List<AggregateResult>> Pipeline_Pre_Order_Last_12_Months_By_Lead_Source(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Pipeline Last 12 Months By Lead Source
         *   @chart name      : Total_Pipeline_By_Lead_Source_SMD_USA
@@ -2927,7 +2909,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
         //                                                     GROUP BY Opportunity_Lead_Source__c, 
         //                                                             calendar_year(Inserting_Date__c), 
         //                                                             calendar_month(Inserting_Date__c)];
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year,';
         query += ' Opportunity_Lead_Source__c lead_source';
@@ -2963,7 +2950,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
     //Negotiation Graphs
     @RemoteAction
     @ReadOnly
-    global static List<AggregateResult> Company_Total_Negotiation_Pipeline_Last_12_Months(String recordTypeName) {
+    global static List<AggregateResult> Company_Total_Negotiation_Pipeline_Last_12_Months(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Negotiation Pipeline Last 12 Months
         *   @chart name      : Company_Total_Pipeline_SMD_USA
@@ -2990,7 +2977,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
         //     GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)
         // ];
 
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year';
         query += ' FROM Opportunity_Dashboard__c ';
@@ -3010,7 +3002,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
     @RemoteAction
     @ReadOnly
-    global static Map<String, List<AggregateResult>> Sales_Reps_Total_Pipeline_Negotiation_Last_12_Months(String recordTypeName) {
+    global static Map<String, List<AggregateResult>> Sales_Reps_Total_Pipeline_Negotiation_Last_12_Months(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Negotiation Pipeline Last 12 Months by Sales Rep / Team
         *   @chart name      : Sales_Reps_Total_Pipeline_SMD_USA
@@ -3035,7 +3027,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
         //                                                     GROUP BY Sales_Rep_Team__r.Name, 
         //                                                             calendar_year(Inserting_Date__c), 
         //                                                             calendar_month(Inserting_Date__c)];
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year,';
         query += ' Sales_Rep_Team__r.Name sal_rep';
@@ -3069,7 +3066,7 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
 
     @RemoteAction
     @ReadOnly
-    global static Map<String, List<AggregateResult>> Pipeline_Negotiation_Last_12_Months_By_Lead_Source(String recordTypeName) {
+    global static Map<String, List<AggregateResult>> Pipeline_Negotiation_Last_12_Months_By_Lead_Source(String recordTypeName, String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Negotiation Pipeline Last 12 Months By Lead Source
         *   @chart name      : Total_Pipeline_By_Lead_Source_SMD_USA
@@ -3096,7 +3093,12 @@ global without sharing class HospitalityDashboardUSAController extends MainSales
         //                                                             calendar_year(Inserting_Date__c), 
         //                                                             calendar_month(Inserting_Date__c)];
 
-        String query = 'SELECT SUM(Amount__c) amount, ';
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
         query += ' calendar_month(Inserting_Date__c) month,';
         query += ' calendar_year(Inserting_Date__c) year,';
         query += ' Opportunity_Lead_Source__c lead_source';

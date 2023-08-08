@@ -1,0 +1,23 @@
+/* Add your custom styles here */
+
+.planer {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.planer th,
+.planer td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+.planer th {
+  background-color: #f2f2f2;
+}
+
+.planer td[data-hour]:hover,
+.planer td[data-day]:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}

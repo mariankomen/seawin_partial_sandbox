@@ -1,10 +1,3 @@
-/**
- * @description       : 
- * @author            : Marian Lyzhychka
- * @group             : 
- * @last modified on  : 06-28-2023
- * @last modified by  : Marian Lyzhychka
-**/
 public class OpportunitySalesProcessPathExtension {
     
     public Opportunity Opp {public get; private set;}
@@ -188,7 +181,7 @@ public class OpportunitySalesProcessPathExtension {
             
         }
     }
-    public void changeStage(){
+    public PageReference changeStage(){
         
         string stageNameIs = ApexPages.currentPage().getParameters().get('stageNameIs'); 
         
@@ -233,7 +226,7 @@ public class OpportunitySalesProcessPathExtension {
             }
         }
         
-        // return null;
+        return null;
     }
 
     

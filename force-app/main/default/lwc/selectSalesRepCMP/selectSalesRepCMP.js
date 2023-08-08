@@ -2,10 +2,10 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 06-24-2023
+ * @last modified on  : 07-06-2023
  * @last modified by  : Marian Lyzhychka
 **/
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import getSalesRepTeamMembers from '@salesforce/apex/SalesRepTeamController.getSalesRepTeamMembers'
 
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -16,15 +16,22 @@ const TOAST_ERROR_TYPE = 'error';
 
 export default class SelectSalesRepCMP extends LightningElement {
 
-    selectedSalesRep;
+    
+    @api selectedSalesRep;
     @track selectedSalesRepMembers = []
     selectedOwner;
     @track isSpinnerShowing = false;
     
+    @track _isMembersReady = false;
     get _isMembersReady(){
         return !!this.selectedSalesRepMembers.length;
     }
-
+    @api reselectSalesRep(salRepId){
+        let cmp = this.template.querySelector('c-reusable-lookup')
+        cmp.fetchDefaultRecord(salRepId)
+        this.selectedSalesRep = salRepId;
+        this.getSalesRepMembers()
+    }
     handleSelectedValue(e){
         console.log(JSON.stringify(e.detail))
         this.selectedSalesRep = e.detail.id
@@ -53,7 +60,12 @@ export default class SelectSalesRepCMP extends LightningElement {
             })
 
             this.selectedSalesRepMembers = membersArr;
+
+            if(!!this.selectedSalesRepMembers.length){
+                this._isMembersReady = true;
+            }
         }).catch(err => {
+            console.error(err)
             this.showToast('Error during fetching sales rep members.', err.message.body, TOAST_ERROR_TYPE)
         })
     }

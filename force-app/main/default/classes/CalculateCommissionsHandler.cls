@@ -633,7 +633,7 @@ public class CalculateCommissionsHandler {
     // Delete Commissions for Billing type Invoice
     public static void DeleteCommissions(set<id> keys, Boolean isMemo){
         
-        // try{
+        try{
             
             string queryStr = '';
             
@@ -647,11 +647,11 @@ public class CalculateCommissionsHandler {
             
             if(!DeletableCommissions.isEmpty()) delete DeletableCommissions;
             
-        // }catch(Exception ex){
+        }catch(Exception ex){
             
-        //     system.debug('Error occured: ');
-        //     system.debug(ex.getMessage());
-        // }
+            system.debug('Error occured: ');
+            system.debug(ex.getMessage());
+        }
     }
     
     public static map<id, Decimal> FindBillingLineTotal(set<id> billingIds){

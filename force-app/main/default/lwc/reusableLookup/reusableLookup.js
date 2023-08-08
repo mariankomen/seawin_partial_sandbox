@@ -41,8 +41,16 @@ export default class ReusableLookup extends LightningElement {
         return this.recordsList.length > 0;
     }
 
+    @api fetchDefaultRecord(recordId){
+        this.selectedRecordId = recordId
+        console.log('this. hahahahahahhaha: ',this.selectedRecordId)
+        if (this.selectedRecordId) {
+            this.fetchSobjectRecords(true);
+        }
+    }
     //getting the default selected record
     connectedCallback() {
+        console.log('this.selectedRecordId: ',this.selectedRecordId)
         if (this.selectedRecordId) {
             this.fetchSobjectRecords(true);
         }
@@ -53,6 +61,7 @@ export default class ReusableLookup extends LightningElement {
         fetchRecords({
             inputWrapper: this.methodInput
         }).then(result => {
+            console.log('result: ',result)
             if (loadEvent && result) {
                 this.selectedRecordName = result[0].mainField;
             } else if (result) {

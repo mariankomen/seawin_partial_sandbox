@@ -42,7 +42,7 @@ export default class AddProductCMP extends NavigationMixin(LightningElement) {
         this.isModalOpen = false;
         this._isDataReady = false;
         this._sObjectCode;
-        this.ecordId;
+        this.recordId;
 
         this._linesWrapperList = [];
 
@@ -179,14 +179,13 @@ export default class AddProductCMP extends NavigationMixin(LightningElement) {
             recordId: this.recordId,
             linesWrapper: JSON.stringify(this._linesWrapperList)
         }).then(res => {
-            
+            console.log('lines were inserted');
             this.showToast('Success', 'Products were added succesfully.',TOAST_SUCCESS_TYPE)
 
             this[NavigationMixin.Navigate]({
                 type: 'standard__recordPage',
                 attributes: {
                     recordId: this.recordId,
-                    objectApiName: 'AcctSeedERP__Sales_Order__c',
                     actionName: 'view'
                 }
             });

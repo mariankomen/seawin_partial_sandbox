@@ -186,7 +186,7 @@
         <apex:pageBlock title="Executed Documents" rendered="{!$ObjectType.AcctSeedERP__Sales_Order__c.fields.Name.Accessible}">
             
             <apex:pageBlockButtons location="top">
-                <apex:commandButton id="TransferToAttachments" onclick="return TransferToAttachments();" reRender="" value="Transfer to Attachments SLAVIK" />
+                <apex:commandButton id="TransferToAttachments" onclick="return TransferToAttachments();" reRender="" value="Transfer to Attachments" />
             </apex:pageBlockButtons>
             
             <apex:actionFunction action="{!getCheckedExecutedDocs}" name="TransferExecutedToAttachments" reRender="" >

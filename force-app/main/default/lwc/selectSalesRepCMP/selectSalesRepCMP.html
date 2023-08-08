@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 06-25-2023
+  @last modified on  : 07-06-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -19,6 +19,7 @@
                                     field-api-name="Name" 
                                     other-field-api-name="Email__c" 
                                     help-text="Select Sales Rep/Team"
+                                    selected-record-id={selectedSalesRep}
                                     required="true"
                                     onvalueselected={handleSelectedValue} 
                                     onvalueremoved={onRemoveHandler}>

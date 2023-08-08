@@ -1,24 +1,76 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-10-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public class DifferentUpdatesBatch implements Database.Batchable<sObject>{
 
     public Database.QueryLocator start(Database.BatchableContext bc) {
-        String query = 'SELECT Id FROM Opportunity WHERE StageName !=\'Closed Won\' AND StageName !=\'Closed Lost\' AND StageName !=\'Not Qualified\'';
+        String query = 'SELECT Id, Name, Type FROM Opportunity';
         return Database.getQueryLocator(query);
     }
 
     public void execute(Database.BatchableContext bc, List<Opportunity> records){
-        Opportunity opp = records[0];
-        List<OpportunityLineItem> line_items = [SELECT Id, SortOrder FROM OpportunityLineItem WHERE OpportunityId=:opp.Id ORDER BY SortOrder];
-        if(!line_items.isEmpty()){
-            Integer sort_order = line_items[line_items.size() - 1].SortOrder != null ? line_items[line_items.size() - 1].SortOrder : 1;
-
-            for(OpportunityLineItem oli:line_items){
-                if(oli.SortOrder == null){
-                    oli.SortOrder = sort_order;
-                    sort_order++;
-                }
+        for(Opportunity opp: records){
+            String name = opp.Name.toLowerCase();
+            if(name.contains('case order') || name.contains('caseorder') || name.contains('issue')){
+                opp.Type = 'Case Order';
+            }else if(name.contains('changed order') || name.contains('changedorder')){
+                opp.Type = 'Change Order';
+            }else if(name.contains('claim order') || name.contains('claimorder')){
+                opp.Type = 'Claim Order';
+            }else if(name.contains('marketing material') || name.contains('marketing materials') || name.contains('catalog') || name.contains('brochure')){
+                opp.Type = 'Marketing Materials';
+            }else if(name.contains('mock-up samples') || name.contains('mock-up sample') || name.contains('mock-up') || name.contains('mockup') || name.contains('mock up')){
+                opp.Type = 'Mock-Up Sample';
+            }else if(name.contains('parts order') || name.contains('partsorder') || name.contains('parts')){
+                opp.Type = 'Parts Order';
+            }else if(name.contains('replacement') || name.contains('replacements')){
+                opp.Type = 'Replacement';
+            }else if(name.contains('sales & marketing samples') || name.contains('sample') || name.contains('samples')){
+                opp.Type = 'Sales & Marketing Samples';
+            }else if(name.contains('warranty related') || name.contains('warranty')){
+                opp.Type = 'Warranty Related';
             }
-            Database.update(line_items, false);
         }
+
+        
+        
+        Database.update(records,false);
+
+        Integer i = 0;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
+        i++;
     }
 
     public void finish(Database.BatchableContext bc){

@@ -1,0 +1,11 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-05-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<apex:page recordSetVar="accs" controller="TransferOptionalProductsController">
+
+
+</apex:page>

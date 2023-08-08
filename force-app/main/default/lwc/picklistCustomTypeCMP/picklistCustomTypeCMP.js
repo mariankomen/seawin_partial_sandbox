@@ -13,14 +13,14 @@ export default class PicklistCustomTypeCMP extends LightningElement {
 
     handleChange(e){
         let row = this.productid
+        console.log('hahaha')
         const selectEvent = new CustomEvent('picklistselect', {
             composed: true,
             bubbles: true,
             detail: {
                 value: e.detail.value,
                 field: e.target.dataset.field,
-                rowId: row,
-                test: 'test'
+                rowId: row
             }
         });
         this.dispatchEvent(selectEvent);

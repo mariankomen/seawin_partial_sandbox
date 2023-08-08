@@ -1,8 +1,6 @@
 public class PurchaseOrderShipmentHandler {
     
     public static void createPurchaseOrderShipment(List<AcctSeedERP__Purchase_Order_Inventory_Movement__c> poMovements){
-        integer i = 0;
-        if(i == 0) return;
         Set<Id> movementIds = new Map<Id, AcctSeedERP__Purchase_Order_Inventory_Movement__c>(poMovements).keySet();
         Map<Id, Id> pol_inventoryBalance = new Map<Id, Id>();
         if(movementIds.isEmpty()) return;

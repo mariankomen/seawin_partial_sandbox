@@ -69,7 +69,7 @@ public with sharing class PurchaseOrderReportBuilder {
 
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
 
-            mail.setSubject('Seawin - Weekly Purchase Order Delay Reports');
+            mail.setSubject('Seawin - Weekly Purchase Order Reports for: '+wrap.userName);
             mail.setToAddresses(new List<String>{wrap.userEmail});
 
             mail.setHtmlBody('The following POs require your attention:'); 
@@ -79,7 +79,7 @@ public with sharing class PurchaseOrderReportBuilder {
 
             if(wrap.hasRecordsInFirstReport){
                 Messaging.EmailFileAttachment reportOneAttachment = new Messaging.EmailFileAttachment();
-                reportOneAttachment.setFileName('Production Delayed POs.csv');
+                reportOneAttachment.setFileName('Report #1.csv');
                 reportOneAttachment.setBody(Blob.valueOf(wrap.reportOneCSV));
                 attachmentsReports.add(reportOneAttachment);
             }

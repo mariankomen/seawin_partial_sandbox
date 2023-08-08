@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-24-2023
+  @last modified by  : Marian Lyzhychka
+-->
 <apex:page controller="createPurchaseOrderController" Tabstyle="AcctSeedERP__Sales_Order__c" title="Sales Order" >
     <apex:form >
         <apex:sectionHeader title="Sales Order" subtitle="{!so.name}"/>

@@ -1,0 +1,254 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-24-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <div class="c-container"> 
+        <div class="header_buttons">
+            <lightning-button label="Save" onclick={handleCreateBilling}></lightning-button>
+            <lightning-button label="Back" onclick={handleCloseQuickActionModal}></lightning-button>
+        </div>
+        <div class="header-fields">
+
+            <!-- Row 1 -->
+            <div class="header-fields__row">
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <div class="field_start">
+                            <b>Account Name</b>
+                        </div>
+                        <div>
+                            <p>{accountInfo.name}</p>
+                        </div>
+                    </span>
+                </div>
+
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <div class="field_start">
+                            <b>Billing Date</b>
+                        </div>
+                        <div>
+                            <lightning-input type="date" required value={billingDate} onchange={handleBillingDateChange}></lightning-input>
+                        </div>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="header-fields__row">
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <div class="field_start">
+                            <b>Ledger</b>
+                        </div>
+                        <div>
+                            <p>{ledgerInfo.Name}</p>
+                        </div>
+                    </span>
+                </div>
+
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <div class="field_start">
+                            <b>Due Date</b>
+                        </div>
+                        <div>
+                            <lightning-input type="date" value={dueDate} onchange={handleDueDateChange}></lightning-input>
+                        </div>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="header-fields__row">
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <div class="field_start">
+                            <b>Billing Format</b>
+                        </div>
+                        <div>
+                            <c-reusable-lookup label="" 
+                                                selected-icon-name="custom:custom84" 
+                                                object-label="PDF Format"
+                                                object-api-name="AcctSeed__Billing_Format__c"
+                                                field-api-name="Name" 
+                                                other-field-api-name="AcctSeed__Type__c" 
+                                                help-text="Select PDF Format"
+                                                selected-record-id={selectedBillingFormat}
+                                                required="true"
+                                                onvalueselected={handleSelectedValue} 
+                                                onvalueremoved={onRemoveHandler}>
+                            </c-reusable-lookup>
+                        </div>
+                    </span>
+                </div>
+
+                <div class="header-fields__row__item">
+                    <span class="fields__row__item_span">
+                        <template if:true={isFirstBilling}>
+                            <div class="field_start">
+                                <b>Bill Deposit/All?</b>
+                            </div>
+                            <div>
+                                <lightning-combobox options={billPicklistOptions} value={billPicklistSelected} onchange={handleChangeBillOption}></lightning-combobox>
+                            </div>
+                        </template>
+                        
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table_items">
+            
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Product Name">Product Name</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Quantity Ordered">Quantity Ordered</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Quantity Billed">Quantity Billed</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Quantity Unbilled">Quantity Unbilled</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Quantity to Bill">
+                                <div>
+                                    Quantity to Bill
+                                </div>
+                                <div>
+                                    <select onchange={handleBillTypeChange}>
+                                        <option>Percent</option>
+                                        <option>Quantity</option>
+                                        <option>Amount</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Billed Amount">Billed Amount</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Unbilled Amount">Unbilled Amount</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Unit Price">Unit Price</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Total Price">Total Price</div>
+                        </th>
+                        <th class="" scope="col">
+                            <div class="slds-truncate" title="Amount to Bill">Amount to Bill</div>
+                        </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- <template lwc:if={linesData}> -->
+                        <template if:true={dataIsReady}>
+                            <template for:each={linesData} for:item="line">
+                                <tr class="slds-line-height_reset" key={line.lineId}>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Product Name">{line.productLineName}</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Quantity Ordered">{line.quantityOrdered}</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Quantity Billed">{line.quantityBilled}</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Quantity Unbilled">{line.quantityUnBilled}</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Quantity to Bill">
+                                            <lightning-input type="number" style="width: 75px;" value={line.toBillNumber} disabled={line.isLineFullyBilled} data-lineid={line.lineId} onchange={handleBillQuantityChange}></lightning-input>
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Billed Amount">
+                                            <lightning-formatted-number value={line.billedAmount} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Billed Amount">
+                                            <lightning-formatted-number value={line.unbilledAmount} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Unit Price">
+                                            <lightning-formatted-number value={line.unitPrice} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Unit Price">
+                                            <lightning-formatted-number value={line.totalPrice} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                        </div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Amount to Bill">
+                                            <lightning-formatted-number value={line.amountToBill} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </template>
+                        </template>
+                        
+
+
+                        <tr class="slds-line-height_reset" style="background: #f7f7f7;">
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Product Name"></div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Quantity Ordered"></div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Quantity Billed"></div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Quantity Unbilled"></div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Quantity to Bill"></div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Billed Amount">
+                                </div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Billed Amount">
+                                </div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Unit Price">
+                                </div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Unit Price">
+                                </div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Amount to Bill">
+                                    
+                                    <b>
+                                        <lightning-formatted-number value={totalAmountToBill} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                    </b>
+
+                                </div>
+                            </th>
+                        </tr>
+                    <!-- </template> -->
+                  </tbody>
+            </table>
+        </div>
+    </div>
+</template>

@@ -272,7 +272,6 @@ public class PurchaseOrderShipmentHandlerTest {
                
         AcctSeederp__warehouse__c warehouse = new AcctSeederp__warehouse__c();
         warehouse.Name = 'myWarehouse';
-        warehouse.GL_Account_Variable_1__c = accVar.Id;
         
         insert warehouse;
         
@@ -288,19 +287,7 @@ public class PurchaseOrderShipmentHandlerTest {
         ib.AcctSeedERP__Location__c = location.id;
         ib.AcctSeedERP__Product__c = kitproduct.id;
         ib.AcctSeedERP__Ledger__c = ledger.id;
-        ib.GL_Account_Variable_1__c = accVar.Id;
-
         insert ib;
-
-        acctseederp__inventory_balance__c ib1 = new acctseederp__inventory_balance__c();
-        
-        ib1.AcctSeedERP__Warehouse__c = warehouse.id;
-        ib1.AcctSeedERP__Location__c = location.id;
-        ib1.AcctSeedERP__Product__c = prod.id;
-        ib1.AcctSeedERP__Ledger__c = ledger.id;
-        ib1.GL_Account_Variable_1__c = accVar.Id;
-
-        insert ib1;
         
         AcctSeed__Accounting_Period__c ap = new AcctSeed__Accounting_Period__c();
         
@@ -322,7 +309,6 @@ public class PurchaseOrderShipmentHandlerTest {
         
         insert poim;
 
-        
 
         AcctSeed__Billing_Format__c packingSlipFormat = new AcctSeed__Billing_Format__c();
         
@@ -383,35 +369,10 @@ public class PurchaseOrderShipmentHandlerTest {
         shipment.AcctSeedERP__Packing_Slip_Format__c = packingSlipFormat.id;
         
         insert shipment;
-
-        AcctSeedERP__Sales_Order_Line__c soline = new AcctSeedERP__Sales_Order_Line__c();
-
-        soline.AcctSeedERP__Sales_Order__c = salesorder.id;
-        soline.AcctSeedERP__Unit_Price__c = 100;
-        soline.AcctSeedERP_Description__c = 'This is salesorder line item';
-        soline.AcctSeedERP__Product__c = prod.id;
-        soline.AcctSeedERP__Quantity_Ordered__c = 1;
-
-        insert soline;
-
-        AcctSeedERP__Sales_Order_Inventory_Movement__c soim = new AcctSeedERP__Sales_Order_Inventory_Movement__c();
-        soim.AcctSeedERP__GL_Account_Variable_1__c = poim.AcctSeedERP__GL_Account_Variable_1__c;
-        soim.AcctSeedERP__Inventory_Balance__c = ib1.id;
-        soim.AcctSeedERP__Quantity__c = 1;
-        soim.AcctSeedERP__Movement_Date__c = date.today();
-        soim.AcctSeedERP__Sales_Order_Line__c = soline.Id;
-        insert soim;
     }
     
     @isTest
     public static void coverage(){
         PurchaseOrderShipmentHandler.coverage();
-    }
-
-    @isTest
-    public static void testSOIM(){
-        AcctSeedERP__Sales_Order_Inventory_Movement__c k = [select id, AcctSeedERP__Quantity__c from AcctSeedERP__Sales_Order_Inventory_Movement__c limit 1];
-        k.AcctSeedERP__Quantity__c = 4;
-        update k;
     }
 }

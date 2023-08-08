@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 07-04-2023
+ * @last modified on  : 08-04-2023
  * @last modified by  : Marian Lyzhychka
 **/
 @isTest
@@ -10,6 +10,33 @@ public with sharing class OpportunityDetailPageControllerTest {
     
     @TestSetup
     static void makeData(){
+        Profile pf = [Select Id from profile where Name = 'System Administrator']; 
+
+        String orgId = UserInfo.getOrganizationId(); 
+        String dateString2 = String.valueof(Datetime.now()).replace(' ','').replace(':','').replace('-','') ;
+        Integer RandomId2 = Integer.valueOf(Math.rint(Math.random()*1000000)); 
+        String uniqueName2 = orgId + dateString2 + RandomId2; 
+        
+        User uu2 = new User(firstname = 'ABCd', 
+                             lastName = 'XYZ1', 
+                             email = uniqueName2 + '@test' + orgId + '.org', 
+                             Username = uniqueName2 + '@test' + orgId + '.org', 
+                             EmailEncodingKey = 'ISO-8859-1', 
+                             Alias = uniqueName2.substring(18, 23), 
+                             TimeZoneSidKey = 'America/Los_Angeles', 
+                             LocaleSidKey = 'en_US', 
+                             LanguageLocaleKey = 'en_US', 
+                             ProfileId = pf.Id
+                            ); 
+        insert uu2;
+
+        Sales_rep__c sr = new Sales_rep__c();  
+        sr.Name = 'ABC XYZ';
+        sr.User__c = uu2.id;
+        sr.Active__c = 'Yes';
+        sr.Team__c = uu2.id;       
+
+        insert sr;
         AcctSeed__Accounting_Variable__c accVar = new AcctSeed__Accounting_Variable__c();
         accVar.Name = 'GL acc var1';
         accVar.AcctSeed__Type__c = 'GL Account Variable 1';
@@ -225,6 +252,16 @@ public with sharing class OpportunityDetailPageControllerTest {
         opp.Run_Validation_Rule__c = true;
         insert opp;
 
+        Attachment attach = new Attachment();   	
+    	attach.Name = 'Unit Test Attachment';
+    	Blob bodyBlob = Blob.valueOf('Unit Test Attachment Body');
+    	attach.body = bodyBlob;
+        attach.parentId = opp.id;
+        attach.Description = 'Test';
+
+        insert attach;
+
+
         // insert to standard price book
         Id pricebookId = Test.getStandardPricebookId();
 
@@ -250,6 +287,31 @@ public with sharing class OpportunityDetailPageControllerTest {
         oli.Description = 'myDescription';
 
         insert oli;
+
+        Opportunity opp2 = new Opportunity();
+
+        opp2.Name = 'Closed Won Opportunity';
+        opp2.AccountId = acct.Id;
+        opp2.Type = 'Actual Order';
+        opp2.StageName = 'Closed Won';
+        opp2.CloseDate = system.today();
+        opp2.ContactPerson__c = cont.Id;
+        opp2.GL_Account_Variable_1__c = accVar.Id;
+        opp2.Run_Validation_Rule__c = true;
+        opp2.sales_rep_o__c = sr.Id;
+        insert opp2;
+
+        OpportunityLineItem oli2 = new OpportunityLineItem();
+
+        oli2.OpportunityId = opp2.Id;
+        oli2.Product2Id = prod.Id;
+        oli2.PricebookEntryId = pricebentry.Id;
+        oli2.Quantity = 10;
+        oli2.UnitPrice = 100;
+        oli2.Description = 'myDescription';
+
+        insert oli2;
+
 
         AcctSeed__GL_Account__c expense = new AcctSeed__GL_Account__c();
         expense.Name = 'Expense GL Account';
@@ -295,12 +357,57 @@ public with sharing class OpportunityDetailPageControllerTest {
 
         insert ledger;
       
+        Id RecordTypeIdSO = Schema.SObjectType.AcctSeedERP__Sales_Order__c.getRecordTypeInfosByName()
+            .get('Seawin USA Hospitality')
+            .getRecordTypeId();
 
+        AcctSeedERP__Sales_Order__c salesorder = new AcctSeedERP__Sales_Order__c();
+        
+        //salesorder.name = 'testSalesOrder';
+        salesorder.RecordTypeId = RecordTypeIdSO;
+        salesorder.AcctSeedERP__Customer__c = acct.Id;
+        salesorder.AcctSeedERP__Opportunity__c = opp.Id;
+        //salesorder.Manufacturer_Rep__c = acct2.id;
+        salesorder.Referral_Sales_Rep__c = UserInfo.getUserId();
+        salesorder.Sales_Rep_O__c = sr.id;
+        salesorder.Contact__c = cont.Id;
+        salesorder.Price_Level__c = 'Level 3';
+        salesorder.AcctSeedERP__Status__c = 'Open';
+        salesorder.AcctSeedERP__Ledger__c = ledger.id;
+        salesorder.GL_Account_Variable_1__c = accVar.Id;
+        salesorder.Commission_Rate_Sales_Rep__c = 1;
+        salesorder.Commission_Rate_Referral_Sales_Rep__c = 1;
+        salesorder.Commission_Rate_Manufacturer_Rep__c = 1;
+        insert salesorder;
+        
+        // create a sales order
+        AcctSeedERP__Sales_Order_Line__c soline = new AcctSeedERP__Sales_Order_Line__c();
+        
+        soline.AcctSeedERP__Sales_Order__c = salesorder.id;
+        soline.AcctSeedERP__Unit_Price__c = 100;
+        soline.AcctSeedERP_Description__c = 'This is salesorder line item';
+        soline.AcctSeedERP__Product__c = prod.id;
+        soline.AcctSeedERP__Quantity_Ordered__c = 1;
+        
+        insert soline;
+
+    }
+
+    @isTest
+    static void getSobjectTypeTest(){
+        AcctSeed__Ledger__c l = [SELECT Id FROM AcctSeed__Ledger__c LIMIT 1];
+        OpportunityDetailPageController.getSobjectType(l.Id);
     }
 
     @isTest
     static void getOpportunitySubStagesTest(){
         OpportunityDetailPageController.getOpportunitySubStages();
+    }
+
+    @isTest
+    static void getOpportunityTest(){
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        OpportunityDetailPageController.getOpportunity(opp.Id);
     }
 
     @isTest
@@ -320,6 +427,13 @@ public with sharing class OpportunityDetailPageControllerTest {
     }
 
     @isTest
+    static void getPreparedLineForBillingSalesOrderTest(){
+        AcctSeedERP__Sales_Order__c so = [SELECT Id FROM AcctSeedERP__Sales_Order__c LIMIT 1];
+
+        OpportunityDetailPageController.getPreparedLineForBilling('Sales Order', so.Id);
+    }
+
+    @isTest
     static void createBillingOpportunityTest(){
         Test.startTest();
         Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='myOpportunity' LIMIT 1];
@@ -327,13 +441,13 @@ public with sharing class OpportunityDetailPageControllerTest {
         AcctSeed__Ledger__c ledger = [SELECT Id FROM AcctSeed__Ledger__c LIMIT 1];
         AcctSeed__Billing_Format__c bf = [SELECT Id FROM AcctSeed__Billing_Format__c LIMIT 1];
 
-        List<OpportunityDetailPageController.CreateBillingLinesWrapper> wp = new List<OpportunityDetailPageController.CreateBillingLinesWrapper>{
-            new OpportunityDetailPageController.CreateBillingLinesWrapper(
+        List<OpportunityDetailPageService.CreateBillingLinesWrapper> wp = new List<OpportunityDetailPageService.CreateBillingLinesWrapper>{
+            new OpportunityDetailPageService.CreateBillingLinesWrapper(
                 oli.Id,
                 1
             )
         };
-        OpportunityDetailPageController.CreateBillingWrapper wrapper = new OpportunityDetailPageController.CreateBillingWrapper(
+        OpportunityDetailPageService.CreateBillingWrapper wrapper = new OpportunityDetailPageService.CreateBillingWrapper(
             opp.Id,
             system.today(),
             system.today(),
@@ -343,6 +457,97 @@ public with sharing class OpportunityDetailPageControllerTest {
         );
 
         OpportunityDetailPageController.createBilling(JSON.serialize(wrapper));
+        Test.stopTest();
+    }
+
+    @isTest
+    static void getAccountTest(){
+        Test.startTest();
+        Account acc = [SELECT Id FROM Account LIMIT 1];
+        OpportunityDetailPageController.getAccount(acc.Id);
+        Test.stopTest();
+    }
+    @isTest
+    static void getOpportunityLineItemsTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        OpportunityDetailPageController.getOpportunityLineItems(opp.Id);
+        Test.stopTest();
+    }
+    @isTest
+    static void deleteSObjectListTest(){
+        Test.startTest();
+        OpportunityLineItem oli = [SELECT Id FROM OpportunityLineItem LIMIT 1];
+        List<Id> oliId = new List<Id>{oli.Id};
+        OpportunityDetailPageController.deleteSObjectList(JSON.serialize(oliId));
+        Test.stopTest();
+    }
+
+    @isTest
+    static void getOptionalOpportunityLinesTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        OpportunityDetailPageController.getOptionalOpportunityLines(opp.Id);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void getOpportunityAttachmentsTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        OpportunityDetailPageController.getOpportunityAttachments(opp.Id);
+        Test.stopTest();
+    }
+    @isTest
+    static void getPredefinedSalesOrderDataTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='Closed Won Opportunity' LIMIT 1];
+        try{
+            OpportunityDetailPageController.getPredefinedSalesOrderData(opp.Id);
+        }catch(Exception e){
+        }
+        Test.stopTest();
+    }
+    @isTest
+    static void createSalesOrderTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='Closed Won Opportunity' LIMIT 1];
+        String data = OpportunityDetailPageController.getPredefinedSalesOrderData(opp.Id);
+
+        OpportunityDetailPageService.CreateSalesOrderPreWrapper wrap = (OpportunityDetailPageService.CreateSalesOrderPreWrapper)JSON.deserialize(data, OpportunityDetailPageService.CreateSalesOrderPreWrapper.class);
+        wrap.selectedGlVarId = wrap.glVariable.Id;
+        wrap.selectedLedgerId = wrap.ledgers[0].Id;
+        OpportunityDetailPageController.createSalesOrder(JSON.serialize(wrap), opp.Id);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void getAttachmentRecordTets(){
+        Test.startTest();
+        Attachment att = [SELECT Id, Description FROM Attachment LIMIT 1];
+        OpportunityDetailPageController.getAttachmentRecord(att.Id);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void updateAttachmentRecordTest(){
+        Test.startTest();
+        Attachment att = [SELECT Id, Description FROM Attachment LIMIT 1];
+        OpportunityDetailPageController.updateAttachmentRecord(JSON.serialize(att));
+        Test.stopTest();
+    }
+    @isTest
+    static void transferExecutedDocumentsToAttachmetsTest(){
+        Test.startTest();
+        List<Attachment> att = [SELECT Id, Description FROM Attachment ];
+        OpportunityDetailPageController.transferExecutedDocumentsToAttachmets(JSON.serialize(att));
+        Test.stopTest();
+    }
+    @isTest
+    static void transferAttachmentsToExecutedDocumentsTest(){
+        Test.startTest();
+        List<Attachment> att = [SELECT Id, Description FROM Attachment ];
+        OpportunityDetailPageController.transferAttachmentsToExecutedDocuments(JSON.serialize(att));
         Test.stopTest();
     }
 }

@@ -7,4 +7,4 @@
 -->
 <aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride">
     <c:productListViewCMP></c:productListViewCMP>
-</aura:component>	
+</aura:component>

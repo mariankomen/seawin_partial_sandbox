@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-28-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class CreatePurchaseOrderPageExtension {
     
     // Wrapper classes
@@ -42,6 +49,7 @@ public with sharing class CreatePurchaseOrderPageExtension {
         PurchaseOrderFormat = null;
         //salesOrderId = Id.ValueOf(ApexPages.currentPage().getParameters().get('id'));
         salesOrderId = std.getId();
+        // salesOrderId = 'a1HEa0000001Mo5MAE';
         // get the sales order
         so = [select id, acctseederp__ledger__c, name, customer_s_eta__c,  
               AcctSeedERP__shipping_street__c,GL_Account_Variable_1__c, 
@@ -154,17 +162,17 @@ public with sharing class CreatePurchaseOrderPageExtension {
             
             if(d.PurchaseOrder.acctseederp__type__c == 'Standard'){
                 // get the SeaWin company's details
-                list<Account> org = [SELECT Id, Name, ShippingStreet, ShippingCity, 
-                ShippingState, ShippingPostalCode, ShippingCountry, contact_person__c 
-                                     FROM Account where id=:d.PurchaseOrder.AcctSeedERP__Shipping_Company__c ]; // org default account
+                list<Account> org = [SELECT Id, Name, billingStreet, billingCity, 
+                                     billingState, billingPostalCode, billingCountry, contact_person__c 
+                                     FROM Account where id='0011I00000EYHFy' ]; // org default account
                 if(!org.isEmpty()){
                     //companyname = org[0].id;
                     //contactname = org[0].contact_person__c;
-                    city = org[0].ShippingCity;
-                    street = org[0].ShippingStreet;
-                    country = org[0].ShippingCountry;
-                    postalcode = org[0].ShippingPostalCode;
-                    state = org[0].ShippingState; 
+                    city = org[0].billingcity;
+                    street = org[0].billingStreet;
+                    country = org[0].billingCountry;
+                    postalcode = org[0].billingPostalCode;
+                    state = org[0].billingState; 
                 }                   
             }else if(d.PurchaseOrder.acctseederp__type__c == 'Drop Shipment'){
                 // set what is on sales order
@@ -175,14 +183,13 @@ public with sharing class CreatePurchaseOrderPageExtension {
                 country = so.AcctSeedERP__Shipping_Country__c;
                 postalcode = so.AcctSeedERP__Shipping_PostalCode__c;
                 state = so.AcctSeedERP__Shipping_State__c;
-                d.PurchaseOrder.AcctSeedERP__Shipping_Company__c = (so.shipping_Account__c != null)?so.shipping_Account__c:
-                    ((so.AcctSeedERP__Opportunity__r.Shipping_Account__c != null)?so.AcctSeedERP__Opportunity__r.Shipping_Account__c:null);
-                
-                d.PurchaseOrder.AcctSeedERP__Shipping_Contact__c = (so.shipping_Name__c != null)?so.shipping_Name__c:
-                    ((so.AcctSeedERP__Opportunity__r.shipping_Name__c != null)?so.AcctSeedERP__Opportunity__r.shipping_Name__c:null);
             }
             
-            
+            d.PurchaseOrder.AcctSeedERP__Shipping_Company__c = (so.shipping_Account__c != null)?so.shipping_Account__c:
+            ((so.AcctSeedERP__Opportunity__r.Shipping_Account__c != null)?so.AcctSeedERP__Opportunity__r.Shipping_Account__c:null);
+                
+                d.PurchaseOrder.AcctSeedERP__Shipping_Contact__c = (so.shipping_Name__c != null)?so.shipping_Name__c:
+            ((so.AcctSeedERP__Opportunity__r.shipping_Name__c != null)?so.AcctSeedERP__Opportunity__r.shipping_Name__c:null);
                 
                 
                 // d.PurchaseOrder.AcctSeedERP__Type__c = // this is already set

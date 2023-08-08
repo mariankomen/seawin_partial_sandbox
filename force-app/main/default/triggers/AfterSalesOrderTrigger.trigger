@@ -11,7 +11,6 @@ trigger AfterSalesOrderTrigger on AcctSeedERP__Sales_Order__c (after insert) {
         
         //AfterSalesOrderTriggerHandler.SalesRepTeamAccessibility(Trigger.New);
      	AttachExistingCaseHandler.PrePorcessing(Trigger.new);
-
     }
     
 }

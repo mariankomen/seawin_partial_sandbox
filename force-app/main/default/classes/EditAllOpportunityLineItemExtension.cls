@@ -1,6 +1,13 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-13-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public class EditAllOpportunityLineItemExtension {
 
-    Private Id oppId {get; set;}
+    Private String oppId {get; set;}
     Private static Id oliId {get; set;}    
     Private List<OpportunityLineItem> oli {get; set;}
     private Boolean EditProductPermission {get; set;}
@@ -8,6 +15,7 @@ public class EditAllOpportunityLineItemExtension {
     public String typeOfProduct {get; set;}
     
     public EditAllOpportunityLineItemExtension(ApexPages.StandardController std){
+        system.debug(111111);
         EditProductPermission = true;
         showBack = false;
         oppId = ApexPages.currentPage().getParameters().get('oppId');

@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-05-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class ProjectAutomaticalyClose {
     
     // @future
@@ -20,13 +27,17 @@ public with sharing class ProjectAutomaticalyClose {
             Set<Id> availableForUpdating = findAvailableProjectsForClosing(projectIds, availableCloseProjects_OPP, availableCloseProjects_SO, availableCloseProjects_PO);
 
             if(!availableForUpdating.isEmpty()) {
-                List<AcctSeed__Project__c> projects = [SELECT Id, AcctSeed__Status__c FROM AcctSeed__Project__c WHERE Id IN: availableForUpdating];
+                List<AcctSeed__Project__c> projects = [SELECT Id, AcctSeed__Status__c FROM AcctSeed__Project__c WHERE Id IN: availableForUpdating FOR UPDATE];
 
                 for(AcctSeed__Project__c project: projects){
                     project.AcctSeed__Status__c = 'Closed';
                 }
     
-                update projects;
+                try{
+                    update projects;
+                }catch(Exception e){
+                    system.debug('Project Automaticaly Close'+ e.getMessage());
+                }
             }
 
             Set<Id> projectIdToOpenUpdate = new Set<Id>();
@@ -37,13 +48,17 @@ public with sharing class ProjectAutomaticalyClose {
             }
 
             if(!projectIdToOpenUpdate.isEmpty()) {
-                List<AcctSeed__Project__c> projects = [SELECT Id, AcctSeed__Status__c FROM AcctSeed__Project__c WHERE Id IN: projectIdToOpenUpdate];
+                List<AcctSeed__Project__c> projects = [SELECT Id, AcctSeed__Status__c FROM AcctSeed__Project__c WHERE Id IN: projectIdToOpenUpdate FOR UPDATE];
 
                 for(AcctSeed__Project__c project: projects){
                     project.AcctSeed__Status__c = 'Open';
                 }
     
-                update projects;
+                try{
+                    update projects;
+                }catch(Exception e){
+                    system.debug('Project Automaticaly Close'+ e.getMessage());
+                }
             }
 
             

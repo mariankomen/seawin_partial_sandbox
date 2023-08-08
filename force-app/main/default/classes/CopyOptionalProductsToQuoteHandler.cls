@@ -1,10 +1,3 @@
-/**
- * @description       : 
- * @author            : Marian Lyzhychka
- * @group             : 
- * @last modified on  : 06-22-2023
- * @last modified by  : Marian Lyzhychka
-**/
 public class CopyOptionalProductsToQuoteHandler {
     
     public static void moveOptionalProducts(LIST<Quote> TriggerData){

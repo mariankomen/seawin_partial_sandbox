@@ -41,7 +41,6 @@ export default class CreateBillingCMP extends NavigationMixin(LightningElement) 
             recordId: this.recordId
         }).then(res => {
             const data = JSON.parse(res);
-            console.log(res)
             this.initialData = data;
             this.accountInfo = {
                 name: data.accountName,
@@ -63,8 +62,12 @@ export default class CreateBillingCMP extends NavigationMixin(LightningElement) 
             this.recalculateCurrencyFields();
             this.recalculateTotalAmountToBill();
 
+            console.log('this.selectedBillingFormat: ',JSON.stringify(this.selectedBillingFormat))
+            let cmp = this.template.querySelector('c-reusable-lookup')
+            cmp.fetchDefaultRecord(this.selectedBillingFormat);
             this.dataIsReady = true;
         }).catch(err => {
+            this.showToast('Error', err.body.message, 'ERROR')
             console.error(err)
         })
     }

@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-10-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class ProductLabel3x4Controller {
     public Product2 product {get;set;}
     public List<String> productDescriptionLines {get;set;}
@@ -26,6 +33,8 @@ public with sharing class ProductLabel3x4Controller {
         String data = ApexPages.currentPage().getParameters().get('data');
         system.debug(data);
         data = data.replace('{{{RESH}}}','#');
+
+        system.debug('data: '+data);
         lines = (List<IterableItem>)JSON.deserialize(data, List<IterableItem>.class);
 
         
@@ -224,7 +233,8 @@ public with sharing class ProductLabel3x4Controller {
                                                                     AcctSeedERP__Sales_Order__r.PO_Date__c,
                                                                     AcctSeedERP__Sales_Order__r.PO_Number__c
                                                                     FROM AcctSeedERP__Sales_Order_Line__c
-                                                                    WHERE Id IN:linesIds];
+                                                                    WHERE Id IN:linesIds
+                                                                    AND AcctSeedERP__Product__r.AcctSeed__Inventory_Product__c = true];
         List<RenderingLine> renderLines = new List<RenderingLine>();
         Integer lineNumber = 1;
         String templateLabel = '';
@@ -530,10 +540,10 @@ public with sharing class ProductLabel3x4Controller {
             this.hasHardwareTemplateBefore = hasHardwareTemplateBefore;
             this.hasGlassTemplateBefore = hasGlassTemplateBefore;
             this.hasGenericTemplateBefore = hasGenericTemplateBefore;
-            iterations = new List<Integer>();
-            for(Integer i = 0; i<copiesCount; i++){
-                iterations.add(i);
-            }
+            iterations = new List<Integer>{1};
+            // for(Integer i = 0; i<copiesCount; i++){
+            //     iterations.add(i);
+            // }
         }
 
     }

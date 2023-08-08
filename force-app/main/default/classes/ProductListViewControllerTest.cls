@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 07-03-2023
+ * @last modified on  : 08-04-2023
  * @last modified by  : Marian Lyzhychka
 **/
 @isTest
@@ -351,6 +351,13 @@ public with sharing class ProductListViewControllerTest {
         custm.AcctSeed__Unapplied_Cash_GL_Account__c = glList[9].id;
         
         insert custm;
+
+        Quote qt = new Quote();
+        qt.OpportunityId = opp.Id;
+        qt.Name = 'myQuote';
+        qt.Quote_Date__c = Date.today();
+        qt.Pricebook2Id = pricebookId;
+        insert qt;
     }
 
     @isTest
@@ -393,6 +400,23 @@ public with sharing class ProductListViewControllerTest {
     }
 
     @isTest
+    static void insertLinesControllerOptionalTest(){
+        Product2 product = [SELECT Id FROM Product2 LIMIT 1];
+        Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
+        ProductListViewController.InsertSObjectLineParamsWrapper wrap = new ProductListViewController.InsertSObjectLineParamsWrapper(
+            product.Id,
+            1.1,
+            1.1,
+            '1',
+            '1',
+            true
+        );
+        List<ProductListViewController.InsertSObjectLineParamsWrapper> wrapList = new List<ProductListViewController.InsertSObjectLineParamsWrapper>{wrap};
+        ProductListViewController.insertLinesController('optionalopp', opp.Id, JSON.serialize(wrapList));
+
+    }
+
+    @isTest
     static void insertLinesControllerSOTest(){
         Product2 product = [SELECT Id FROM Product2 LIMIT 1];
         AcctSeedERP__Sales_Order__c so = [SELECT Id FROM AcctSeedERP__Sales_Order__c LIMIT 1];
@@ -406,6 +430,23 @@ public with sharing class ProductListViewControllerTest {
         );
         List<ProductListViewController.InsertSObjectLineParamsWrapper> wrapList = new List<ProductListViewController.InsertSObjectLineParamsWrapper>{wrap};
         ProductListViewController.insertLinesController('so', so.Id, JSON.serialize(wrapList));
+
+    }
+
+    @isTest
+    static void insertLinesControllerQuoteTest(){
+        Product2 product = [SELECT Id FROM Product2 LIMIT 1];
+        Quote quoteRecord = [SELECT Id FROM Quote LIMIT 1];
+        ProductListViewController.InsertSObjectLineParamsWrapper wrap = new ProductListViewController.InsertSObjectLineParamsWrapper(
+            product.Id,
+            1.1,
+            1.1,
+            '1',
+            '1',
+            true
+        );
+        List<ProductListViewController.InsertSObjectLineParamsWrapper> wrapList = new List<ProductListViewController.InsertSObjectLineParamsWrapper>{wrap};
+        ProductListViewController.insertLinesController('QuoteLineItem', quoteRecord.Id, JSON.serialize(wrapList));
 
     }
 }

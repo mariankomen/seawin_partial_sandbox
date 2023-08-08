@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-12-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 global class SalesDashboardController extends MainSalesDashboardController {
     
     @RemoteAction
@@ -1184,33 +1191,39 @@ global class SalesDashboardController extends MainSalesDashboardController {
 
     //NEW GRAPHS
 
+    /*****************************************************************************************************
+    *   @dashboard name  : Company Total Pipeline Last 12 Months
+    *   @chart name      : Company_Total_Pipeline_SMD_USA
+    *   @description     : Preparing data for frontend rendering
+    *   @author          : Marian Lyzhychka ©Peeklogic
+    *****************************************************************************************************/
     @RemoteAction
     @ReadOnly
-    global static List<AggregateResult> Company_Total_Pre_Order_Pipeline_Last_12_Months_Sales() {
-        /*****************************************************************************************************
-        *   @dashboard name  : Company Total Pipeline Last 12 Months
-        *   @chart name      : Company_Total_Pipeline_SMD_USA
-        *   @description     : Preparing data for frontend rendering
-        *   @author          : Marian Lyzhychka ©Peeklogic
-        *****************************************************************************************************/
+    global static List<AggregateResult> Company_Total_Pre_Order_Pipeline_Last_12_Months_Sales(String calculateTotalBy) {
+        
 
         Map<string, integer> Last12MonthsList_CombinedMap = Last12MonthsList_CombinedMap();
-        
-        List<AggregateResult> opportunity_data = [
-            SELECT  
-            SUM(Amount__c) amount, 
-            calendar_month(Inserting_Date__c) month,
-            calendar_year(Inserting_Date__c) year
-            FROM Opportunity_Dashboard__c 
-            WHERE 
-            Month_Year__c IN:Last12MonthsList_CombinedMap.keySet()
-            AND Opportunity_Forecast_Category__c = 'Pipeline'
-            AND Opportunity_StageName__c = 'Pre-Order'
-            AND Opportunity_GL_Var_1__r.Name = 'Seawin USA'
-            AND Amount__c != null
-            AND Opportunity__r.ownerId =:UserInfo.getUserId()       
-            GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)
-        ];
+        Set<String> months = Last12MonthsList_CombinedMap.keySet();
+
+
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
+        query += ' calendar_month(Inserting_Date__c) month,';
+        query += ' calendar_year(Inserting_Date__c) year';
+        query += ' FROM Opportunity_Dashboard__c ';
+        query += ' WHERE Month_Year__c IN:months';
+        query += ' AND Opportunity_Forecast_Category__c = \'Pipeline\'';
+        query += ' AND Opportunity_StageName__c = \'Pre-Order\'';
+        query += ' AND Amount__c != null';
+        query += ' AND Opportunity__r.ownerId = \'' + UserInfo.getUserId() + '\'';
+        query += ' GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)';
+        system.debug(query);
+        List<AggregateResult> opportunity_data = (List<AggregateResult>)Database.query(query);
+
         system.debug(JSON.serialize(opportunity_data));
         
         return opportunity_data;
@@ -1218,7 +1231,7 @@ global class SalesDashboardController extends MainSalesDashboardController {
 
     @RemoteAction
     @ReadOnly
-    global static List<AggregateResult> Company_Total_Negotiation_Pipeline_Last_12_Months() {
+    global static List<AggregateResult> Company_Total_Negotiation_Pipeline_Last_12_Months(String calculateTotalBy) {
         /*****************************************************************************************************
         *   @dashboard name  : Negotiation Pipeline Last 12 Months
         *   @chart name      : Company_Total_Pipeline_SMD_USA
@@ -1228,22 +1241,27 @@ global class SalesDashboardController extends MainSalesDashboardController {
 
         Map<string, integer> Last12MonthsList_CombinedMap = Last12MonthsList_CombinedMap();
         
-        List<AggregateResult> opportunity_data = [
-            SELECT  
-            SUM(Amount__c) amount, 
-            calendar_month(Inserting_Date__c) month,
-            calendar_year(Inserting_Date__c) year
-            FROM Opportunity_Dashboard__c 
-            WHERE 
-            Month_Year__c IN:Last12MonthsList_CombinedMap.keySet()
-            AND Opportunity_Forecast_Category__c = 'Pipeline'
-            AND Opportunity_StageName__c = 'Negotiation'
-            AND Opportunity_GL_Var_1__r.Name = 'Seawin USA'
-            AND Amount__c != null
-            AND Opportunity__r.ownerId =:UserInfo.getUserId()       
-            GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)
-        ];
-        system.debug(JSON.serialize(opportunity_data));
+        Set<String> months = Last12MonthsList_CombinedMap.keySet();
+
+
+        String query;
+        if(calculateTotalBy == 'Expected Revenue'){
+            query = 'SELECT SUM(Opportunity_Expected_Revenue__c) amount, ';
+        }else{
+            query = 'SELECT SUM(Amount__c) amount, ';
+        }
+        query += ' calendar_month(Inserting_Date__c) month,';
+        query += ' calendar_year(Inserting_Date__c) year';
+        query += ' FROM Opportunity_Dashboard__c ';
+        query += ' WHERE Month_Year__c IN:months';
+        query += ' AND Opportunity_Forecast_Category__c = \'Pipeline\'';
+        query += ' AND Opportunity_StageName__c = \'Negotiation\'';
+        query += ' AND Amount__c != null';
+        query += ' AND Opportunity__r.ownerId = \'' + UserInfo.getUserId() + '\'';
+        query += ' GROUP BY calendar_year(Inserting_Date__c), calendar_month(Inserting_Date__c)';
+        system.debug(query);
+        List<AggregateResult> opportunity_data = (List<AggregateResult>)Database.query(query);
+
         
         return opportunity_data;
     }

@@ -1,0 +1,70 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-04-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+	<template if:true={isSalesOrderOpened}>
+		<article class="slds-card">
+
+            <template if:true={_datatableData.AcctSeedERP__Sales_Order_Line__c}>
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="standard:product_item_transaction" alternative-text="Products" title="Sales Order Line(s)"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Sales Order Line ({_datatableData.AcctSeedERP__Sales_Order_Line__c.totalRecords})</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleNavigateToProductScreen}>Add Product</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleNavigateToViewAllScreen}>View All</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleTransferToOptional}>Edit All</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleOpenSorting}>Sort</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleNavigateToAllocatedScreen}>Allocate</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleNavigateToDeAllocateScreen}>De-Allocate</button>
+							<button class="slds-button slds-button_neutral" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleTransferToOptional}>Delete Selected</button>
+
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="AcctSeedERP__Sales_Order_Line__c"
+                                                    key-field="Id"
+                                                    data={_datatableData.AcctSeedERP__Sales_Order_Line__c.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.AcctSeedERP__Sales_Order_Line__c}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.AcctSeedERP__Sales_Order_Line__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.AcctSeedERP__Sales_Order_Line__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="AcctSeedERP__Sales_Order_Line__c" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+
+	</template>
+
+    <c-sobjects-sorter onsortend={handleOnSortEnd}></c-sobjects-sorter>
+
+</template>

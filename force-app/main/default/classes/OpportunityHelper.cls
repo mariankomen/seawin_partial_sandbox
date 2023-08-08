@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-28-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 public with sharing class OpportunityHelper implements ITriggerHelper{
     
     public static final String OPPORTUNITY_WITH_COMMISSIONS_ERROR = '<h1>Can not delete Opportunity because it has related commission record(s). Delete commission records before deleting Opportunity</h1>';
@@ -51,7 +58,7 @@ public with sharing class OpportunityHelper implements ITriggerHelper{
         RecordTypeSyncHandler.AfterUpdateOpportunity(oldList, newList);
         ProcessApprovalOpportunityHandler.Check_Email(oldList, newList);
         SyncOptionalProductsToQuoteHandler.SyncToQuote(oldList, newList);
-        //if(!Test.isRunningTest()) OpportunityDashboardHandler.updateExistingRecords(newList);
+        if(!Test.isRunningTest()) OpportunityDashboardHandler.updateExistingRecords(newList);
 
         OpportunityAccountUpdateHandler.UpdateQuoteAccount(oldList, newList);
 
@@ -304,6 +311,9 @@ public with sharing class OpportunityHelper implements ITriggerHelper{
             Opportunity opp = opportunityAfterUpdateQueriedMap.get(opportunityId);
             if(opp.StageName == 'Needs Analysis' || opp.StageName == 'Qualification' || opp.StageName == 'Take-off' || opp.StageName == 'Estimate'){
                 opp.StageName = 'Proposal';
+                opp.Sub_Stage__c = null;
+                opportunityToUpdateList.add(opp);
+            }else{
                 opp.Sub_Stage__c = null;
                 opportunityToUpdateList.add(opp);
             }

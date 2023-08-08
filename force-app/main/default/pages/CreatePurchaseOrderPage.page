@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-28-2023
+  @last modified by  : Marian Lyzhychka
+-->
 <apex:page standardcontroller="AcctSeedERP__Sales_Order__c" extensions="CreatePurchaseOrderPageExtension" Tabstyle="AcctSeedERP__Sales_Order__c" title="Sales Order" >
     <apex:form id="form">
         <apex:sectionHeader title="Sales Order" subtitle="{!so.name}"/>
@@ -107,13 +114,6 @@
                 <apex:pageBlockSection title="Purchase Order" columns="1" collapsible="false">
                         <apex:outputText value="{!d.Vendor}" label="Vendor:"></apex:outputText>
                         <apex:inputField value="{!d.PurchaseOrder.AcctSeedERP__Type__c}" required="true"/>
-                        <!-- {!d.PurchaseOrder.acctseederp__type__c} -->
-                        <!-- <apex:outputPanel rendered="{!IF(d.PurchaseOrder.acctseederp__type__c == 'Standard', true, false)}"> -->
-                            <!-- <apex:inputField value="{!d.PurchaseOrder.AcctSeedERP__Shipping_Company__c}" required="true"/> -->
-                            <!-- <apex:inputField value="{!d.PurchaseOrder.AcctSeedERP__Shipping_Contact__c}" required="true"/> -->
-                        <!-- </apex:outputPanel> -->
-                        
-
 						<!-- <apex:inputField value="{!d.PurchaseOrder.GL_Account_Variable_1__c}"/> -->
                     <apex:pageBlockTable value="{!d.plw}" var="LineItem" rendered="{!visible}" style="width: 100%">
                         <apex:column headervalue="Product">
@@ -245,5 +245,55 @@
             }
         }
     </script>
+
+
+
+<div>
+    <p>Enter Your Message Here:</p>
+    <input type="text" id="theMessage" />
+    <button onclick="publishMC()"> Publish Msg</button>
+    <br/><br/>
+        <button onclick="subscribeMC()">Subscribe</button>
+        <button onclick="unsubscribeMC()">Unsubscribe</button>
+    <br/>
+    <br/>
+    <p>Received message:</p>
+    <label id="MCMessageText"/>
+</div>
+
+        <script>
+            
+            // Load the MessageChannel token in a variable
+            var SAMPLEMC = "{!$MessageChannel.MyMessageChannel__c}";
+            var subscriptionToMC;
+
+            function publishMC() {
+                const message = {
+                    messageToSend: document.getElementById('theMessage').value,
+                    sourceSystem: "From VisualForce Page"
+                };
+                sforce.one.publish(SAMPLEMC, message);
+            }
+        
+            // Display message in the textarea field
+            function displayMessage(message) {
+                var textLabel = document.querySelector("#MCMessageText");
+                textLabel.innerHTML = message ? JSON.stringify(message, null, '\t') : 'no message payload';
+            }
+
+            function subscribeMC() {
+                if (!subscriptionToMC) {
+                    subscriptionToMC = sforce.one.subscribe(SAMPLEMC, displayMessage);
+                }
+            }
+
+            function unsubscribeMC() {
+                if (subscriptionToMC) {
+                    sforce.one.unsubscribe(subscriptionToMC);
+                    subscriptionToMC = null;
+                }
+            }
+
+        </script>
     </apex:form>
 </apex:page>

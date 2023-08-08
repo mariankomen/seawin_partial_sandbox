@@ -5,7 +5,7 @@
 *****************************************************************************************************/
 public with sharing class OpportunityEditAllController {
 
-    public Id opportunityId {get; set;}
+    public String opportunityId {get; set;}
     public Boolean isOpportunityProduct {get; set;}
     public Boolean isOptionalProduct {get; set;}
     private String typeOfProduct {get; set;}
@@ -25,7 +25,7 @@ public with sharing class OpportunityEditAllController {
 
         opportunityId = ApexPages.currentPage().getParameters().get('oppId');
         typeOfProduct = ApexPages.currentPage().getParameters().get('recordType');
-
+        system.debug('opportunityId: '+opportunityId);
         opp = [SELECT Id, Name, Price_Level__c FROM Opportunity WHERE Id=:opportunityId];
         subTitle = opp.Name + ' & (' + opp.Price_Level__c + ')';
 

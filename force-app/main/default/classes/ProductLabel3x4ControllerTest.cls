@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-11-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 @isTest
 public with sharing class ProductLabel3x4ControllerTest {
     @TestSetup
@@ -47,9 +54,11 @@ public with sharing class ProductLabel3x4ControllerTest {
         Product2 prod = new Product2();
         
         prod.Name = 'myProduct';
+        prod.Description = 'myProductmyProductmyProductmy\nProductm\n\n\n\n\n\n\nyProductmyProductmyProductmyProductmyProductmyProductmyProductmyProductmyProduct';
         prod.ProductCode = 'ABC123';
         prod.AcctSeed__Unit_Cost__c = 100;
         prod.IsActive = true;
+        prod.AcctSeed__Inventory_Product__c = true;
         prod.AcctSeed__Inventory_Type__c = 'Purchased';
         prod.AcctSeed__Expense_GL_Account__c = ga.id;
         prod.AcctSeed__Inventory_GL_Account__c = ga.id;
@@ -266,44 +275,61 @@ public with sharing class ProductLabel3x4ControllerTest {
     @isTest
     public static void createLabelsControllerPOSHIPTest(){
         PO_Shipment__c ship = [SELECT Id FROM PO_Shipment__c LIMIT 1];
+        PO_Shipment_Line__c shipLine = [SELECT Id FROM PO_Shipment_Line__c LIMIT 1];
         ApexPages.currentPage().getParameters().put('recordId', ship.Id);
-        CreateLabelsController ctrl = new CreateLabelsController();
+
+        String payload = '[{"selectedTemplate":"Label 4x3 Hardware","productId":"01t8W000005BbuYQAS","lineId":"a1GEY00000066gq2AA","copiesCount":1}]';
+        List<ProductLabel3x4Controller.IterableItem> lines = (List<ProductLabel3x4Controller.IterableItem>)JSON.deserialize(payload, List<ProductLabel3x4Controller.IterableItem>.class);
+        lines[0].lineId = shipLine.Id;
 
         ApexPages.currentPage().getParameters().put('shortSObjectName', 'POSHIP');
-        ApexPages.currentPage().getParameters().put('data', JSON.serialize(ctrl.wrappedLines));
+        ApexPages.currentPage().getParameters().put('data', JSON.serialize(lines));
+
         ProductLabel3x4Controller c = new ProductLabel3x4Controller();
     }
 
     @isTest
     public static void createLabelsControllerSOTest(){
         AcctSeedERP__Sales_Order__c ship = [SELECT Id FROM AcctSeedERP__Sales_Order__c LIMIT 1];
+        AcctSeedERP__Sales_Order_Line__c shipLine = [SELECT Id FROM AcctSeedERP__Sales_Order_Line__c LIMIT 1];
         ApexPages.currentPage().getParameters().put('recordId', ship.Id);
-        CreateLabelsController ctrl = new CreateLabelsController();
+
+        String payload = '[{"selectedTemplate":"Label 4x3 Hardware","productId":"01t8W000005BbuYQAS","lineId":"a1GEY00000066gq2AA","copiesCount":1}]';
+        List<ProductLabel3x4Controller.IterableItem> lines = (List<ProductLabel3x4Controller.IterableItem>)JSON.deserialize(payload, List<ProductLabel3x4Controller.IterableItem>.class);
+        lines[0].lineId = shipLine.Id;
 
         ApexPages.currentPage().getParameters().put('shortSObjectName', 'SO');
-        ApexPages.currentPage().getParameters().put('data', JSON.serialize(ctrl.wrappedLines));
+        ApexPages.currentPage().getParameters().put('data', JSON.serialize(lines));
+
         ProductLabel3x4Controller c = new ProductLabel3x4Controller();
     }
     @isTest
     public static void createLabelsControllerProductTest(){
         Product2 ship = [SELECT Id FROM Product2 LIMIT 1];
         ApexPages.currentPage().getParameters().put('recordId', ship.Id);
-        CreateLabelsController ctrl = new CreateLabelsController();
+        String payload = '[{"selectedTemplate":"Label 4x3 Hardware","productId":"01t8W000005BbuYQAS","lineId":"a1GEY00000066gq2AA","copiesCount":1}]';
+        List<ProductLabel3x4Controller.IterableItem> lines = (List<ProductLabel3x4Controller.IterableItem>)JSON.deserialize(payload, List<ProductLabel3x4Controller.IterableItem>.class);
+        lines[0].lineId = ship.Id;
 
 
         ApexPages.currentPage().getParameters().put('shortSObjectName', 'PRODUCT');
-        ApexPages.currentPage().getParameters().put('data', JSON.serialize(ctrl.wrappedLines));
+        ApexPages.currentPage().getParameters().put('data', JSON.serialize(lines));
         ProductLabel3x4Controller c = new ProductLabel3x4Controller();
 
     }
     @isTest
     public static void createLabelsControllerShippTest(){
         AcctSeedERP__Shipment__c ship = [SELECT Id FROM AcctSeedERP__Shipment__c LIMIT 1];
+        AcctSeedERP__Shipment_Line__c shipLine = [SELECT Id FROM AcctSeedERP__Shipment_Line__c LIMIT 1];
+
         ApexPages.currentPage().getParameters().put('recordId', ship.Id);
-        CreateLabelsController ctrl = new CreateLabelsController();
+        String payload = '[{"selectedTemplate":"Label 4x3 Hardware","productId":"01t8W000005BbuYQAS","lineId":"a1GEY00000066gq2AA","copiesCount":1}]';
+        List<ProductLabel3x4Controller.IterableItem> lines = (List<ProductLabel3x4Controller.IterableItem>)JSON.deserialize(payload, List<ProductLabel3x4Controller.IterableItem>.class);
+        lines[0].lineId = shipLine.Id;
+
 
         ApexPages.currentPage().getParameters().put('shortSObjectName', 'SHIP');
-        ApexPages.currentPage().getParameters().put('data', JSON.serialize(ctrl.wrappedLines));
+        ApexPages.currentPage().getParameters().put('data', JSON.serialize(lines));
         ProductLabel3x4Controller c = new ProductLabel3x4Controller();
     }
 }

@@ -7,4 +7,4 @@
 -->
 <aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride">
     <c:createAccountCMP></c:createAccountCMP>
-</aura:component>	
+</aura:component>

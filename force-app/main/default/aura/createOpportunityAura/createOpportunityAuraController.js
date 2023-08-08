@@ -12,5 +12,10 @@
         //get object API name
         var objectApiName = component.get("v.pageReference").attributes.objectApiName;
         console.log('objectApiName-' + objectApiName);
+
+
+        var value = helper.getParameterByName(component , event, 'inContextOfRef');
+
+        component.set("v.recordId", value);
     },
 })

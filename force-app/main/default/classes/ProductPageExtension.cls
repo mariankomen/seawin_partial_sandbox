@@ -277,13 +277,9 @@ public class ProductPageExtension {
                 }else{
                     size = 15;
                 }
-
-                Id userId = UserInfo.getUserId();
-                User user = [SELECT Id, Default_GL_Account_Variable__c FROM User WHERE id=:userId];
-
                 queryStr = 'select ' + fields;
                 queryStr += ' from Product2 ';
-                queryStr += ' where IsActive = true AND AcctSeed__GL_Account_Variable_1__r.Name = \''+user.Default_GL_Account_Variable__c+'\'';
+                queryStr += ' where IsActive = true ';
                 
                 if (DropShipMessage) {
                     queryStr += ' AND Product2.AcctSeed__Inventory_Product__c = false ';
@@ -547,20 +543,16 @@ public class ProductPageExtension {
                 new ApexPages.Message(ApexPages.Severity.FATAL, ObjectError)
             );
         }
-        Id userId = UserInfo.getUserId();
-        User user = [SELECT Id, Default_GL_Account_Variable__c FROM User WHERE id=:userId];
-
+        
         queryStr = 'select ' + fields;
         queryStr += ' from Product2 ';
-
-
+        
         if (DropShipMessage) {
-            queryStr += ' where Product2.AcctSeed__Inventory_Product__c = false AND AcctSeed__GL_Account_Variable_1__r.Name = \''+user.Default_GL_Account_Variable__c+'\'';
+            queryStr += ' where Product2.AcctSeed__Inventory_Product__c = false ';
         }
     }
     
     public void FetchProducts(String queryStr) {
-        system.debug('queryStr VASYL: '+queryStr);
         if(selectedRecordsCountFilter != null && selectedRecordsCountFilter != String.valueOf(15)){
             size = Integer.valueOf(selectedRecordsCountFilter);
         }else if(productPageUserConfig != null && productPageUserConfig.Page_Size__c != null){
@@ -672,15 +664,13 @@ public class ProductPageExtension {
                 // queryStr = queryStr + ' and Complementary_Category__c =\'\'';
             }
         }
-        Id userId = UserInfo.getUserId();
-        User user = [SELECT Id, Default_GL_Account_Variable__c FROM User WHERE id=:userId];
-
-        queryStr = queryStr + ' and IsActive = ' + isActive + '  AND AcctSeed__GL_Account_Variable_1__r.Name = \''+user.Default_GL_Account_Variable__c+'\'';
+        
+        queryStr = queryStr + ' and IsActive = ' + isActive;
         
         //queryStr = queryStr + ' order by Name ';
         
         queryStr = ((String.isEmpty(sortWith))
-                    ? queryStr + '  order by Name ' 
+                    ? queryStr + ' order by Name '
                     : queryStr +
                     ' order by ' +
                     sortField +

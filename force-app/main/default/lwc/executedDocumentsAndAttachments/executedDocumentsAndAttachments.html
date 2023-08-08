@@ -1,0 +1,117 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-17-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <!-- Executed ATTACHMENTS -->
+
+    <template if:true={isOpportunityOpened}>
+        <article class="slds-card">
+            <template if:true={_datatableData.executedDocuments}>
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="standard:document_reference" alternative-text="Products" title="Products"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Executed Documents</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+                            <button class="slds-button slds-button_neutral" data-sobject="executedDocuments" onclick={handleTransferToAttachments}>Transfer to Attachments</button>
+                            <!-- <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleNavigateToViewAllScreen}>Attach File</button> -->
+                            <!-- <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleNavigateToEditAllScreen}>View All</button> -->
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="executedDocuments"
+                                                    key-field="Id"
+                                                    data={_datatableData.executedDocuments.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.executedDocuments}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.executedDocuments}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="executedDocuments" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.executedDocuments}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="executedDocuments" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+    
+        <!-- DEFAULT ATTACHMENTS -->
+    
+        <article class="slds-card">
+            <template if:true={_datatableData.defaultAttachments}>
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="standard:document" alternative-text="Products" title="Products"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Attachments</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+                            <button class="slds-button slds-button_neutral" data-sobject="defaultAttachments" onclick={handleNewAttachment}>New Attachment</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="defaultAttachments" onclick={handleNewAttachmentWithRenaming}>New Attachment with Renaming</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="defaultAttachments" onclick={handleTransferToExecutedDocuments}>Transfer to Executed Documents</button>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="defaultAttachments"
+                                                    key-field="Id"
+                                                    data={_datatableData.defaultAttachments.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.defaultAttachments}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.defaultAttachments}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="defaultAttachments" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.defaultAttachments}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="defaultAttachments" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+    </template>
+    
+
+    <c-edit-attachment-c-m-p onsavesuccess={refreshAllRelatedLists}></c-edit-attachment-c-m-p>
+</template>

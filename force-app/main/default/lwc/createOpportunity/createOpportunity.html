@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 07-03-2023
+  @last modified on  : 07-07-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -50,7 +50,7 @@
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="AccountId"></lightning-input-field>
+                              <lightning-input-field field-name="AccountId" value={accountRecord.Id}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                               <lightning-input-field field-name="Sales_Rep_O__c" disabled value={salesRepAndOwnerObj.sales_rep_id}></lightning-input-field>
@@ -59,10 +59,10 @@
                         
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="ContactPerson__c"></lightning-input-field>
+                              <lightning-input-field field-name="ContactPerson__c" value={accountRecord.Contact_Person__c}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="Manufacturer_Rep__c"></lightning-input-field>
+                              <lightning-input-field field-name="Manufacturer_Rep__c" value={accountRecord.Manufacture_Representative__c}></lightning-input-field>
                             </div>
                         </div>
 
@@ -95,19 +95,22 @@
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="GL_Account_Variable_1__c" required></lightning-input-field>
+                              <lightning-input-field field-name="GL_Account_Variable_1__c" required value={accountRecord.AcctSeed__GL_Account_Variable_1__c}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="Probability" value={opportunityProbability} required></lightning-input-field>
+                              <lightning-input-field field-name="Sub_Stage__c" ></lightning-input-field>
+
                             </div>
                         </div>
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
                               <lightning-input-field field-name="Project__c"></lightning-input-field>
+                              
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="ForecastCategoryName" value={opportunityForecastCategory} required></lightning-input-field>
+                              <lightning-input-field field-name="Probability" value={opportunityProbability} required></lightning-input-field>
+
                             </div>
                         </div>
 
@@ -116,30 +119,34 @@
                               <lightning-input-field field-name="Approval_Status__c" required></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="CloseDate" required></lightning-input-field>
+                              <lightning-input-field field-name="ForecastCategoryName" value={opportunityForecastCategory} required></lightning-input-field>
+
                             </div>
                         </div>
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
+                              <lightning-output-field field-name="Amount"></lightning-output-field>
+
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="CloseDate" required></lightning-input-field>
+
+                            </div>
+                        </div>
+
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-size_1-of-2">
+                              <lightning-input-field field-name="Price_Level__c" value={priceLevel}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                               <lightning-input-field field-name="Loss_Reason__c"></lightning-input-field>
-                            </div>
-                        </div>
-
-                        <div class="slds-grid">
-                            <div class="slds-col slds-size_1-of-2">
-                            </div>
-                            <div class="slds-col slds-size_1-of-2">
-                              <lightning-output-field field-name="Amount"></lightning-output-field>
-                            </div>
-                        </div>
-                        <div class="slds-grid">
-                            <div class="slds-col slds-size_1-of-2">
-                            </div>
-                            <div class="slds-col slds-size_1-of-2">
-                              <lightning-input-field field-name="Price_Level__c"></lightning-input-field>
                             </div>
                         </div>
                     </lightning-accordion-section>
@@ -335,10 +342,10 @@
                     <lightning-accordion-section name="G" label="Billing Information">
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Billing_Terms_Name__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Billing_Terms_Name__c" value={accountRecord.AcctSeed__Billing_Terms_Name__c}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Billing_Deposit__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Billing_Deposit__c" value={accountRecord.Deposit__c}></lightning-input-field>
                             </div>
                         </div>
                     </lightning-accordion-section>
@@ -366,7 +373,7 @@
                     <lightning-accordion-section name="I" label="Shipping Details">
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_Account__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_Account__c" value={accountRecord.Id}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
@@ -374,7 +381,7 @@
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_Name__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_Name__c" value={accountRecord.AcctSeed__Shipping_Contact__c}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
@@ -382,7 +389,7 @@
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_Street__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_Street__c" value={accountRecord.ShippingStreet}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
@@ -390,28 +397,28 @@
 
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_City__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_City__c" value={accountRecord.ShippingCity}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
                         </div>
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_State__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_State__c" value={accountRecord.ShippingState}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
                         </div>
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_PostalCode__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_PostalCode__c" value={accountRecord.ShippingPostalCode}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>
                         </div>
                         <div class="slds-grid">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Shipping_Country__c" ></lightning-input-field>
+                                <lightning-input-field field-name="Shipping_Country__c" value={accountRecord.ShippingCountry}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
                             </div>

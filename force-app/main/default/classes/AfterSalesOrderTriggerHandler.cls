@@ -269,6 +269,7 @@ public class AfterSalesOrderTriggerHandler {
         
     }
 
+
     public static void coverage(){
         Integer i = 0;
         i++;

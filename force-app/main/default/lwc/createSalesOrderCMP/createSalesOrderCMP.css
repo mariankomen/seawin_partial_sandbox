@@ -1,0 +1,36 @@
+.header__row{
+    display: flex;
+    justify-content: space-between;
+    padding: 0 13%;
+}
+
+.header__row__item{
+    display: flex;
+    align-items: flex-end;
+}
+.field_start{
+    margin-right: 10px;
+}
+
+:host {
+    --sds-c-textarea-sizing-min-height: 100px;
+}
+
+.childrenDiv{
+    padding: 5px;
+    background-color: #ddb929;
+    margin-bottom: 3px;
+    color: #fff;
+}
+
+.childrenDivBottom{
+    padding: 5px;
+    background-color: #ddb929;
+    margin-bottom: 3px;
+    width: 103.3%;
+    margin-left: -1.5%;
+    margin-top: -1px;
+}
+.childredTd{
+    padding: 1% 0 0 5%;
+}

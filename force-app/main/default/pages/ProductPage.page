@@ -323,12 +323,12 @@
                     <apex:column headerValue="Hardware Finish" value="{!p.prod.Hardware_Finish__c}" width="100"/>
                     <apex:column headerValue="Glass" value="{!p.prod.Glass__c}" width="100"/>
                     <apex:column headerValue="Glass Thickness" value="{!p.prod.Glass_Thickness__c}" width="100"/>
-                    <apex:column headerValue="Available QT">
+                    <apex:column headerValue="Available Quantity">
                         <apex:outputText value="{0, number, integer}">
                             <apex:param value="{!ibMap[p.prod.id][0]}" />
                         </apex:outputText>
                     </apex:column>
-                    <apex:column headerValue="Allocated QT">
+                    <apex:column headerValue="Allocated Quantity">
                         <apex:outputText value="{0, number, integer}">
                             <apex:param value="{!ibMap[p.prod.id][1]}" />
                         </apex:outputText>

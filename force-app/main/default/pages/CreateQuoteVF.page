@@ -1,0 +1,123 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-02-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<apex:page controller="CreateQuoteVFController" tabStyle="Quote">
+    <style>
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody {
+            margin: 7px 0px 0px 0px;
+        }
+        .requiredLegend {
+            padding: 0 2px;
+            background-color: transparent !important;
+            font-weight: normal;
+            color: #000;
+        }
+        .opportunityTab .tertiaryPalette, .individualPalette .opportunityBlock .tertiaryPalette, .layoutEdit .individualPalette .opportunityBlock .tertiaryPalette {
+            background-image: url(/img/alohaSkin/opacity75.png);
+            border-width: 0;
+            color: black !important;
+            padding: 4px 16px;
+            border-top: 1px solid #fff;
+        }
+        #para {
+            padding: 0;
+            margin: 16px 0;
+            font-size: 109%;
+            text-align: left;
+        }
+    </style>
+    <apex:sectionHeader title="Quote" subtitle="New Quote"></apex:sectionHeader>
+
+    <apex:form>
+        <apex:pageBlock>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!handleCreateQuote}" />
+                <!-- <apex:commandButton value="Cancel" action="{!cancel}" /> -->
+            </apex:pageBlockButtons>
+            <apex:pageMessages escape="false"></apex:pageMessages>
+
+            <apex:pageBlockSection id="pageblocksection" title="InformationQuote Information" columns="2" collapsible="false">
+                <apex:facet name="header"><span class="pbSubExtra">
+                    <span class="requiredLegend brandTertiaryFgr">
+                        <span class="requiredExampleOuter">
+                            <span class="requiredExample">&nbsp;</span>
+                        </span>
+                        <span class="requiredText"> = Required Information.</span>
+                    </span>
+                    </span>
+                    <h3>Quote Information<span class="titleSeparatingColon">:</span></h3>
+                </apex:facet>
+
+                <apex:outputField value="{!quoteRecord.AccountId}"></apex:outputField>
+                <apex:outputField value="{!quoteRecord.RecordTypeId}"></apex:outputField>
+
+                <apex:inputField value="{!quoteRecord.Name}"></apex:inputField>
+                <apex:outputField value="{!quoteRecord.Subtotal}"></apex:outputField>
+
+                <apex:outputField value="{!opportunity.Name}"></apex:outputField>
+                <apex:inputField value="{!quoteRecord.Tax}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.Quote_Date__c}"></apex:inputField>
+                <apex:outputField value="{!quoteRecord.GrandTotal}"></apex:outputField>
+
+                <apex:inputField value="{!quoteRecord.ExpirationDate}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Deposit_Term__c}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.Status}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Price_Level__c}"></apex:inputField>
+
+                <apex:outputField value="{!quoteRecord.IsSyncing}"></apex:outputField>
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="pageblocksection1" title="Prepared For" columns="2" collapsible="false">
+                <apex:inputField value="{!quoteRecord.ContactId}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Phone}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.Email}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Fax}"></apex:inputField>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="pageblocksection2" title="Drawings" columns="2" collapsible="false">
+                <apex:inputField value="{!quoteRecord.Architect__c}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Revision__c}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.Drawing_Date__c}"></apex:inputField>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="pageblocksection3" title="Additional Information" columns="2" collapsible="false">
+                <apex:inputField value="{!quoteRecord.Description}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Shipping_Term__c}"></apex:inputField>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection id="pageblocksection4" title="Address Information" columns="2" collapsible="false">
+                <apex:inputField value="{!quoteRecord.BillingName}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.Shipping_Account__c}"></apex:inputField>
+
+                <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                <apex:inputField value="{!quoteRecord.Shipping_Name__c}"></apex:inputField>
+
+
+                <apex:inputField value="{!quoteRecord.BillingStreet}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.ShippingStreet}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.BillingCity}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.ShippingCity}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.BillingState}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.ShippingState}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.BillingPostalCode}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.ShippingPostalCode}"></apex:inputField>
+
+                <apex:inputField value="{!quoteRecord.BillingCountry}"></apex:inputField>
+                <apex:inputField value="{!quoteRecord.ShippingCountry}"></apex:inputField>
+
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

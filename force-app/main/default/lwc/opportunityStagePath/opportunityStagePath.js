@@ -38,8 +38,6 @@ const FIELDS = [
     'Opportunity.Financial_Clearance_Date__c',
     'Opportunity.submittal_approval_date__c',
     'Opportunity.Contract_Date__c',
-    
-
 ];
 
 const USER_FIELDS = [

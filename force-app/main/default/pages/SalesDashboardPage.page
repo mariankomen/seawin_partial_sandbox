@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-12-2023
+  @last modified by  : Marian Lyzhychka
+-->
 <apex:page controller="SalesDashboardController">
     
     <style>
@@ -193,6 +200,82 @@
         opacity: 1;
         }
         
+        .toggler-wrapper {
+            display: block;
+            width: 230px;
+            height: 25px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .toggler-wrapper input[type="checkbox"] {
+            display: none;
+            background: blue;
+        }
+
+        .toggler-wrapper input[type="checkbox"]:checked+.toggler-slider {
+            background-color: #68726b;
+            font-weight: 600;
+        }
+
+        .toggler-wrapper .toggler-slider {
+            background-color: #bbb7b7;
+            position: absolute;
+            border-radius: 100px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-transition: all 300ms ease;
+            transition: all 300ms ease;
+        }
+
+        .toggler-wrapper .toggler-knob {
+            position: absolute;
+            -webkit-transition: all 300ms ease;
+            transition: all 300ms ease;
+        }
+
+        .toggler-wrapper.style-2 input[type="checkbox"]:checked+.toggler-slider .toggler-knob:before {
+            opacity: 0.4;
+        }
+
+        .toggler-wrapper.style-2 input[type="checkbox"]:checked+.toggler-slider .toggler-knob:after {
+            opacity: 1;
+        }
+
+        .toggler-wrapper.style-2 .toggler-knob {
+            position: relative;
+            height: 100%;
+        }
+
+        .toggler-wrapper.style-2 .toggler-knob:before {
+            content: 'Current Amount';
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+            font-size: 75%;
+            text-transform: uppercase;
+            font-weight: 500;
+            color: white;
+        }
+
+        .toggler-wrapper.style-2 .toggler-knob:after {
+            content: 'Expected Revenue';
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+            font-size: 75%;
+            text-transform: uppercase;
+            font-weight: 500;
+            color: white;
+            opacity: 0.4;
+        }
+
     </style>
     
     
@@ -385,6 +468,50 @@
             </div>
         </div>
 
+        <div class="individualPalette listViewportWrapper" style="width: 33%;position: relative; 
+        display: inline-block;">
+            <div class="listViewport Custom29Block">
+                1
+            </div>
+        </div>
+        <div class="individualPalette listViewportWrapper" style="width: 33%;position: relative; 
+        display: inline-block;">
+            <div class="listViewport Custom29Block">
+                <div style="display: flex; align-items: center;">
+                    <p style="padding-right: 15px;">Calculate Pre-Order Total by: </p>
+
+                    <div>
+                        <!-- Toggle Button Style 2 -->
+                        <label class="toggler-wrapper style-2">
+                          <input type="checkbox" onchange="handleCheckboxChange(event, 'pre-order')"/>
+                          <div class="toggler-slider">
+                            <div class="toggler-knob"></div>
+                          </div>
+                        </label>
+                        <!-- End Toggle Button Style 2 -->
+                      </div>
+                </div>
+            </div>
+        </div>
+        <div class="individualPalette listViewportWrapper " style="width: 33%;position: relative; 
+        display: inline-block;">
+            <div class="listViewport Custom29Block">
+                <div style="display: flex; align-items: center;">
+                    <p style="padding-right: 15px;">Calculate Negotiation Total by: </p>
+
+                    <div>
+                        <!-- Toggle Button Style 2 -->
+                        <label class="toggler-wrapper style-2">
+                          <input type="checkbox" onchange="handleCheckboxChange(event, 'negotiation')"/>
+                          <div class="toggler-slider">
+                            <div class="toggler-knob"></div>
+                          </div>
+                        </label>
+                        <!-- End Toggle Button Style 2 -->
+                      </div>
+                </div>
+            </div>
+        </div>
         <div class="individualPalette listViewportWrapper width-33">
             <div class="listViewport Custom29Block">
                 <form>
@@ -652,6 +779,19 @@
     </apex:pageBlock> 
     <script>
     
+
+    function handleCheckboxChange(event, type){
+        const calculateTotalBy = event.target.checked ? 'Expected Revenue' : 'Current Amount';
+
+        if(type == 'pre-order'){
+            renderPreOrderPipelineGraph(calculateTotalBy);
+        }else if(type == 'negotiation'){
+            renderNegitiationPipelineGraph(calculateTotalBy);
+
+        }
+    }
+
+
     function getMonthNumberFromMonthName(monthString){
         
         var month = 1;
@@ -3010,383 +3150,390 @@
 
 
 <script>
-    /* ---------------------- Pre-Order Pipeline Last 12 Months ---------------------- */
-    var CompanyTotalPipelineData = new Array();
 
-    //Calculate map of last 12 year-month
-    function getMapLast12Month(){
-        let date = new Date();
-        date.setDate(1);
-        let year_month_obj = {};
-        for(let month = 1; month <= 12; month++){
-            let index = 12 - month;
-            let iteration_month = date.getMonth() + 1;
-            let iteration_year = date.getFullYear();
+    function renderPreOrderPipelineGraph(calculateTotalBy){
+        var CompanyTotalPipelineData = new Array();
 
-            year_month_obj[index] = {
-                month: iteration_month,
-                year: iteration_year
+        //Calculate map of last 12 year-month
+        function getMapLast12Month(){
+            let date = new Date();
+            date.setDate(1);
+            let year_month_obj = {};
+            for(let month = 1; month <= 12; month++){
+                let index = 12 - month;
+                let iteration_month = date.getMonth() + 1;
+                let iteration_year = date.getFullYear();
+
+                year_month_obj[index] = {
+                    month: iteration_month,
+                    year: iteration_year
+                }
+                //month_year_map[month] = year_month_obj;
+                date.setMonth(date.getMonth() - 1);
             }
-            //month_year_map[month] = year_month_obj;
-            date.setMonth(date.getMonth() - 1);
+
+            return year_month_obj;
         }
+        
+        var dataArray = new Array();
 
-        return year_month_obj;
-    }
-    
-    var dataArray = new Array();
+        Visualforce.remoting.timeout = 120000;
 
-    Visualforce.remoting.timeout = 120000;
+        Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Company_Total_Pre_Order_Pipeline_Last_12_Months_Sales}',calculateTotalBy,
+            function(result, event){
 
-    Visualforce.remoting.Manager.invokeAction(
-    '{!$RemoteAction.SalesDashboardController.Company_Total_Pre_Order_Pipeline_Last_12_Months_Sales}',
-        function(result, event){
+                if (event.status) {
+                    const month_year_map = getMapLast12Month();
 
-            if (event.status) {
-                const month_year_map = getMapLast12Month();
+                    const dashboard_arr = []
+                    const month_amount = []
+                    result.forEach(el => {
+                        for(let char in month_year_map){
+                            if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
+                                month_amount.push([char, el.amount])
+                            }
+                        }
+                    })
+                    let setted_month = []
+                    month_amount.forEach(el => {
+                        setted_month.push(el[0])
+                    })
 
-                const dashboard_arr = []
-                const month_amount = []
-                result.forEach(el => {
-                    for(let char in month_year_map){
-                        if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
-                            month_amount.push([char, el.amount])
+                    for(let i = 0; i<12; i++){
+                        if(!setted_month.includes(i.toString())){
+                            month_amount.push([i.toString(), 0])
                         }
                     }
-                })
-                let setted_month = []
-                month_amount.forEach(el => {
-                    setted_month.push(el[0])
-                })
-
-                for(let i = 0; i<12; i++){
-                    if(!setted_month.includes(i.toString())){
-                        month_amount.push([i.toString(), 0])
-                    }
-                }
-                month_amount.sort((a, b) => b[0] - a[0]).reverse()
-                dashboard_arr.push({
-                    name: 'companydata',
-                    data: month_amount
-                })
-                RenderCompanyTotalPreorderPipelineLast12Months(dashboard_arr);
-            } else if (event.type === 'exception') {
-                
-                    console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                    month_amount.sort((a, b) => b[0] - a[0]).reverse()
+                    dashboard_arr.push({
+                        name: 'companydata',
+                        data: month_amount
+                    })
+                    RenderCompanyTotalPreorderPipelineLast12Months(dashboard_arr);
+                } else if (event.type === 'exception') {
+                    
+                        console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                        console.log(event.message);
+                        console.log(event.where);
+                } else {
+                    console.log('Error occured in Pre-Order Pipeline Last 12 Months...');
                     console.log(event.message);
-                    console.log(event.where);
-            } else {
-                console.log('Error occured in Pre-Order Pipeline Last 12 Months...');
-                console.log(event.message);
-            }
-        }, 
-        {escape: true}
-    );
-
-    function RenderCompanyTotalPreorderPipelineLast12Months(CompanyTotalPipelineData){
-    
-        Highcharts.chart('preorderpipeline', {
-            credits: {
-                enabled: false
-            },
-            title: {
-                text: ''
-            },
-            chart: {
-                events: {
-                    click: function(event) {
-                        var chartName = "Pre-Order Pipeline Last 12 Months";
-                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart';
-                        url += '&duration=&str=';
-                        url += '&dashboard=SMD_USA';
-                        window.open(url, '_blank');
-                    }
                 }
-            },
-            subtitle: {
-                text: ''
-            },
-            
-            yAxis: {
-                min: 0,
+            }, 
+            {escape: true}
+        );
+
+        function RenderCompanyTotalPreorderPipelineLast12Months(CompanyTotalPipelineData){
+        
+            Highcharts.chart('preorderpipeline', {
+                credits: {
+                    enabled: false
+                },
                 title: {
-                    text: 'Amount ($)'
+                    text: ''
                 },
-                allowDecimals: false
-            },
-            
-            xAxis: {
-                min: 0,
-                categories: Last12MonthsReverseCategories,
-                max:11
-            },
-            tooltip: {
-                formatter: function () {
-                    return '<b style="color: '+this.color+'; font-weight:bold">' + 
-                        this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
-                            style: 'currency',
-                            currency: 'USD',
-                        });
-                }
-            },
-            
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'top',
-                enabled: false
-            },
-            
-            plotOptions: {
-                line: {
-                    dataLabels: {
-                        enabled: false
-                    }
-                },
-                series: {
-                    label: {
-                        connectorAllowed: false
-                    },
-                    marker: {
-                        enabled: true
-                    },
-                    stickyTracking: false,
-                    cursor: 'pointer',
+                chart: {
                     events: {
-                        legendItemClick: function(event) {
-
-                            var chartName = "Company Total Pipeline Last 12 Months";
-                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend';
-                        url += '&duration=&str='+event.target.userOptions.name+'&year=';
-                            url += '&dashboard=SMD_USA';
-                            window.open(url, '_blank');
-                            event.preventDefault();
-                            
-                        },
                         click: function(event) {
-                            var d = new Date();
-
-                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-                            
-                            var CategArray = event.point.category.split(" ");
-                            var CurrentMonth = parseInt(d.getMonth()) + 1;
-                            
-                            var YearIndex = (CategArray[1]).replace("'", "");
-                            
-                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
-                            let full_year = '20'
-                            // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
-                            var year = full_year + YearIndex
-                            console.log('YearIndex: ',YearIndex)
-                            console.log('full_year: ',full_year)
-                            console.log('year: ',year)
-                            var duration = '';
-
                             var chartName = "Pre-Order Pipeline Last 12 Months";
-                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point';
-                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
-                                event.point.series.userOptions.name;
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                            url += '&duration=&str=';
                             url += '&dashboard=SMD_USA';
                             window.open(url, '_blank');
                         }
                     }
-                }
-            },
-            
-            series: CompanyTotalPipelineData
-            
-        });
+                },
+                subtitle: {
+                    text: ''
+                },
+                
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Amount ($)'
+                    },
+                    allowDecimals: false
+                },
+                
+                xAxis: {
+                    min: 0,
+                    categories: Last12MonthsReverseCategories,
+                    max:11
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                            this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                    }
+                },
+                
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    enabled: false
+                },
+                
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: false
+                        }
+                    },
+                    series: {
+                        label: {
+                            connectorAllowed: false
+                        },
+                        marker: {
+                            enabled: true
+                        },
+                        stickyTracking: false,
+                        cursor: 'pointer',
+                        events: {
+                            legendItemClick: function(event) {
+
+                                var chartName = "Company Total Pipeline Last 12 Months";
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                            url += '&duration=&str='+event.target.userOptions.name+'&year=';
+                                url += '&dashboard=SMD_USA';
+                                window.open(url, '_blank');
+                                event.preventDefault();
+                                
+                            },
+                            click: function(event) {
+                                var d = new Date();
+
+                                var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                                
+                                var CategArray = event.point.category.split(" ");
+                                var CurrentMonth = parseInt(d.getMonth()) + 1;
+                                
+                                var YearIndex = (CategArray[1]).replace("'", "");
+                                
+                                var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                                let full_year = '20'
+                                // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                                var year = full_year + YearIndex
+                                console.log('YearIndex: ',YearIndex)
+                                console.log('full_year: ',full_year)
+                                console.log('year: ',year)
+                                var duration = '';
+
+                                var chartName = "Pre-Order Pipeline Last 12 Months";
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_PreOrder_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                                url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
+                                    event.point.series.userOptions.name;
+                                url += '&dashboard=SMD_USA';
+                                window.open(url, '_blank');
+                            }
+                        }
+                    }
+                },
+                
+                series: CompanyTotalPipelineData
+                
+            });
+        }
     }
+    /* ---------------------- Pre-Order Pipeline Last 12 Months ---------------------- */
+    renderPreOrderPipelineGraph('Current Amount');
 </script>
 
 <script>
-    /* ---------------------- Negotiation Pipeline Last 12 Months ---------------------- */
-    var CompanyTotalPipelineData = new Array();
+    function renderNegitiationPipelineGraph(calculateTotalBy){
+        /* ---------------------- Negotiation Pipeline Last 12 Months ---------------------- */
+        var CompanyTotalPipelineData = new Array();
 
-    //Calculate map of last 12 year-month
-    function getMapLast12Month(){
-        let date = new Date();
-        date.setDate(1);
-        let year_month_obj = {};
-        for(let month = 1; month <= 12; month++){
-            let index = 12 - month;
-            let iteration_month = date.getMonth() + 1;
-            let iteration_year = date.getFullYear();
+        //Calculate map of last 12 year-month
+        function getMapLast12Month(){
+            let date = new Date();
+            date.setDate(1);
+            let year_month_obj = {};
+            for(let month = 1; month <= 12; month++){
+                let index = 12 - month;
+                let iteration_month = date.getMonth() + 1;
+                let iteration_year = date.getFullYear();
 
-            year_month_obj[index] = {
-                month: iteration_month,
-                year: iteration_year
+                year_month_obj[index] = {
+                    month: iteration_month,
+                    year: iteration_year
+                }
+                //month_year_map[month] = year_month_obj;
+                date.setMonth(date.getMonth() - 1);
             }
-            //month_year_map[month] = year_month_obj;
-            date.setMonth(date.getMonth() - 1);
+
+            return year_month_obj;
         }
 
-        return year_month_obj;
-    }
-    
-    var dataArray = new Array();
+        var dataArray = new Array();
 
-    Visualforce.remoting.timeout = 120000;
+        Visualforce.remoting.timeout = 120000;
 
-    Visualforce.remoting.Manager.invokeAction(
-    '{!$RemoteAction.SalesDashboardController.Company_Total_Negotiation_Pipeline_Last_12_Months}',
-        function(result, event){
+        Visualforce.remoting.Manager.invokeAction(
+        '{!$RemoteAction.SalesDashboardController.Company_Total_Negotiation_Pipeline_Last_12_Months}',calculateTotalBy,
+            function(result, event){
 
-            if (event.status) {
-                const month_year_map = getMapLast12Month();
+                if (event.status) {
+                    const month_year_map = getMapLast12Month();
 
-                const dashboard_arr = []
-                const month_amount = []
-                result.forEach(el => {
-                    for(let char in month_year_map){
-                        if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
-                            month_amount.push([char, el.amount])
+                    const dashboard_arr = []
+                    const month_amount = []
+                    result.forEach(el => {
+                        for(let char in month_year_map){
+                            if(el.year == month_year_map[char].year && el.month == month_year_map[char].month){
+                                month_amount.push([char, el.amount])
+                            }
+                        }
+                    })
+                    let setted_month = []
+                    month_amount.forEach(el => {
+                        setted_month.push(el[0])
+                    })
+
+                    for(let i = 0; i<12; i++){
+                        if(!setted_month.includes(i.toString())){
+                            month_amount.push([i.toString(), 0])
                         }
                     }
-                })
-                let setted_month = []
-                month_amount.forEach(el => {
-                    setted_month.push(el[0])
-                })
-
-                for(let i = 0; i<12; i++){
-                    if(!setted_month.includes(i.toString())){
-                        month_amount.push([i.toString(), 0])
-                    }
-                }
-                month_amount.sort((a, b) => b[0] - a[0]).reverse()
-                dashboard_arr.push({
-                    name: 'companydata',
-                    data: month_amount
-                })
-                RenderCompanyTotalNegotiationPipelineLast12Months(dashboard_arr);
-            } else if (event.type === 'exception') {
-                
-                    console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                    month_amount.sort((a, b) => b[0] - a[0]).reverse()
+                    dashboard_arr.push({
+                        name: 'companydata',
+                        data: month_amount
+                    })
+                    RenderCompanyTotalNegotiationPipelineLast12Months(dashboard_arr);
+                } else if (event.type === 'exception') {
+                    
+                        console.log('Exception has occured in Company Total Pipeline Last 12 Months...');
+                        console.log(event.message);
+                        console.log(event.where);
+                } else {
+                    console.log('Error occured in Negotiation Pipeline Last 12 Months...');
                     console.log(event.message);
-                    console.log(event.where);
-            } else {
-                console.log('Error occured in Negotiation Pipeline Last 12 Months...');
-                console.log(event.message);
-            }
-        }, 
-        {escape: true}
-    );
-
-    function RenderCompanyTotalNegotiationPipelineLast12Months(CompanyTotalPipelineData){
-    
-        Highcharts.chart('negotiationpipeline', {
-            credits: {
-                enabled: false
-            },
-            title: {
-                text: ''
-            },
-            chart: {
-                events: {
-                    click: function(event) {
-                        var chartName = "Negotiation Pipeline Last 12 Months";
-                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart';
-                        url += '&duration=&str=';
-                        url += '&dashboard=SMD_USA';
-                        window.open(url, '_blank');
-                    }
                 }
-            },
-            subtitle: {
-                text: ''
-            },
-            
-            yAxis: {
-                min: 0,
+            }, 
+            {escape: true}
+        );
+
+        function RenderCompanyTotalNegotiationPipelineLast12Months(CompanyTotalPipelineData){
+
+            Highcharts.chart('negotiationpipeline', {
+                credits: {
+                    enabled: false
+                },
                 title: {
-                    text: 'Amount ($)'
+                    text: ''
                 },
-                allowDecimals: false
-            },
-            
-            xAxis: {
-                min: 0,
-                categories: Last12MonthsReverseCategories,
-                max:11
-            },
-            tooltip: {
-                formatter: function () {
-                    return '<b style="color: '+this.color+'; font-weight:bold">' + 
-                        this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
-                            style: 'currency',
-                            currency: 'USD',
-                        });
-                }
-            },
-            
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'top',
-                enabled: false
-            },
-            
-            plotOptions: {
-                line: {
-                    dataLabels: {
-                        enabled: false
-                    }
-                },
-                series: {
-                    label: {
-                        connectorAllowed: false
-                    },
-                    marker: {
-                        enabled: true
-                    },
-                    stickyTracking: false,
-                    cursor: 'pointer',
+                chart: {
                     events: {
-                        legendItemClick: function(event) {
-
-                            var chartName = "Negotiation Pipeline Last 12 Months";
-                        var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend';
-                        url += '&duration=&str='+event.target.userOptions.name+'&year=';
-                            url += '&dashboard=SMD_USA';
-                            window.open(url, '_blank');
-                            event.preventDefault();
-                            
-                        },
                         click: function(event) {
-                            var d = new Date();
-
-                            var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-                            
-                            var CategArray = event.point.category.split(" ");
-                            var CurrentMonth = parseInt(d.getMonth()) + 1;
-                            
-                            var YearIndex = (CategArray[1]).replace("'", "");
-                            
-                            var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
-                            let full_year = '20'
-                            // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
-                            var year = full_year + YearIndex
-                            console.log('YearIndex: ',YearIndex)
-                            console.log('full_year: ',full_year)
-                            console.log('year: ',year)
-                            var duration = '';
-
                             var chartName = "Negotiation Pipeline Last 12 Months";
-                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point';
-                            url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
-                                event.point.series.userOptions.name;
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=chart'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                            url += '&duration=&str=';
                             url += '&dashboard=SMD_USA';
                             window.open(url, '_blank');
                         }
                     }
-                }
-            },
-            
-            series: CompanyTotalPipelineData
-            
-        });
+                },
+                subtitle: {
+                    text: ''
+                },
+                
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Amount ($)'
+                    },
+                    allowDecimals: false
+                },
+                
+                xAxis: {
+                    min: 0,
+                    categories: Last12MonthsReverseCategories,
+                    max:11
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b style="color: '+this.color+'; font-weight:bold">' + 
+                            this.x + '</b><br> Amount: '+ this.y.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                            });
+                    }
+                },
+                
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    enabled: false
+                },
+                
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: false
+                        }
+                    },
+                    series: {
+                        label: {
+                            connectorAllowed: false
+                        },
+                        marker: {
+                            enabled: true
+                        },
+                        stickyTracking: false,
+                        cursor: 'pointer',
+                        events: {
+                            legendItemClick: function(event) {
+
+                                var chartName = "Negotiation Pipeline Last 12 Months";
+                            var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=legend'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                            url += '&duration=&str='+event.target.userOptions.name+'&year=';
+                                url += '&dashboard=SMD_USA';
+                                window.open(url, '_blank');
+                                event.preventDefault();
+                                
+                            },
+                            click: function(event) {
+                                var d = new Date();
+
+                                var MonthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                                
+                                var CategArray = event.point.category.split(" ");
+                                var CurrentMonth = parseInt(d.getMonth()) + 1;
+                                
+                                var YearIndex = (CategArray[1]).replace("'", "");
+                                
+                                var month = parseInt(MonthArray.indexOf(CategArray[0]) + 1);
+                                let full_year = '20'
+                                // var year = parseInt(YearIndex) == 21 ? d.getFullYear() : parseInt(YearIndex) == 20 ? d.getFullYear() - 1 : d.getFullYear() + 1;
+                                var year = full_year + YearIndex
+                                console.log('YearIndex: ',YearIndex)
+                                console.log('full_year: ',full_year)
+                                console.log('year: ',year)
+                                var duration = '';
+
+                                var chartName = "Negotiation Pipeline Last 12 Months";
+                                var url = '{!communityUrl}/apex/ListOfRecordsPage?chart=Company_Negotiation_Pipeline_SMD_USA_Sales&title='+encodeURI(chartName)+'&click=point'+'&calculateTotalBy='+encodeURI(calculateTotalBy);
+                                url += '&duration='+duration+'&month='+month+'&year='+year+'&str='+
+                                    event.point.series.userOptions.name;
+                                url += '&dashboard=SMD_USA';
+                                window.open(url, '_blank');
+                            }
+                        }
+                    }
+                },
+                
+                series: CompanyTotalPipelineData
+                
+            });
+        }
     }
+    renderNegitiationPipelineGraph('Current Amount');
 </script>
 
 </apex:page>

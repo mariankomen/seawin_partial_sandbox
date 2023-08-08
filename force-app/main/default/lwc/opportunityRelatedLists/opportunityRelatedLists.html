@@ -1,0 +1,123 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-04-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:true={isOpportunityOpened}>
+        <article class="slds-card">
+
+            <template if:true={_datatableData.OpportunityLineItem}>
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="standard:products" alternative-text="Products" title="Products"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Products ({_datatableData.OpportunityLineItem.totalRecords})</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleNavigateToProductScreen}>Add Product</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleNavigateToViewAllScreen}>View All</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleNavigateToEditAllScreen}>Edit All</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleOpenSorting}>Sort</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleDeleteSelected}>Delete Selected</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="OpportunityLineItem" onclick={handleTransferToOptional}>Transfer To Optional</button>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="OpportunityLineItem"
+                                                    key-field="Id"
+                                                    data={_datatableData.OpportunityLineItem.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.OpportunityLineItem}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.OpportunityLineItem}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="OpportunityLineItem" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.OpportunityLineItem}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="OpportunityLineItem" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+    
+        <!-- OPTIONAL PRODUCTS -->
+    
+        <article class="slds-card">
+            <template if:true={_datatableData.Optional_Products_Opportunity__c}>
+                <div class="slds-grid slds-page-header forceRelatedListCardHeader">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contact" title="contact">
+                                
+                                <lightning-icon icon-name="standard:products" alternative-text="Products" title="Products"></lightning-icon>
+                                <span class="slds-assistive-text">contact</span>
+                            </span>
+                            </div>
+                            <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <a href="#" class="slds-card__header-link slds-truncate" title="Products (1)">
+                                    <span>Optional Products ({_datatableData.Optional_Products_Opportunity__c.totalRecords})</span>
+                                </a>
+                            </h2>
+                        </div>
+                        <div class="slds-no-flex">
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleNavigateToProductScreen}>Add Product</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleNavigateToViewAllScreen}>View All</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleNavigateToEditAllScreen}>Edit All</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleOpenOptionalSorting}>Sort</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleDeleteSelected}>Delete Selected</button>
+                            <button class="slds-button slds-button_neutral" data-sobject="Optional_Products_Opportunity__c" onclick={handleTransferToLineItems}>Transfer To Line Items</button>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <c-salesforce-codex-data-table
+                                                    data-id="Optional_Products_Opportunity__c"
+                                                    key-field="Id"
+                                                    data={_datatableData.Optional_Products_Opportunity__c.data}
+                                                    show-row-number-column="false"
+                                                    onrowaction={handleRowAction}
+                                                    columns={_datatableColumns.Optional_Products_Opportunity__c}>
+                    </c-salesforce-codex-data-table>
+                    <template if:true={relatedListsViewAll.Optional_Products_Opportunity__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="Optional_Products_Opportunity__c" onclick={handleShowMoreOLI}>View All</a>
+                        </div>
+                        
+                    </template>
+                    <template if:false={relatedListsViewAll.Optional_Products_Opportunity__c}>
+                        <div class="slds-align_absolute-center" style="padding: 10px 0 0 0;">
+                            <a href="javascript:void(0);" data-sobject="Optional_Products_Opportunity__c" onclick={handleShowLessOLI}>View Less</a>
+                        </div>
+                        
+                    </template>
+                </div>
+            </template>
+        </article>
+    </template>
+    
+    <c-sobjects-sorter onsortend={handleOnSortEnd}></c-sobjects-sorter>
+
+    
+</template>

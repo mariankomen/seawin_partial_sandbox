@@ -1,0 +1,31 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-10-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+	<lightning-card  title="Print Labels">
+		<div style="display: flex; justify-content: center;">
+			<lightning-button label="Build Labels" onclick={buildLabelsHandler}></lightning-button>
+		</div>
+		<div class="slds-p-horizontal_small">
+				<c-salesforce-codex-data-table
+											key-field="lineId"
+											data={linesData}
+											show-row-number-column="false"
+											hide-checkbox-column={_showCheckboxes}
+											columns={columns}
+											oncellchange={handlePicklistChange}
+											onpicklistselect={handlePicklistChange}
+											oninputchange={handleInputChange}
+											>
+				</c-salesforce-codex-data-table>
+		</div>
+
+		<template if:true={_showSpinner}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
+	</lightning-card>
+</template>

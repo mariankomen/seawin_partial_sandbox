@@ -1,0 +1,76 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-04-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:true={isModalOpen}>
+        <!-- Modal/Popup Box LWC starts here -->
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box LWC header here -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close"
+                            alternative-text="close"
+                            variant="inverse"
+                            size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Lines Sorting</h2>
+                </header>
+                <!-- Modal/Popup Box LWC body starts here -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    
+                    <table class="table-dragable slds-table slds-table_cell-buffer slds-table_bordered" aria-describedby="User Details">
+                        <thead>
+                            <tr>
+                                <th scope="col"> &nbsp; </th>
+                                <th scope="col" style="display: none;">Line Id Test</th>
+                                <th scope="col" style="display: none;">Index Test</th>
+                                <th scope="col" style="max-width: 200px;">Product Name</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Sales Price</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={users.data}>
+                                <template for:each={users.data} for:item="user" for:index="index">
+                                    <tr class="grabable" key={user.lineId} id={user.lineId} draggable="true" data-drag-id={index} data-huy={index}
+                                        ondragstart={onDragStart} ondragover={onDragOver} ondrop={onDrop} ondragenter={handleDragEnter}>
+                                        <th scope="col">
+                                            <input class="mychkbox" type="checkbox" style="display: none;"></input>
+                                            <lightning-icon icon-name="utility:justify_text" alternative-text="Approved" title="Approved"></lightning-icon>
+
+                                        </th>
+                                        <th scope="col" class="myId" style="display: none;">{user.lineId}</th>
+                                        <th scope="col" class="myIndex" style="display: none;">{user.index}</th>
+                                        <th scope="col" >{user.productName}</th>
+                                        <th scope="col" >{user.quantity}</th>
+                                        <th scope="col">{user.salesPrice}</th>
+                                        <th scope="col">
+                                            <lightning-textarea value={user.description}></lightning-textarea>
+                                        </th>
+                                        <th scope="col">{user.size}</th>
+                                    </tr>
+                                </template>
+                            </template>
+                            <template if:true={users.error}>No rows found.</template>
+                        </tbody>
+                    </table>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick={closeModal} title="Cancel">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick={handleSubmit} title="OK">OK</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    
+</template>

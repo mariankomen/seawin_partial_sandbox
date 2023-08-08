@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-26-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 @isTest
 public with sharing class RestApiServiceTest {
 
@@ -123,6 +130,21 @@ public with sharing class RestApiServiceTest {
         RestContext.response = res;
         req.requestURI = '/findclient';
         req.params.put('email',cl.Email__c);
+        RestApiService.doGet();
+    }
+    @isTest
+    public static void doGetEmailTest1(){
+        Client__c cl = [SELECT Id, Email__c from Client__c LIMIT 1];
+        RestRequest req = new RestRequest(); 
+        RestResponse res = new RestResponse();
+
+        req.httpMethod = 'POST';
+        req.addHeader('Content-Type', 'application/json');
+
+        RestContext.request = req;
+        RestContext.response = res;
+        req.requestURI = '/searchproducts';
+        req.params.put('search_key','prod');
         RestApiService.doGet();
     }
 }

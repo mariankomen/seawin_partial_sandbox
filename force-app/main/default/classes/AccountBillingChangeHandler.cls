@@ -1,13 +1,7 @@
-/**
- * @description       : 
- * @author            : Marian Lyzhychka
- * @group             : 
- * @last modified on  : 06-22-2023
- * @last modified by  : Marian Lyzhychka
-**/
 public class AccountBillingChangeHandler {
     
     public static void AccountBillingChangeHandler(list<Account> oldValues, list<Account> newValues){
+        
         // only run the process if the account's billing has changed by comparing old and new values
         
         Integer i = 0;
@@ -184,5 +178,4 @@ public class AccountBillingChangeHandler {
             }
         }
     }
-
 }

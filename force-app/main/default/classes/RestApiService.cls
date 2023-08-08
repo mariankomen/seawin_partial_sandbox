@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Marian Lyzhychka
+ * @group             : 
+ * @last modified on  : 07-26-2023
+ * @last modified by  : Marian Lyzhychka
+**/
 @RestResource(urlMapping = '/v1/integration/*')
 global with sharing class RestApiService {
     
@@ -26,6 +33,7 @@ global with sharing class RestApiService {
     }
 
 
+
     @HttpGet
     webservice static void doGet(){
         String requestURI = RestContext.request.requestURI;
@@ -40,6 +48,10 @@ global with sharing class RestApiService {
                 String client_email = RestContext.request.params.get('email');
                 RestContext.response.responseBody = Blob.valueOf(getClientByEmail(client_email));
 
+            }else if(requestURIWildcard == '/searchproducts'){
+                String searchStr = RestContext.request.params.get('search_key');
+                RestContext.response.responseBody = Blob.valueOf(searchProductByKey(searchStr));
+
             }else{
                 throw new WebServiceException('Endpoint not found.'); 
             }
@@ -48,6 +60,18 @@ global with sharing class RestApiService {
  
         }
     }
+
+    public static String searchProductByKey(String key){
+        if(key == null){
+            throw new WebServiceException('Missing params: search_key is required');
+        }
+        String query = 'SELECT Id, Name, ProductCode, CreatedDate FROM Product2 WHERE ProductCode LIKE \'%' + key + '%\' OR Name LIKE \'%' + key + '%\'';
+        List<Product2> products = Database.query(query);
+
+        SearchProductsWrapper wrap = new SearchProductsWrapper(products, products.size());
+        return JSON.serialize(wrap);
+    }
+
 
     public static String getClient(Id clientId){
         if(clientId == null){
@@ -158,6 +182,16 @@ global with sharing class RestApiService {
         public GetClientsResponseWrapper(String status, Client__c data){
             this.status = status;
             this.data = data;
+        }
+    }
+
+    public class SearchProductsWrapper{
+        public List<Product2> products {get;set;}
+        public Integer total {get;set;}
+
+        public SearchProductsWrapper(List<Product2> products, Integer total){
+            this.products = products;
+            this.total = total;
         }
     }
 }

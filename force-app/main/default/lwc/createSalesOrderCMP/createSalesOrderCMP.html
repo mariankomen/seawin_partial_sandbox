@@ -1,0 +1,247 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-19-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <lightning-card>
+        <div style="display:flex; justify-content:center;">
+            <lightning-button label="Save" onclick={handleSave}></lightning-button>
+        </div>
+        <h3 slot="title">
+            <lightning-icon icon-name="standard:opportunity" size="small"></lightning-icon>
+            OpportunityName
+        </h3>
+        <lightning-button variant="base" label="Base" title="Looks like a link" onclick={redirectToOpportunity} class="slds-m-left_x-small"></lightning-button>
+
+        <div class="slds-p-horizontal_small">
+
+            <lightning-accordion
+                allow-multiple-sections-open
+                active-section-name={activeSections}
+            >
+                <lightning-accordion-section name="A" label="Sales Order">
+                    <div class="header">
+                        <div class="header__row">
+                            <div class="header__row__item">
+                                <div class="field_start">
+                                    <b>Customer:</b>
+                                </div>
+                                <div>
+                                    <span>{predefinedData.customerName}</span>
+                                </div>
+                            </div>
+        
+                            <div class="header__row__item">
+                                <div class="field_start">
+                                    <b>GL Account Variable 1: </b>
+                                </div>
+                                <div>
+                                    <c-reusable-lookup label="" 
+                                                        selected-icon-name="custom:custom84" 
+                                                        object-label="Accounting Variable"
+                                                        object-api-name="AcctSeed__Accounting_Variable__c"
+                                                        field-api-name="Name" 
+                                                        other-field-api-name="AcctSeed__Type__c" 
+                                                        help-text="Select GL Varialble 1"
+                                                        selected-record-id={_GLVariable_1}
+                                                        required="true"
+                                                        onvalueselected={handleSelectedValue} 
+                                                        onvalueremoved={onRemoveHandler}>
+                                    </c-reusable-lookup>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header__row">
+                            <div class="header__row__item">
+                                <div class="field_start">
+                                    <b>Ledger:</b>
+                                </div>
+                                <div>
+                                    <lightning-combobox name="progress"
+                                                        label=""
+                                                        value={_selectedLedger}
+                                                        placeholder="Select Progress"
+                                                        options={_ledgers}
+                                                        onchange={handleChange} ></lightning-combobox>
+                                </div>
+                            </div>
+        
+                            <div class="header__row__item">
+                                <div class="field_start">
+                                </div>
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </lightning-accordion-section>
+
+                <lightning-accordion-section name="B" label="Sales Order Lines">
+                    
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="">
+                                            <lightning-input type="checkbox" checked={_masterCheck} onchange={handleMasterCheck}></lightning-input>
+                                    </div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Product">Product</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Product Code">Product Code</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Item Description">Item Description</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Size">Size</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Quantity">Quantity</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Sales Price">Sales Price</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Total Price">Total Price</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={predefinedData.lines}>
+                                <template for:each={predefinedData.lines} for:item="line">
+                                    <tr class="slds-line-height_reset" colspan="" key={line.productId}>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="">
+                                                <lightning-input type="checkbox" checked={line.selected} data-lineid={line.opportunityLineId} onchange={handleCheckboxSelectChange}></lightning-input>
+                                            </div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Product">{line.productName}</div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Product Code">{line.productCode}</div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Item Description">
+                                                <template if:true={line.allowDescriptionChange}>
+                                                    <lightning-textarea value={line.description} data-lineid={line.opportunityLineId} data-field="description" onchange={handleFieldChange}></lightning-textarea>
+                                                </template>
+                                                <template if:false={line.allowDescriptionChange}>
+                                                    <lightning-textarea value={line.description} disabled></lightning-textarea>
+                                                </template>
+                                            </div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Size">
+                                                <lightning-input type="text" value={line.size} data-lineid={line.opportunityLineId} data-field="size" onchange={handleFieldChange}></lightning-input>
+
+                                                
+                                            </div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Quantity">
+                                                <lightning-input type="number" value={line.quantity} step=".01" data-lineid={line.opportunityLineId} data-field="quantity" onchange={handleFieldChange}></lightning-input>
+                                            </div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Sales Price">
+                                                <lightning-formatted-number value={line.salesPrice} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                            </div>
+                                        </th>
+                                        <th class="" scope="col">
+                                            <div class="slds-truncate" title="Sales Price">
+                                                <lightning-formatted-number value={line.total} format-style="currency" currency-code="USD"></lightning-formatted-number>
+                                            </div>
+                                        </th>
+
+                                        
+                                    </tr>
+
+                                    <tr class="slds-line-height_reset" key={line.productName}>
+                                        
+                                        <template if:true={line.isKit}>
+                                            <td colspan="12" class="childredTd" style="padding:  1% 0 0 5%;">
+                                                <div class="childrenDiv">
+                                                    <p>Kit Childrens ({line.productName})</p>
+                                                </div>
+                                                <table key={line.productName} class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+                                                    <thead>
+                                                        <tr class="slds-line-height_reset">
+                                                            
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Product">Product</div>
+                                                            </th>
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Product Code">Product Code</div>
+                                                            </th>
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Item Description">Item Description</div>
+                                                            </th>
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Size">Size</div>
+                                                            </th>
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Size">Quantity</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template for:each={line.kitChildrens} for:item="children">
+                                                            <tr class="slds-line-height_reset" key={line.productId}>
+                                                                <th class="" scope="col">
+                                                                    <div class="slds-truncate" title="Product">{children.productName}</div>
+                                                                </th>
+                                                                <th class="" scope="col">
+                                                                    <div class="slds-truncate" title="Product Code">{children.productCode}</div>
+                                                                </th>
+                                                                <th class="" scope="col">
+                                                                    <div class="slds-truncate" title="Item Description">
+                                                                        <template if:true={children.allowDescriptionChange}>
+                                                                            <lightning-textarea value={children.description} onchange={handleChildrenFieldChange} data-field="description" data-parent={line.opportunityLineId} data-id={children.id}></lightning-textarea>
+                                                                        </template>
+                                                                        <template if:false={children.allowDescriptionChange}>
+                                                                            <lightning-textarea value={children.description} disabled ></lightning-textarea>
+                                                                        </template>
+                                                                    </div>
+                                                                </th>
+                                                                <th class="" scope="col">
+                                                                    <div class="slds-truncate" title="Size">
+                                                                        <lightning-input type="text" value={children.size} onchange={handleChildrenFieldChange} data-field="size" data-parent={line.opportunityLineId} data-id={children.id}></lightning-input>
+                                                                    </div>
+                                                                </th>
+                                                                <th class="" scope="col">
+                                                                    <div class="slds-truncate" title="Quantity">
+                                                                        {children.quantity}
+                                                                    </div>
+                                                                </th>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+
+                                                <div class="childrenDivBottom"></div>
+                                            </td>
+                                            
+                                        </template>
+                                    </tr>
+                                    
+                                    
+                                </template>
+                            </template>
+                        </tbody>
+                        
+                    </table>
+                </lightning-accordion-section>
+
+            </lightning-accordion>
+
+            
+        </div>
+    </lightning-card>
+</template>

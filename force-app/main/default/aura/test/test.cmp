@@ -1,0 +1,10 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 07-31-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,lightning:actionOverride,force:lightningQuickAction">
+    <c:createCommissionManually ></c:createCommissionManually>
+</aura:component>	

@@ -1,13 +1,17 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { CurrentPageReference } from 'lightning/navigation';
 
 import getOpportunityStageValues from '@salesforce/apex/OpportunityDetailPageController.getOpportunityStageValues'
 import getOpportunityRecordTypes from '@salesforce/apex/OpportunityDetailPageController.getOpportunityRecordTypes'
+import getAccount from '@salesforce/apex/OpportunityDetailPageController.getAccount'
 
 export default class CreateOpportunity extends NavigationMixin(LightningElement) {
 
     @api recordTypeId;
+    @api accountId;
+
     @track salesRepAndOwnerObj = {}
     @track firstStepIsReady = true;
     @track secondStepIsReady = false;
@@ -18,19 +22,78 @@ export default class CreateOpportunity extends NavigationMixin(LightningElement)
     @track isChinaRecordType = false;
     @track isOtherRecordType = false;
 
+    @track accountRecord = {}
     recordTypesMap = {};
     stageValuesMap = {};
+    /* ----- Values for predefining ------*/
     checkboxValue = false;
     opportunityType = null;
-    opportunityProbability = null
-    opportunityForecastCategory = null
-
+    opportunityProbability = null;
+    opportunityForecastCategory = null;
+    priceLevel = null;
+    /* ----- Values for predefining ------*/
     connectedCallback(){
-        console.log('record type id LWC: ', JSON.stringify(this.recordTypeId))
         this.getStageValues();
         this.getOpportunityRecordTypesMap();
+
+        const url = window.location.href;
+        this.accountId = this.getRecordIdFromUrl(url);
+        
+        if(this.accountId){
+            console.log('account id presented: ', this.accountId)
+            this.getAccountRecord();
+        }else{
+            console.log('no account id: ')
+        }
+        
     }
 
+    predefineAccountValues(){
+        let cmp = this.template.querySelector('c-select-sales-rep-c-m-p')
+        cmp.reselectSalesRep(this.accountRecord.Sales_Rep_O__c);
+        // this.firstStepIsReady = false;
+        // this.secondStepIsReady = true;
+        this.salesRepAndOwnerObj['sales_rep_id'] = this.accountRecord.Sales_Rep_O__c
+        this.priceLevel = this.accountRecord.Price_Level__c;
+    }
+    getRecordIdFromUrl(url) {
+        if(url.includes('/partner/')){
+            const urlParts = url.split('/');
+            const recordIdIndex = urlParts.findIndex(part => part.startsWith('001'));
+            if (recordIdIndex !== -1) {
+              let recordId = urlParts[recordIdIndex];
+              const paramIndex = recordId.indexOf('?');
+              if (paramIndex !== -1) {
+                recordId = recordId.substring(0, paramIndex);
+              }
+              return recordId;
+            }
+            return null;
+        }else{
+            if(url.includes('accid')){
+                const urlParams = new URLSearchParams(url);
+                let accountId = urlParams.get('additionalParams').split('=')[1].slice(0, -1)
+                return accountId;
+            }else{
+                return null;
+            }
+            
+        }
+        
+      }
+
+    getAccountRecord(){
+        getAccount({
+            accountId: this.accountId
+        }).then(res => {
+            console.log('Account: ',res)
+            this.accountRecord = JSON.parse(res);
+            this.predefineAccountValues();
+        }).catch(err => {
+            console.error(err)
+            this.showToast('Error during getting account info.', err.body.message, 'ERROR')
+        })
+    }
     getStageValues(){
         getOpportunityStageValues().then(res => {
             this.stageValuesMap = JSON.parse(res)

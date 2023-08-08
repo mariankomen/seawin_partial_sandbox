@@ -128,7 +128,7 @@ public class OpportunityDashboardHandler{
         //We run in update opportunity loop and check does iterable opportunity
         //has children OPD record in map. If it have, then update to current values from opp
         OpportunityDashboardUpdateBatch batch = new OpportunityDashboardUpdateBatch(opporunities);
-        //Database.executeBatch(batch,1);
+        Database.executeBatch(batch,1);
     }
 
 
