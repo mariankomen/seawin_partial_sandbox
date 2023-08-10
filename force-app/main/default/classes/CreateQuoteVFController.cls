@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 08-04-2023
+ * @last modified on  : 08-08-2023
  * @last modified by  : Marian Lyzhychka
 **/
 public with sharing class CreateQuoteVFController {
@@ -103,10 +103,11 @@ public with sharing class CreateQuoteVFController {
         return recordType.Id;
     }
 
+
     /**
-    * @description 
+    * @description: private method, for validation parent opportunity record, which checks do Quote is available for create. 
     * @author Marian Lyzhychka | 08-02-2023 
-    * @return Boolean 
+    * @return Boolean | true = allows/false = not
     **/
     private Boolean runValidionsBeforeInitialization(){
         
@@ -116,7 +117,6 @@ public with sharing class CreateQuoteVFController {
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.FATAL, LOCKED_OPPORTUNITY_EXCEPTION));
             return false;
         }else if(opportunity.Approval_Status__c != STATUS_APPROVED){
-            system.debug('opportunity.Approval_Status__c: '+opportunity.Approval_Status__c);
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.FATAL, NOT_APPROVED_EXCEPTION));
             return false;
         }else if(opportunity.Account.Status__c == STATUS_REJECTED){

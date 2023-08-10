@@ -43,7 +43,9 @@ export default class CommissionsAndPayableRelatedList extends NavigationMixin(Li
                     this.matchDatatableColumnsConfig();
                     // this.getOpportunityRecord()
                     this.refreshAllRelatedLists();
-                    helper.handleGetSalesOrder(this);
+                    if(type == 'AcctSeedERP__Sales_Order__c'){
+                        helper.handleGetSalesOrder(this);
+                    }
                     this.isSalesOrderOpened = true;
                 }else{
                     this.isSalesOrderOpened = false;

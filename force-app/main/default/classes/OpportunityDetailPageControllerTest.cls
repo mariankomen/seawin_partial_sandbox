@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 08-04-2023
+ * @last modified on  : 08-10-2023
  * @last modified by  : Marian Lyzhychka
 **/
 @isTest
@@ -549,5 +549,41 @@ public with sharing class OpportunityDetailPageControllerTest {
         List<Attachment> att = [SELECT Id, Description FROM Attachment ];
         OpportunityDetailPageController.transferAttachmentsToExecutedDocuments(JSON.serialize(att));
         Test.stopTest();
+    }
+
+    @isTest
+    static void getOpportunityDetailPageMessagesTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='Closed Won Opportunity' LIMIT 1];
+
+        OpportunityDetailPageController.getOpportunityDetailPageMessages(opp.Id);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void salesOrderLineKitChildrenWrapperTest(){
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='Closed Won Opportunity' LIMIT 1];
+
+        OpportunityDetailPageService.SalesOrderLineKitChildrenWrapper wrap = new OpportunityDetailPageService.SalesOrderLineKitChildrenWrapper(
+            opp.Id,
+            'test',
+            'test',
+            'test',
+            'test',
+            1,
+            1,
+            true
+        );
+    }
+
+
+    @isTest
+    static void handleSaveAttachmentTest(){
+        Test.startTest();
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Name='Closed Won Opportunity' LIMIT 1];
+
+        OpportunityDetailPageController.handleSaveAttachment('test','test.txt', opp.Id);
+        Test.stopTest();
+        
     }
 }

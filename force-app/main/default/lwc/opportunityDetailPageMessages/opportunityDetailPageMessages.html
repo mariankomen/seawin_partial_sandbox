@@ -1,0 +1,25 @@
+<!--
+  @description       : 
+  @author            : Marian Lyzhychka
+  @group             : 
+  @last modified on  : 08-08-2023
+  @last modified by  : Marian Lyzhychka
+-->
+<template>
+    <template if:true={isOpportunityOpened}>
+        <div class="slds-box slds-box_small">
+            <template for:each={messages} for:item="mes">
+                <template if:true={mes.showMessage}>
+                    <div key={mes.Id} class="messageRow" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    ">
+                        <lightning-icon icon-name={mes.iconProperties.name} alternative-text="Defatul" variant={mes.iconProperties.variant} title={mes.message} size={mes.iconProperties.name}></lightning-icon>
+                        <p>{mes.message}</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </template>
+</template>

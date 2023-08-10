@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 07-24-2023
+ * @last modified on  : 08-09-2023
  * @last modified by  : Marian Lyzhychka
 **/
 public virtual class OpportunityDetailPageService {
@@ -81,6 +81,13 @@ public virtual class OpportunityDetailPageService {
         }
     }
 
+    public static void handleSaveAttachmentService(String base64, String fileName, String recordId){
+        Attachment attachment = new Attachment();
+        attachment.Body = EncodingUtil.base64Decode(base64);
+        attachment.Name = fileName;
+        attachment.ParentId = recordId; 
+        insert attachment;
+    }
     /**
     * @description 
     * @author Marian Lyzhychka | 07-13-2023 
@@ -974,6 +981,121 @@ public virtual class OpportunityDetailPageService {
         }
 
         return recordtypeIdIs;
+    }
+
+    // system.debug(OpportunityDetailPageService.getOpportunityDetailPageMessagesService('006EY000002J7c7YAC'));
+    /**
+    * @description 
+    * @author Marian Lyzhychka | 08-08-2023 
+    * @param opportunityId 
+    **/
+    public static String getOpportunityDetailPageMessagesService(String opportunityId){
+        try{
+            List<MessagesWrapper> messages = new List<MessagesWrapper>();
+
+            List<Opportunity> opportunityDataForMessage = [SELECT Id FROM Opportunity WHERE Id = :opportunityId 
+                                                                AND Account.Id !=null 
+                                                                AND Sales_Rep_O__c != null 
+                                                                AND (Sales_Rep_O__r.Quote_Shower_Doors__c = false 
+                                                                    OR Sales_Rep_O__r.Quote_Wall_Surrounds__c = false 
+                                                                    OR Sales_Rep_O__r.Quote_Shower_Bases__c = false 
+                                                                    OR Sales_Rep_O__r.Quote_Barn_Doors__c = false 
+                                                                    OR Sales_Rep_O__r.Quote_LED_Mirrors__c = false 
+                                                                    OR Sales_Rep_O__r.Quote_Vanities_Kitchens__c = false 
+                                                                    OR Account.Shower_Doors__c = false 
+                                                                    OR Account.Wall_Surrounds__c = false 
+                                                                    OR Account.Shower_Bases__c = false 
+                                                                    OR Account.Barn_Doors__c = false 
+                                                                    OR Account.LED_Mirrors__c = false 
+                                                                    OR Account.Vanities_Kitchens__c = false)];
+            String checkMarksFieldsMessage = 'See check mark fields on Account screen \n See check mark fields on Sales rep screen';
+    
+            messages.add(new MessagesWrapper(
+                checkMarksFieldsMessage,
+                !opportunityDataForMessage.isEmpty(),
+                'WARNING'
+            ));
+            
+            AggregateResult agr = [SELECT count(Id) total FROM AcctSeedERP__Sales_order__c WHERE AcctSeedERP__opportunity__c =:opportunityId];
+            Boolean opportunityHasSalesOrders = (Integer)agr.get('total') > 0;
+    
+            String hasSalesOrderMessage = 'Sales Order was created. Your changes will not reflect this Sales Order. Make your changes on Sales Order directly if you want changes to take place.';
+    
+            messages.add(new MessagesWrapper(
+                hasSalesOrderMessage,
+                opportunityHasSalesOrders,
+                'WARNING'
+            ));
+    
+            List<OpportunityFieldHistory> fieldHistories = [SELECT Field, OldValue, NewValue
+                                                               FROM OpportunityFieldHistory
+                                                               WHERE OpportunityId = :opportunityId
+                                                               AND Field IN ('Price_Level__c', 'GL_Account_Variable_1__c', 'Manufacturer_Rep__c')
+                                                               ORDER BY CreatedDate DESC];
+    
+            Boolean hasPriceLevelMessage = false;                                                   
+            Boolean hasGLAccountMessage = false;                                                   
+            Boolean hasManufactureRepMessage = false;   
+    
+            for (OpportunityFieldHistory fieldHistory : fieldHistories) {
+                String fieldName = fieldHistory.Field;
+                String oldValue = String.valueOf(fieldHistory.OldValue);
+                String newValue = String.valueOf(fieldHistory.NewValue);
+    
+                if (fieldName == 'Price_Level__c' && oldValue != newValue && !hasPriceLevelMessage) {
+                    String message = 'Price Level was changed from [' + (oldValue == 'null' || oldValue == null ? '_' : oldValue);
+                    message += '] to [' + (newValue == 'null' || newValue == null ? '_' : newValue) + ']';
+    
+                    messages.add(new MessagesWrapper(
+                        message,
+                        true,
+                        'INFO'
+                    ));
+                    hasPriceLevelMessage = true;
+                } else if (fieldName == 'GL_Account_Variable_1__c' && oldValue != newValue && !hasGLAccountMessage) {
+                    String message = 'GL Account Variable 1 was changed from [' + (oldValue == 'null' || oldValue == null ? '_' : oldValue);
+                    message += '] to [' + (newValue == 'null' || newValue == null ? '_' : newValue) + ']';
+    
+                    messages.add(new MessagesWrapper(
+                        message,
+                        true,
+                        'INFO'
+                    ));
+    
+                    hasGLAccountMessage = true;
+                } else if (fieldName == 'Manufacturer_Rep__c' && oldValue != newValue && !hasManufactureRepMessage) {
+                    system.debug('man rep: '+newValue);
+                    String message = 'Manufacture Rep was changed from [' + (oldValue == 'null' || oldValue == null ? '_' : oldValue);
+                    message += '] to [' + (newValue == 'null' || newValue == null  ? '_' : newValue) + ']';
+    
+                    messages.add(new MessagesWrapper(
+                        message,
+                        true,
+                        'INFO'
+                    ));
+    
+                    hasManufactureRepMessage = true;
+                }
+    
+            }
+    
+            return JSON.serialize(messages);
+        }catch(Exception e){
+            throw new OpportunityDetailPageServiceException(e.getMessage());
+        }
+        
+    }
+
+    public class MessagesWrapper{
+        public String message {get;set;}
+        public Boolean showMessage {get;set;}
+        public String messageType {get;set;} // ERROR | WARNING | INFO | SUCCESS
+
+        public MessagesWrapper(String message, Boolean showMessage, String messageType){
+            this.message = message;
+            this.showMessage = showMessage;
+            this.messageType = messageType;
+        }
     }
 
     public class RelatedListWrapper{

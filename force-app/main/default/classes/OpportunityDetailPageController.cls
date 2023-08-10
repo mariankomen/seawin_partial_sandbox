@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 07-31-2023
+ * @last modified on  : 08-09-2023
  * @last modified by  : Marian Lyzhychka
 **/
 public without sharing class OpportunityDetailPageController extends OpportunityDetailPageService{
@@ -95,5 +95,15 @@ public without sharing class OpportunityDetailPageController extends Opportunity
     @AuraEnabled
     public static Id createSalesOrder(String payload, String opportunityId){
         return createSalesOrderService(payload, opportunityId);
+    }
+
+    @AuraEnabled
+    public static string getOpportunityDetailPageMessages(String opportunityId){
+        return getOpportunityDetailPageMessagesService(opportunityId);
+    }
+
+    @AuraEnabled
+    public static void handleSaveAttachment(String base64, String filename, String recordId){
+        handleSaveAttachmentService(base64, filename, recordId);
     }
 }

@@ -52,3 +52,9 @@ declare module "@salesforce/apex/OpportunityDetailPageController.getPredefinedSa
 declare module "@salesforce/apex/OpportunityDetailPageController.createSalesOrder" {
   export default function createSalesOrder(param: {payload: any, opportunityId: any}): Promise<any>;
 }
+declare module "@salesforce/apex/OpportunityDetailPageController.getOpportunityDetailPageMessages" {
+  export default function getOpportunityDetailPageMessages(param: {opportunityId: any}): Promise<any>;
+}
+declare module "@salesforce/apex/OpportunityDetailPageController.handleSaveAttachment" {
+  export default function handleSaveAttachment(param: {base64: any, filename: any, recordId: any}): Promise<any>;
+}

@@ -39,7 +39,6 @@ export default class OpportunityRelatedLists extends NavigationMixin(LightningEl
 
     getOpportunityRecord(){
         helper.getOpportunityService(this.recordId).then(res => {
-            console.log('res cntrl: ',res)
             this._OpportunityRecord = JSON.parse(res)
         })
     }

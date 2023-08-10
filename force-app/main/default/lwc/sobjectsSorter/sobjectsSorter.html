@@ -2,7 +2,7 @@
   @description       : 
   @author            : Marian Lyzhychka
   @group             : 
-  @last modified on  : 08-04-2023
+  @last modified on  : 08-08-2023
   @last modified by  : Marian Lyzhychka
 -->
 <template>
@@ -31,6 +31,7 @@
                                 <th scope="col" style="display: none;">Line Id Test</th>
                                 <th scope="col" style="display: none;">Index Test</th>
                                 <th scope="col" style="max-width: 200px;">Product Name</th>
+                                <th scope="col" style="max-width: 200px;">Image</th>
                                 <th scope="col">Quantity</th>
                                 <th scope="col">Sales Price</th>
                                 <th scope="col">Description</th>
@@ -50,6 +51,9 @@
                                         <th scope="col" class="myId" style="display: none;">{user.lineId}</th>
                                         <th scope="col" class="myIndex" style="display: none;">{user.index}</th>
                                         <th scope="col" >{user.productName}</th>
+                                        <th scope="col" >
+                                            <img src={user.imageUrl} alt='image' style="height:-1px; width:164px;"/>
+                                        </th>
                                         <th scope="col" >{user.quantity}</th>
                                         <th scope="col">{user.salesPrice}</th>
                                         <th scope="col">

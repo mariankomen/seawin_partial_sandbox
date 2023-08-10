@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Marian Lyzhychka
  * @group             : 
- * @last modified on  : 08-04-2023
+ * @last modified on  : 08-08-2023
  * @last modified by  : Marian Lyzhychka
 **/
 public with sharing class SObjectSortController {
@@ -12,46 +12,56 @@ public with sharing class SObjectSortController {
     private static final Map<String, String> QUOTE_LINE_ITEMS_MAPPING = new Map<String, String>{
         'productApi' => 'Product2',
         'productName' => 'Product2.Name',
+        'productImageUrl' => 'Product2.Product_Image_Short_URL__c',
         'quantity' => 'Quantity',
         'salesPrice' => 'UnitPrice',
         'description' => 'ITEM_DESCRIPTION__c',
-        'size' => 'Size__c'
+        'size' => 'Size__c',
+        'image' => 'Product_Image_Short_URL__c'
     };
 
     private static final Map<String, String> QUOTE_OPTIONAL_LINE_ITEMS_MAPPING = new Map<String, String>{
         'productApi' => 'Product__r',
         'productName' => 'Product__r.Name',
+        'productImageUrl' => 'Product__r.Product_Image_Short_URL__c',
         'quantity' => 'Quantity__c',
         'salesPrice' => 'UnitPrice__c',
         'description' => 'Item_Description__c',
-        'size' => 'Size__c'
+        'size' => 'Size__c',
+        'image' => 'Product_Image_Short_URL__c'
     };
 
     private static final Map<String, String> OPPORTUNITY_LINE_ITEMS_MAPPING = new Map<String, String>{
         'productApi' => 'Product2',
         'productName' => 'Product2.Name',
+        'productImageUrl' => 'Product2.Product_Image_Short_URL__c',
         'quantity' => 'Quantity',
         'salesPrice' => 'UnitPrice',
         'description' => 'Item_Description__c',
-        'size' => 'Size__c'
+        'size' => 'Size__c',
+        'image' => 'Product_Image_Short_URL__c'
     };
 
     private static final Map<String, String> OPPORTUNITY_OPTIONAL_LINE_ITEMS_MAPPING = new Map<String, String>{
         'productApi' => 'Product__r',
         'productName' => 'Product__r.Name',
+        'productImageUrl' => 'Product__r.Product_Image_Short_URL__c',
         'quantity' => 'Quantity__c',
         'salesPrice' => 'UnitPrice__c',
         'description' => 'Item_Description__c',
-        'size' => 'Size__c'
+        'size' => 'Size__c',
+        'image' => 'Product_Image_Short_URL__c'
     };
 
     private static final Map<String, String> SALES_ORDER_LINE_ITEMS_MAPPING = new Map<String, String>{
         'productApi' => 'AcctSeedERP__Product__r',
         'productName' => 'AcctSeedERP__Product__r.Name',
+        'productImageUrl' => 'AcctSeedERP__Product__r.Product_Image_Short_URL__c',
         'quantity' => 'AcctSeedERP__Quantity_Ordered__c',
         'salesPrice' => 'AcctSeedERP__Unit_Price__c',
         'description' => 'Item_Description__c',
-        'size' => 'Size__c'
+        'size' => 'Size__c',
+        'image' => 'Product_Image_Short_URL__c'
     };
 
 
@@ -73,7 +83,7 @@ public with sharing class SObjectSortController {
             String queryFields = '';
 
             for(String field: fields){
-                if(field != 'Product2' && field != 'Product__r' && field != 'AcctSeedERP__Product__r'){
+                if(field != 'Product2' && field != 'Product__r' && field != 'AcctSeedERP__Product__r' && field != 'Product_Image_Short_URL__c'){
                     queryFields += ' ' + field + ',';
                 }
             }
@@ -88,13 +98,15 @@ public with sharing class SObjectSortController {
                 system.debug(JSON.serialize(sobj));
                 Map<String, Object> sobjSerialized = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(sobj));
                 Map<String, Object> sobjSerializedProduct = (Map<String, Object>)JSON.deserializeUntyped(JSON.serialize(sobjSerialized.get(fieldsMapping.get('productApi'))));
+                system.debug('sobjSerializedProduct: '+sobjSerializedProduct);
                 sortItemsWrapperList.add(new SortItem(
                     (Id)sobj.get('Id'),
                     String.valueOf(sobjSerializedProduct.get('Name')),
                     (Decimal)sobj.get(fieldsMapping.get('quantity')),
                     (Decimal)sobj.get(fieldsMapping.get('salesPrice')),
                     String.valueOf(sobj.get(fieldsMapping.get('description'))),
-                    String.valueOf(sobj.get(fieldsMapping.get('size')))
+                    String.valueOf(sobj.get(fieldsMapping.get('size'))),
+                    String.valueOf(sobjSerializedProduct.get(fieldsMapping.get('image')))
                 ));
             }
             system.debug('sortItemsWrapperList: '+JSON.serialize(sortItemsWrapperList));
@@ -152,14 +164,16 @@ public with sharing class SObjectSortController {
         public Decimal salesPrice {get;set;}
         public String description {get;set;}
         public String size {get;set;}
+        public String imageUrl {get;set;}
 
-        public SortItem(Id lineId, String productName, Decimal quantity, Decimal salesPrice, String description, String size){
+        public SortItem(Id lineId, String productName, Decimal quantity, Decimal salesPrice, String description, String size, String imageUrl){
             this.lineId = lineId;
             this.productName = productName;
             this.quantity = quantity;
             this.salesPrice = salesPrice;
             this.description = description;
             this.size = size;
+            this.imageUrl = imageUrl;
         }
 
     }

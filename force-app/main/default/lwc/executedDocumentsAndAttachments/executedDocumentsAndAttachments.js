@@ -45,7 +45,7 @@ export default class ExecutedDocumentsAndAttachments  extends NavigationMixin(Li
 
     @track isOpportunityOpened = false;
 
-
+    openedSObject = '';
     connectedCallback(){
         if(!this.recordId){
             this.isOpportunityOpened = false;
@@ -53,10 +53,14 @@ export default class ExecutedDocumentsAndAttachments  extends NavigationMixin(Li
             getSobjectType({
                 recordId: this.recordId
             }).then(type => {
-                if(type == 'Opportunity'){
+                this.openedSObject = type;
+                if(type == 'Opportunity' || type == 'AcctSeedERP__Sales_Order__c'){
                     this.matchDatatableColumnsConfig();
-                    this.getOpportunityRecord()
                     this.refreshAllRelatedLists();
+
+                    if(type == 'Opportunity'){
+                        this.getOpportunityRecord()
+                    }
 
                     this.isOpportunityOpened = true;
                 }else{
@@ -68,7 +72,6 @@ export default class ExecutedDocumentsAndAttachments  extends NavigationMixin(Li
 
     getOpportunityRecord(){
         helper.getOpportunityService(this.recordId).then(res => {
-            console.log('res cntrl: ',res)
             this._OpportunityRecord = JSON.parse(res)
         })
     }
@@ -143,12 +146,16 @@ export default class ExecutedDocumentsAndAttachments  extends NavigationMixin(Li
     }
 
     handleNewAttachment(){
-        window.location.href = `/p/attach/NoteAttach?pid=${this.recordId}&parentname=${this._OpportunityRecord.Name}&retURL=/partner/s/detail/${this.recordId}`
+        const cmp = this.template.querySelector('c-upload-attachment');
+        cmp.initial(this.recordId, false);
+        // window.location.href = `/p/attach/NoteAttach?pid=${this.recordId}&parentname=${this._OpportunityRecord.Name}&retURL=/partner/s/detail/${this.recordId}`
     }
     handleNewAttachmentWithRenaming(){
-        window.location.href = `/partner/apex/OpportunityAttachmentPage?pid=${this.recordId}&id=${this.recordId}&parentname=${this._OpportunityRecord.Name}&retURL=/partner/s/detail/${this.recordId}`
+        const cmp = this.template.querySelector('c-upload-attachment');
+        cmp.initial(this.recordId, true);
     }
 
+   
     handleDeleteSelected(e){
         const sobjectDatatable = `[data-id="${e.target.dataset.sobject}"]`;
         let selectedRecords =  this.template.querySelector(sobjectDatatable).getSelectedRows();
@@ -210,5 +217,9 @@ export default class ExecutedDocumentsAndAttachments  extends NavigationMixin(Li
     }
     refreshAllRelatedLists(){
         helper.getOpportunityAttachmentsService(this)
+    }
+
+    handleOnFileSave(){
+        this.refreshAllRelatedLists();
     }
 }
